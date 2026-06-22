@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Single visual" description="One core message + one dominant diagram on a light canvas. No swipe arrow." -->
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="./ds-base.js"></script>
+<style>
+  html,body{margin:0}
+  body{background:#e6e6e6;display:flex;align-items:flex-start;justify-content:center;padding:48px;box-sizing:border-box;min-height:100vh}
+</style>
+</helmet>
+
+<div data-screen-label="Single visual" style="position:relative;width:1080px;height:1350px;box-sizing:border-box;padding:var(--margin);overflow:hidden;flex:none;
+  background:var(--canvas-light-bg);color:var(--canvas-light-fg);font-family:var(--font-body);box-shadow:0 8px 40px rgba(0,0,0,.12);
+  --fg:var(--canvas-light-fg);--muted:var(--canvas-light-muted);--line:var(--canvas-light-line);--soft:var(--canvas-light-soft);--sig-color:var(--brand-primary)">
+
+  <!-- chrome (top) — no swipe arrow on a single -->
+  <div style="position:absolute;top:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span>
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category / function</span>
+  </div>
+
+  <!-- headline block -->
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:230px">
+    <span style="display:block;font-weight:700;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">The re-hook</span>
+    <h1 class="headline headline--lg" style="margin-top:20px">Most outreach fails on the <span class="sig-underline">first line</span></h1>
+    <p style="font-weight:400;font-size:32px;line-height:1.45;color:var(--muted);margin:28px 0 0;max-width:760px;text-wrap:pretty">A single supporting line that adds context the post hook left out.</p>
+  </div>
+
+  <!-- ONE dominant diagram -->
+  <div style="position:absolute;left:0;right:0;bottom:210px;display:flex;justify-content:center">
+    <div style="position:relative;width:520px;height:520px;border-radius:50%;
+      background:conic-gradient(var(--brand-primary) 0 68%, var(--canvas-light-soft) 68% 100%)">
+      <div style="position:absolute;inset:120px;border-radius:50%;background:var(--canvas-light-bg);display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <span style="font-family:var(--font-display);font-weight:700;font-size:130px;letter-spacing:-.04em;line-height:.9">68%</span>
+        <span style="font-weight:500;font-size:28px;color:var(--muted);margin-top:6px">never read past it</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1176, &quot;height&quot;: 780 },
+  &quot;primary&quot;:   { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#0A66C2&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;secondary&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#16232B&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;accent&quot;:    { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#E7A33E&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;tint&quot;:      { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 7, &quot;min&quot;: 3, &quot;max&quot;: 16, &quot;tsType&quot;: &quot;number&quot; },
+  &quot;font&quot;:      { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Inter&quot;, &quot;options&quot;: [&quot;Inter&quot;, &quot;Plus Jakarta Sans&quot;, &quot;Space Grotesk&quot;, &quot;Sora&quot;], &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  apply() {
+    const p = this.props || {};
+    const r = document.documentElement.style;
+    if (p.primary)   r.setProperty('--brand-primary', p.primary);
+    if (p.secondary) r.setProperty('--brand-secondary', p.secondary);
+    if (p.accent)    r.setProperty('--brand-accent', p.accent);
+    if (p.tint != null) r.setProperty('--brand-tint', p.tint + '%');
+    const font = p.font;
+    if (font) {
+      const id = 'tweak-font-' + font.replace(/\s+/g, '-');
+      if (!document.getElementById(id)) {
+        const l = document.createElement('link');
+        l.id = id; l.rel = 'stylesheet';
+        l.href = 'https://fonts.googleapis.com/css2?family=' + font.replace(/\s+/g, '+') + ':wght@400;500;600;700;800&display=swap';
+        document.head.appendChild(l);
+      }
+      r.setProperty('--brand-font', "'" + font + "', system-ui, sans-serif");
+      r.setProperty('--brand-font-display', "'" + font + "', system-ui, sans-serif");
+    }
+  }
+  componentDidMount() { this.apply(); }
+  componentDidUpdate() { this.apply(); }
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

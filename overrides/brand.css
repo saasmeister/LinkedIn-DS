@@ -1,0 +1,27 @@
+/* ============================================================
+   BRAND LAYER · OVERRIDES   ←  THIS FILE IS YOURS (the branch)
+   ------------------------------------------------------------
+   This is the one file every client edits. It is imported LAST,
+   so anything you set here wins over the master defaults in
+   tokens/brand.css. Master updates NEVER touch this file — your
+   colours, fonts and signature survive every upgrade.
+
+   Uncomment and set what you want to own. Leave the rest to inherit
+   the master defaults (and any new defaults future updates ship).
+   ============================================================ */
+
+:root {
+  /* ---- Colours -------------------------------------------- */
+  /* --brand-primary:   #0A66C2; */   /* LOUD canvas (cover/back)        */
+  /* --brand-secondary: #16232B; */   /* SECTION canvas (chapter marker) */
+  /* --brand-accent:    #E7A33E; */   /* categorise / mark / highlight   */
+  /* --brand-tint: 7%; */             /* LIGHT-canvas tint strength      */
+
+  /* ---- Type ----------------------------------------------- */
+  /* Load your webfont yourself (a <link> or @font-face), then: */
+  /* --brand-font:         'Your Font', system-ui, sans-serif; */
+  /* --brand-font-display: 'Your Display', system-ui, sans-serif; */
+
+  /* ---- Headline signature --------------------------------- */
+  /* --signature: underline; */       /* underline | block | bubble | plain */
+}

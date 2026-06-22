@@ -1,0 +1,46 @@
+<!-- @dsCard group="Principles" viewport="700x300" name="Brief Studio & feed preview" subtitle="Fill a type-first brief → advice + pushback → see it in the LinkedIn feed" -->
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin:0; font-family:var(--font-body); background:#fff; color:#18181b; padding:22px 26px; }
+  .lead { font-size:13px; color:#8a8a8a; margin:0 0 16px; }
+  .lead b { color:#18181b; }
+  .cols { display:flex; gap:20px; align-items:stretch; }
+  .panel { flex:1; border:1px solid #ececec; border-radius:12px; padding:13px 15px; }
+  .pt { font-family:var(--font-display); font-weight:700; font-size:13px; margin:0 0 10px; letter-spacing:-.01em; }
+  .fld { height:9px; border-radius:5px; background:#eef0f2; margin-bottom:7px; }
+  .fld.s { width:60%; }
+  .chips { display:flex; gap:6px; margin-bottom:10px; }
+  .chip { font-size:10px; font-weight:700; padding:4px 8px; border-radius:6px; background:#fff; border:1px solid #d8dadd; color:#5f6671; }
+  .chip.on { background:var(--brand-primary); color:#fff; border-color:transparent; }
+  .note { font-size:11px; line-height:1.4; border-radius:8px; padding:7px 9px; margin-bottom:6px; }
+  .warn { background:#fff4e5; border:1px solid #ffd9a8; color:#8a5200; }
+  .good { background:#e7f6ee; border:1px solid #bce8cf; color:#1f6b43; }
+  .feed { border:1px solid #e8e8e8; border-radius:10px; overflow:hidden; }
+  .fh { display:flex; align-items:center; gap:7px; padding:9px 11px; }
+  .av { width:26px; height:26px; border-radius:50%; background:var(--brand-primary); }
+  .fl { height:7px; border-radius:4px; background:#eef0f2; }
+  .vis { aspect-ratio:4/5; background:var(--canvas-light-bg); border-top:1px solid #eee; display:flex; flex-direction:column; justify-content:center; padding:14px; gap:7px; }
+  .vh { font-family:var(--font-display); font-weight:700; font-size:15px; color:var(--canvas-light-fg); letter-spacing:-.01em; }
+  .vh u { text-decoration:none; background:linear-gradient(var(--brand-primary),var(--brand-primary)) no-repeat 0 100%/100% 4px; padding-bottom:1px; }
+</style></head>
+<body>
+  <p class="lead">The front door. A <b>non-designer</b> fills a type-first brief; the system <b>advises and pushes back</b>, then shows the visual <b>live in the LinkedIn feed</b> — single or carousel — before anything is built.</p>
+  <div class="cols">
+    <div class="panel">
+      <p class="pt">The brief</p>
+      <div class="chips"><span class="chip">Single</span><span class="chip on">Carousel</span><span class="chip">Infographic</span><span class="chip">Quote</span></div>
+      <div class="fld"></div><div class="fld"></div><div class="fld s"></div>
+      <div class="note warn"><b>Pushback:</b> short for a carousel — a single will hit harder. Switch?</div>
+      <div class="note good"><b>Good:</b> there's a number here — one big stat could carry it.</div>
+    </div>
+    <div class="panel" style="flex:0 0 220px;background:#F4F2EE">
+      <p class="pt">Preview · in the feed</p>
+      <div class="feed">
+        <div class="fh"><span class="av"></span><div style="flex:1"><div class="fl" style="width:60%"></div><div class="fl" style="width:40%;margin-top:5px"></div></div></div>
+        <div class="vis"><span style="font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--canvas-light-muted)">THE RE-HOOK</span><span class="vh">Most outreach fails on the <u>first line</u></span></div>
+      </div>
+    </div>
+  </div>
+</body></html>

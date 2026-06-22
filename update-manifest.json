@@ -1,0 +1,26 @@
+{
+  "name": "LinkedIn Visual Design System",
+  "channel": "master",
+  "version": "1.0.0",
+  "published": "2026-06-22",
+  "manifestUrl": "REPLACE_WITH_PUBLISHED_MANIFEST_URL",
+  "checkCadenceHours": 24,
+  "autoApply": false,
+  "releases": [
+    {
+      "version": "1.0.0",
+      "date": "2026-06-22",
+      "level": "minor",
+      "summary": "Foundation release — the colour- & font-agnostic system, four templates, two kits, and the master/branch model.",
+      "templates": ["Single visual", "Quote visual", "Carousel", "Infographic"],
+      "components": [
+        "Canvas", "Chrome", "Headline", "Stat", "Quote", "InfoCard", "Cta", "BrowserMock", "FeedPost"
+      ],
+      "notes": [
+        "24px hard safe band on all visuals.",
+        "Brief Studio (intake + live feed preview) and Visual Library (export PNG/HTML + approve-to-learn).",
+        "Master → branch model: overrides/ + client/ are never overwritten."
+      ]
+    }
+  ]
+}
