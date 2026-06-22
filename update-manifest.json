@@ -1,12 +1,25 @@
 {
   "name": "LinkedIn Visual Design System",
   "channel": "master",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "published": "2026-06-22",
   "manifestUrl": "REPLACE_WITH_PUBLISHED_MANIFEST_URL",
   "checkCadenceHours": 24,
   "autoApply": false,
   "releases": [
+    {
+      "version": "1.1.0",
+      "date": "2026-06-22",
+      "level": "minor",
+      "summary": "Visual Board (one Canva-style board per project, per-visual PNG/HTML export) plus two hard behaviour gates: ask-before-build, and all-visuals-on-one-board.",
+      "templates": ["Visual Board"],
+      "components": [],
+      "notes": [
+        "GATE 1: the assistant asks questions and offers directions before building any visual.",
+        "GATE 2: every visual is a block on one Visual Board \u2014 never a file per visual.",
+        "Setup screen fixes: starts at step 1, live preview reflects font/colour, input focus retained."
+      ]
+    },
     {
       "version": "1.0.0",
       "date": "2026-06-22",
