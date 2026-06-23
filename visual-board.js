@@ -4,9 +4,14 @@
    No build step, no React — add a visual by appending a <section class="visual">
    to the HTML and this picks it up on reload. */
 (function () {
+  function boot() {
+    var source = document.getElementById("source");
+    var reel = document.getElementById("reel");
+    if (!source || !reel) { return requestAnimationFrame(boot); }
+    init(source, reel);
+  }
+  function init(source, reel) {
   var APPROVED_KEY = "li-vds-board-approved-v1";
-  var source = document.getElementById("source");
-  var reel = document.getElementById("reel");
   var heroStage = document.getElementById("heroStage");
   var heroType = document.getElementById("heroType");
   var heroBadge = document.getElementById("heroBadge");
@@ -160,4 +165,6 @@
 
   if (!visuals.length) { countEl.textContent = "No visuals yet — add a <section class=\"visual\"> block"; return; }
   renderHero(); renderReel();
+  }
+  boot();
 })();

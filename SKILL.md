@@ -19,6 +19,38 @@ Brand setup (font, colours, logo, photo, spacing) is a **one-time step** the use
 
 ---
 
+## 🛑 GATE 1 — ASK BEFORE YOU BUILD. DO NOT JUST DESIGN.
+
+**When the user gives you a post / idea and asks for a visual, your FIRST response is questions and pushback — NOT a finished visual.** You are a senior LinkedIn designer guiding a non-designer, not an order-taker. Building immediately is the #1 failure mode — do not do it.
+
+Before producing ANY visual, you must have explicit answers (ask in the chat, propose options, let them choose):
+
+1. **The post** — full text. Post-first, always.
+2. **Visual type** — single / carousel / infographic / quote. **Ask — never assume.** If borderline, lay out the trade-off and recommend one.
+3. **The one thing to remember** — the save-trigger. If there isn't one, say so and reshape.
+4. **Second hook** — the visual heading differs from the post's first line. Will they write it, or shall you derive it?
+5. **Identity bar** — name + claimed category/function.
+6. **References / sketch** — "Do you have examples you like, or a sketch?" If yes, design from them.
+7. **Visual ambition** — dead-simple, or lean into a chart/diagram? Don't guess.
+
+Then run the **critical pass** (`BRIEF.md §5`): does the post fit the type? Is the save-trigger real? Does it hold the series together? **Offer 2–3 directions with a recommendation**, then build only the chosen one. Hand the user the starter brief (`BRIEF.md §0`) to fill if that's faster.
+
+**The deliverable is guiding them to the right visual — not executing the first idea.** A sharp question or a "this won't work because…" beats a fast wrong visual every time.
+
+---
+
+## 🛑 GATE 2 — ALL VISUALS GO ON ONE BOARD. NEVER ONE FILE PER VISUAL.
+
+**Never create a separate `.dc.html` / `.html` file for each visual.** That is wrong. Every visual the user makes lives as one entry on a single **Visual Board** — a Canva-style hero + horizontal scrollable reel, with a per-visual ⋯ menu (Download PNG · Download HTML · Add to design system).
+
+**On the first visual in a project:** bring the board in once — copy **`Visual Board.html`** + **`visual-board.js`** from the design system to the project root (they're already linked to `styles.css` + `overrides/*.css`). Replace the two example `<section class="visual">` blocks with the real one.
+
+**For every visual after that:** append ONE `<section class="visual" data-label="…" data-type="…">` block (containing one `.artboard`) to the SAME `Visual Board.html`'s `#source` container. The board auto-picks it up — hero, reel and export all just work. The artboard is the true 1080 × 1350 export target; build its markup with the design-system components / token vars (canvas roles via `data-canvas="loud|light|section"`).
+
+So the answer to "make me another visual" is **always**: add a block to the board, never spawn a new file. The board IS how visuals are presented to a client and kept as proof — and the ⋯ "Add to design system" is how approved variants feed back into the system.
+
+---
+
 Read `README.md` first for the philosophy, then **`posture.md` — how to behave (a senior designer who guides, not an order-taker)** and **`BRIEF.md` — the intake + the fillable starter brief you complete before building.**
 
 ## Operating posture (read `posture.md`)
@@ -39,9 +71,9 @@ A colour- and font-agnostic ruleset for LinkedIn visuals. The value is the **pri
 7. **Build only when the approach is clear and consistent** — consistency within a series beats loose creativity. Then critique your own output and iterate.
 
 ## Producing artifacts
-- **Every visual is delivered on a canvas (a stage):** the artboard sits centred on a board, exportable as **standalone HTML** or **PNG** (proof for a client). Size is locked at **1080 × 1350** (4:5) — it may scale down to preview, but export at the true size.
-- For throwaway visuals/mocks: copy the relevant `templates/<slug>/` artboard, swap in the post's copy, override the brand layer (or set the Tweak props), and export at 1080×1350.
-- For production: read the token CSS and component primitives and design against the real system — link `styles.css`, mount components from `window.LinkedInVisualDesignSystem_a51278`.
+- **Delivery is the Visual Board (GATE 2):** one board per project, every visual a `<section class="visual">` block appended to it. Never one file per visual. Export per-visual as **PNG** or standalone **HTML** from the ⋯ menu; size is locked at **1080 × 1350** (4:5), scaled down only for preview.
+- **Building an artboard:** use the four `templates/<slug>/` artboards as the reference for each type's layout, but paste the artboard markup into a board block — don't ship the template file itself as the deliverable.
+- For production code: read the token CSS and component primitives and design against the real system — link `styles.css`, mount components from `window.LinkedInVisualDesignSystem_a51278`.
 - Copy assets out rather than referencing them across projects.
 
 After the brief is filled, move to making the first visual.

@@ -1,5 +1,10 @@
 # LinkedIn Visual Design System
 
+> # ⛔ READ THIS FIRST — three non-negotiable rules
+> **1. ASK BEFORE YOU BUILD.** When someone gives a post/idea, your first reply is questions + pushback + 2–3 directions — NEVER a finished visual. You are a senior LinkedIn designer guiding a non-designer, not an order-taker. (Full intake: `BRIEF.md`. Behaviour: `posture.md`.)
+> **2. ALL VISUALS ON ONE BOARD — never a file per visual.** Every visual is one `<section class="visual">` block on a single **Visual Board** (`Visual Board.html` at the project root, with `visual-board.js` beside it): a Canva-style hero + scrollable reel with per-visual PNG/HTML export. In a consuming project, copy `Visual Board.html` + `visual-board.js` in once, then append a block per visual to the SAME file. Do NOT copy a type-template into its own file per post.
+> **3. The four type-templates (Single/Carousel/Quote/Infographic) are REFERENCE LAYOUTS,** not deliverables. Read them to build an artboard, then paste that artboard as a block on the board.
+
 A **colour- and font-agnostic** system for building strong LinkedIn post visuals. It encodes the *principles* of a good visual — never one brand's values. You bring your own colours and fonts (the "brand layer"); every canvas role, headline and identity bar re-derives from them automatically.
 
 > **Core idea:** the value is in the *principles*, not the brand values. A token names a **role and a function** ("section background = the secondary colour"), never a concrete value ("section = navy").

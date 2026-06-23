@@ -19,7 +19,7 @@ async function main() {
   const OWNERSHIP = "governance/ownership.json";
   const LOCK = "governance/master.lock";
   const sha = (s) => createHash("sha256").update(s, "utf8").digest("hex");
-  const toGlob = (p) => new RegExp("^" + p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\u00a7\u00a7").replace(/\*/g, "[^/]*").replace(/\u00a7\u00a7/g, ".*") + "$");
+  const toGlob = (p) => new RegExp("^" + p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "DBLSTAR").replace(/\*/g, "[^/]*").replace(/DBLSTAR/g, ".*") + "$");
   const match = (path, globs) => globs.some((g) => toGlob(g).test(path));
 
   async function walk(dir, acc = []) {
@@ -43,7 +43,7 @@ async function main() {
     const lock = {};
     for (const f of files) if (isMaster(f)) lock[f] = sha(await readFile(join(ROOT, f), "utf8"));
     await writeFile(join(ROOT, LOCK), JSON.stringify(lock, null, 0));
-    console.log(`\u2713 wrote ${LOCK} (${Object.keys(lock).length} master files)`);
+    console.log("wrote " + LOCK + " (" + Object.keys(lock).length + " master files)");
     return;
   }
 
@@ -55,14 +55,14 @@ async function main() {
     for (const f of files) {
       if (!isMaster(f)) continue;
       const cur = sha(await readFile(join(ROOT, f), "utf8"));
-      if (!(f in lock)) violations.push(`NEW master-area file in branch: ${f}\n   -> move it to client/ or overrides/, or push it from master.`);
-      else if (lock[f] !== cur) violations.push(`MASTER file edited in branch: ${f}\n   -> revert it; put your change in overrides/ or client/.`);
+      if (!(f in lock)) violations.push("NEW master-area file in branch: " + f + "\n   -> move it to client/ or overrides/, or push it from master.");
+      else if (lock[f] !== cur) violations.push("MASTER file edited in branch: " + f + "\n   -> revert it; put your change in overrides/ or client/.");
     }
     for (const f of Object.keys(lock)) {
-      if (!files.includes(f)) violations.push(`MASTER file deleted in branch: ${f}\n   -> restore it; a branch cannot remove master files.`);
+      if (!files.includes(f)) violations.push("MASTER file deleted in branch: " + f + "\n   -> restore it; a branch cannot remove master files.");
     }
   } else {
-    console.log("\u2022 No lock found — running master-side checks only. Generate one with --write-lock.");
+    console.log("No lock found — running master-side checks only. Generate one with --write-lock.");
   }
 
   const deny = (own.forbiddenInMaster && own.forbiddenInMaster.denyClientNames) || [];
@@ -70,17 +70,17 @@ async function main() {
     for (const f of files) {
       if (!isMaster(f)) continue;
       const body = await readFile(join(ROOT, f), "utf8");
-      for (const name of deny) if (body.includes(name)) violations.push(`Client name "${name}" found in master file: ${f}\n   -> client-specific values belong in overrides/ or client/.`);
+      for (const name of deny) if (body.includes(name)) violations.push('Client name "' + name + '" found in master file: ' + f + "\n   -> client-specific values belong in overrides/ or client/.");
     }
   }
 
   if (violations.length) {
-    console.error(`\n\u2717 push blocked — ${violations.length} ownership violation(s):\n`);
-    violations.forEach((v) => console.error("  \u2022 " + v));
+    console.error("\npush blocked — " + violations.length + " ownership violation(s):\n");
+    violations.forEach((v) => console.error("  - " + v));
     console.error("\nSee GOVERNANCE.md. master ships fundamentals; the branch owns overrides/ + client/.\n");
     process.exit(1);
   }
-  console.log("\u2713 ownership OK — master files untouched, no client data leaked. Safe to push.");
+  console.log("ownership OK — master files untouched, no client data leaked. Safe to push.");
 }
 
 if (typeof process !== "undefined" && process.versions && process.versions.node) {

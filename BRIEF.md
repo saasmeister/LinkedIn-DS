@@ -133,10 +133,11 @@ The assistant fills any gaps in §1–§4 by asking, then runs §5.
 
 ---
 
-## 6. Delivery — always on a canvas
+## 6. Delivery — always on the Visual Board
 
-Every visual is delivered **on a canvas (a stage)** — the artboard is centred on a board, never handed over as a bare element. This is how the visual is communicated to a client and kept as proof.
+Every visual is delivered as one entry on a single **Visual Board** (`templates/visual-board/`) — a Canva-style hero + scrollable reel. **Never a separate file per visual** (see SKILL.md GATE 2).
 
-- **Exportable both ways:** the canvas downloads as **standalone HTML** and exports to **PNG** — a shareable record of the visual.
-- **Size is locked:** the artboard is **never larger than 1080 × 1350** (4:5 portrait). A hard requirement of the canvas. It may *scale down* to fit a preview, but its true export size stays 1080 × 1350.
-- The templates already render this way (artboard on a gray stage). When delivering, export at the true size, not the scaled preview.
+- **One board per project.** Copy `Visual Board.html` + `visual-board.js` to the project root once; append a `<section class="visual">` block per visual to its `#source` container thereafter.
+- **Exportable per visual** from the ⋯ menu: **PNG** (rasterised at true size) or standalone **HTML** (artboard + inlined brand tokens + signature CSS). This is the client-facing proof.
+- **⋯ "Add to design system"** marks a client-approved visual so recurring patterns feed back into components/templates.
+- **Size is locked:** the `.artboard` is **never larger than 1080 × 1350** (4:5 portrait). It scales down for preview but exports at true size.

@@ -25,7 +25,8 @@
               "ui_kits/brief-studio/**",
               "ui_kits/setup/**",
               "ui_kits/update-center/**",
-              "ui_kits/visual-library/**"
+              "ui_kits/visual-library/**",
+              "visual-board.js"
             ],
             "message": "Import design-system components from 'index.js', not component internals."
           }
