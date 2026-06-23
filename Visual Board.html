@@ -13,66 +13,120 @@
 
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <style>
-  html, body { margin: 0; }
-  body { background: #eceef0; font-family: var(--font-body, system-ui); color: #1f2328; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #eceef0; font-family: var(--font-body, system-ui); color: #1f2328; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
   ::-webkit-scrollbar { width: 11px; height: 11px; } ::-webkit-scrollbar-thumb { background: #cfd3d8; border-radius: 999px; } ::-webkit-scrollbar-track { background: transparent; }
 
-  header { display:flex; align-items:center; justify-content:space-between; padding:18px 30px; border-bottom:1px solid #e0e2e5; background:#fff; position:sticky; top:0; z-index:20; }
-  header .t { font-family: var(--font-display, inherit); font-weight:700; font-size:19px; letter-spacing:-.01em; }
-  header .s { font-size:12.5px; color:#8a9098; margin-top:2px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 26px; border-bottom:1px solid #e0e2e5; background:#fff; flex:none; z-index:30; }
+  header .t { font-family: var(--font-display, inherit); font-weight:700; font-size:18px; letter-spacing:-.01em; }
+  header .s { font-size:12px; color:#8a9098; margin-top:2px; }
+  header .right { display:flex; align-items:center; gap:16px; }
   header .feed { display:flex; align-items:center; gap:8px; font-size:13px; color:#5f6671; }
   header .feed .dot { width:9px; height:9px; border-radius:50%; background:var(--brand-primary,#0A66C2); }
+  .editToggle { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:#5f6671; background:#fff; border:1px solid #d8dadd; border-radius:10px; padding:8px 14px; cursor:pointer; }
+  .editToggle svg { width:16px; height:16px; }
+  body.editing .editToggle { background:var(--brand-primary,#0A66C2); color:#fff; border-color:transparent; }
 
-  /* ---- hero (the focused artboard) ---- */
-  .hero { display:flex; justify-content:center; padding:34px 24px 18px; }
-  .hero .frame { position:relative; }
-  .hero .bar { position:absolute; left:0; right:0; top:-44px; display:flex; align-items:center; justify-content:space-between; }
-  .hero .type { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--brand-primary,#0A66C2); }
-  .hero .vtag { font-size:12px; font-weight:600; color:#6b7280; }
-  .hero .vtag b { color:#1f2328; }
-  .hero .badge { display:none; align-items:center; gap:5px; font-size:12px; font-weight:600; color:#1f8a5b; background:#e7f6ee; padding:3px 9px; border-radius:999px; }
-  .hero .size { font-size:12px; font-weight:600; color:#6b7280; background:#fff; border:1px solid #e0e2e5; border-radius:999px; padding:5px 12px; }
-  .hero .chosenPill { display:none; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:#fff; background:var(--brand-primary,#0A66C2); padding:4px 10px; border-radius:999px; }
+  /* ---- work area: rail + stage ---- */
+  .work { flex:1; display:flex; min-height:0; }
+  .rail { flex:0 0 0px; overflow:hidden; background:#fff; border-right:1px solid #e0e2e5; transition:flex-basis .16s; display:flex; flex-direction:column; }
+  body.editing .rail { flex-basis:236px; }
+  .rail .rh { padding:14px 16px 8px; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#9aa0a6; }
+  .rail .scroll { overflow-y:auto; padding:0 14px 18px; }
+  .rail .grp { font-size:11.5px; font-weight:700; color:#6b7280; margin:14px 2px 8px; }
+  .palette { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pitem { height:58px; border:1px solid #e6e8eb; border-radius:9px; background:#fafbfc; cursor:grab; display:flex; align-items:center; justify-content:center; color:#3a3f45; font-size:12px; font-weight:600; text-align:center; overflow:hidden; padding:4px; }
+  .pitem:hover { border-color:var(--brand-primary,#0A66C2); background:#fff; }
+  .pitem.wide { grid-column:1 / -1; height:46px; }
+  .pitem.upload { grid-column:1 / -1; height:auto; padding:14px 8px; flex-direction:column; gap:5px; border-style:dashed; color:#6b7280; }
+  .rail .lib { display:flex; flex-direction:column; gap:8px; }
+  .libimg { width:100%; border-radius:9px; border:1px solid #e6e8eb; background:#fafbfc url('') center/cover; cursor:grab; }
 
-  /* ---- timeline (iteration history) ---- */
-  .tlwrap { background:#fff; border-top:1px solid #e0e2e5; padding:14px 0 16px; }
-  .tlhead { display:flex; align-items:baseline; gap:10px; padding:0 30px 10px; }
+  .stage { flex:1; position:relative; min-width:0; display:flex; align-items:flex-start; justify-content:center; padding:48px 24px 40px; overflow:hidden; }
+  .frame { position:relative; }
+  .bar { position:absolute; left:0; right:0; top:-34px; display:flex; align-items:center; justify-content:space-between; }
+  .type { font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--brand-primary,#0A66C2); }
+  .vtag { font-size:12px; font-weight:600; color:#6b7280; }
+  .vtag b { color:#1f2328; }
+  .badge { display:none; align-items:center; gap:5px; font-size:12px; font-weight:600; color:#1f8a5b; background:#e7f6ee; padding:3px 9px; border-radius:999px; }
+  .size { font-size:12px; font-weight:600; color:#6b7280; background:#fff; border:1px solid #e0e2e5; border-radius:999px; padding:4px 11px; }
+  .zoom { display:flex; align-items:center; gap:2px; background:#fff; border:1px solid #e0e2e5; border-radius:999px; padding:2px; }
+  .zoom button { width:26px; height:26px; border:none; background:transparent; border-radius:999px; cursor:pointer; color:#5f6671; font-size:15px; font-weight:600; line-height:1; display:flex; align-items:center; justify-content:center; }
+  .zoom button:hover { background:#f0f1f3; }
+  .zoom #zoomFit { width:auto; padding:0 9px; font-size:11.5px; font-weight:700; }
+  .zoom #zoomPct { font-size:11.5px; font-weight:700; color:#1f2328; min-width:38px; text-align:center; }
+  .chosenPill { display:none; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:#fff; background:var(--brand-primary,#0A66C2); padding:4px 10px; border-radius:999px; }
+  #heroStage { border-radius:4px; overflow:hidden; box-shadow:0 12px 50px rgba(0,0,0,.16); background:#fff; position:relative; }
+  body.editing #heroStage { box-shadow:0 12px 50px rgba(0,0,0,.16), 0 0 0 1px var(--brand-primary,#0A66C2); }
+  body.editing #heroStage .artscale { cursor:default; }
+
+  /* ---- editor: selection overlay + element toolbar ---- */
+  .selbox { position:absolute; border:1.5px solid var(--brand-primary,#0A66C2); pointer-events:none; z-index:40; display:none; }
+  .selbox .handle { position:absolute; width:13px; height:13px; background:#fff; border:1.5px solid var(--brand-primary,#0A66C2); border-radius:50%; pointer-events:auto; }
+  .selbox .handle.br { right:-7px; bottom:-7px; cursor:nwse-resize; }
+  .eltbar { position:absolute; display:none; gap:2px; background:#1f2328; border-radius:9px; padding:4px; z-index:50; box-shadow:0 6px 24px rgba(0,0,0,.3); }
+  .eltbar button { width:30px; height:30px; border:none; background:transparent; color:#cfd3d8; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .eltbar button:hover { background:rgba(255,255,255,.13); color:#fff; }
+  .editHint { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); font-size:12px; color:#8a9098; background:rgba(255,255,255,.9); padding:5px 12px; border-radius:999px; display:none; }
+  body.editing .editHint { display:block; }
+
+  /* ---- bottom dock (iteration history + visuals) ---- */
+  .dock { flex:none; background:#fff; border-top:1px solid #e0e2e5; display:flex; flex-direction:column; max-height:46vh; }
+  .tlwrap { border-bottom:1px solid #eef0f2; padding:11px 0 12px; }
+  .tlhead { display:flex; align-items:baseline; gap:10px; padding:0 26px 8px; }
   .tlhead .h { font-size:13px; font-weight:700; letter-spacing:.01em; }
   .tlhead .sub { font-size:12px; color:#9aa0a6; }
-  .tltrack { display:flex; gap:0; overflow-x:auto; padding:2px 30px 8px; align-items:stretch; }
-  .round { flex:none; border:1px solid #e8eaed; border-radius:12px; padding:11px 12px 12px; background:#fafbfc; }
-  .round .rh { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .tltrack { display:flex; gap:0; overflow-x:auto; padding:2px 26px 6px; align-items:stretch; }
+  .round { flex:none; border:1px solid #e8eaed; border-radius:12px; padding:10px 12px 11px; background:#fafbfc; }
+  .round .rh { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .round .rv { font-size:11px; font-weight:700; color:#1f2328; letter-spacing:.02em; }
   .round .rn { font-size:10.5px; color:#9aa0a6; }
   .round .vars { display:flex; gap:9px; }
-  .tlvar { width:62px; height:78px; border-radius:4px; overflow:hidden; position:relative; cursor:pointer; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.13); transition:transform .1s; }
+  .tlvar { width:58px; height:73px; border-radius:4px; overflow:hidden; position:relative; cursor:pointer; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.13); transition:transform .1s; }
   .tlvar:hover { transform:translateY(-2px); }
   .tlvar.chosen { box-shadow:0 0 0 2px var(--brand-primary,#0A66C2); }
   .tlvar.focused::after { content:""; position:absolute; inset:0; border-radius:4px; outline:2px solid #1f2328; outline-offset:1px; }
-  .tlvar .ck { position:absolute; top:3px; right:3px; width:16px; height:16px; border-radius:50%; background:var(--brand-primary,#0A66C2); color:#fff; display:none; align-items:center; justify-content:center; }
+  .tlvar .ck { position:absolute; top:3px; right:3px; width:15px; height:15px; border-radius:50%; background:var(--brand-primary,#0A66C2); color:#fff; display:none; align-items:center; justify-content:center; }
   .tlvar.chosen .ck { display:flex; }
   .tlvar .vk { position:absolute; bottom:0; left:0; right:0; font-size:9px; font-weight:700; text-align:center; color:#fff; background:rgba(31,35,40,.55); padding:1px 0; }
-  .arrow { flex:none; align-self:center; width:34px; display:flex; align-items:center; justify-content:center; color:#c4c9cf; }
-  .round.next { border-style:dashed; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:104px; color:#9aa0a6; gap:6px; cursor:default; }
-  .round.next .plus { width:30px; height:30px; border-radius:50%; border:1.5px dashed #c4c9cf; display:flex; align-items:center; justify-content:center; }
+  .arrow { flex:none; align-self:center; width:30px; display:flex; align-items:center; justify-content:center; color:#c4c9cf; }
+  .round.next { border-style:dashed; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:100px; color:#9aa0a6; gap:6px; cursor:pointer; }
+  .round.next:hover { border-color:var(--brand-primary,#0A66C2); color:var(--brand-primary,#0A66C2); }
+  .round.next .plus { width:28px; height:28px; border-radius:50%; border:1.5px dashed currentColor; display:flex; align-items:center; justify-content:center; }
   .round.next .nt { font-size:11px; font-weight:600; text-align:center; line-height:1.35; }
 
   /* ---- reel (one entry PER VISUAL) ---- */
-  .reelwrap { border-top:1px solid #e0e2e5; background:#fff; padding:14px 0 18px; }
-  .reelhead { font-size:13px; font-weight:700; padding:0 30px 9px; }
-  .reel { display:flex; gap:16px; overflow-x:auto; padding:4px 30px 12px; }
-  .thumb { flex:none; width:108px; cursor:pointer; }
-  .thumb .tframe { width:108px; height:135px; border-radius:4px; overflow:hidden; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.14); position:relative; transition:box-shadow .12s; }
+  .reelwrap { padding:11px 0 14px; overflow-y:auto; }
+  .reelhead { font-size:13px; font-weight:700; padding:0 26px 8px; }
+  .reel { display:flex; gap:14px; overflow-x:auto; padding:4px 26px 10px; align-items:flex-start; }
+  .thumb { flex:none; width:96px; cursor:pointer; }
+  .thumb .tframe { width:96px; height:120px; border-radius:4px; overflow:hidden; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.14); position:relative; transition:box-shadow .12s; }
   .thumb.active .tframe { box-shadow:0 0 0 3px var(--brand-primary,#0A66C2); }
   .thumb .lbl { font-size:11px; color:#8a9098; margin-top:6px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .thumb.active .lbl { color:#1f2328; font-weight:600; }
-  /* count badge — how many variants this visual contains */
   .thumb .cbadge { position:absolute; bottom:5px; right:5px; height:19px; min-width:19px; padding:0 5px; box-sizing:border-box; border-radius:999px; background:rgba(31,35,40,.82); color:#fff; display:flex; align-items:center; gap:3px; font-size:11px; font-weight:700; }
   .thumb .cbadge svg { width:11px; height:11px; }
   .thumb .abadge { position:absolute; top:5px; left:5px; width:20px; height:20px; border-radius:50%; background:#1f8a5b; color:#fff; display:none; align-items:center; justify-content:center; }
   .thumb.approved .abadge { display:flex; }
+  /* + New visual card at the end of the reel */
+  .newvis { flex:none; width:96px; cursor:pointer; }
+  .newvis .nframe { width:96px; height:120px; border-radius:4px; border:1.5px dashed #c4c9cf; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; color:#9aa0a6; background:#fafbfc; }
+  .newvis:hover .nframe { border-color:var(--brand-primary,#0A66C2); color:var(--brand-primary,#0A66C2); }
+  .newvis .nframe .plus { width:30px; height:30px; border-radius:50%; border:1.5px dashed currentColor; display:flex; align-items:center; justify-content:center; }
+  .newvis .nlbl { font-size:11px; color:#8a9098; margin-top:6px; text-align:center; font-weight:600; }
 
   .dots { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:9px; border:1px solid #e0e2e5; background:#fff; color:#5f6671; cursor:pointer; padding:0; }
+
+  /* ---- Brief Studio slide-over ---- */
+  .briefScrim { position:fixed; inset:0; background:rgba(20,24,28,.42); z-index:100; display:none; }
+  .briefScrim.on { display:block; }
+  .briefPanel { position:fixed; top:0; right:0; bottom:0; width:min(96vw,1180px); background:#f1f2f4; z-index:101; box-shadow:-12px 0 50px rgba(0,0,0,.25); transform:translateX(100%); transition:transform .22s ease; display:flex; flex-direction:column; }
+  .briefScrim.on + .briefPanel { transform:translateX(0); }
+  .briefPanel .bp-head { flex:none; display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:#fff; border-bottom:1px solid #e0e2e5; }
+  .briefPanel .bp-head .bt { font-family:var(--font-display,inherit); font-weight:700; font-size:16px; }
+  .briefPanel .bp-head .bs { font-size:12px; color:#8a9098; margin-top:2px; }
+  .briefPanel .bp-close { width:34px; height:34px; border-radius:9px; border:1px solid #e0e2e5; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#5f6671; }
+  .briefPanel iframe { flex:1; width:100%; border:none; }
   .menu { position:fixed; width:266px; background:#fff; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.18); border:1px solid #ebedf0; padding:7px; z-index:80; display:none; }
   .menu .mh { padding:8px 12px 6px; font-size:12px; color:#9aa0a6; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .menu button { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:11px 13px; border:none; background:transparent; cursor:pointer; border-radius:10px; font:inherit; color:#1f2328; }
@@ -119,39 +173,80 @@
     <div class="t">Visual Board</div>
     <div class="s" id="count">0 visuals · 1080 × 1350 · export PNG or HTML</div>
   </div>
-  <div class="feed"><span class="dot"></span><span id="feed">0 approved · feeding the system</span></div>
+  <div class="right">
+    <div class="feed"><span class="dot"></span><span id="feed">0 approved · feeding the system</span></div>
+    <button class="editToggle" id="editToggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+      <span id="editToggleLabel">Edit</span>
+    </button>
+  </div>
 </header>
 
-<section class="hero">
-  <div class="frame">
-    <div class="bar">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="type" id="heroType">—</span>
-        <span class="vtag" id="heroVer"></span>
-        <span class="chosenPill" id="heroChosen">★ Chosen</span>
-        <span class="badge" id="heroBadge">✓ In design system</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="size">1080 × 1350 · PNG / HTML</span>
-        <button class="dots" id="heroDots" aria-label="Visual options">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
-        </button>
-      </div>
-    </div>
-    <div id="heroStage" style="width:497px;height:621px;border-radius:4px;overflow:hidden;box-shadow:0 12px 50px rgba(0,0,0,.16);background:#fff"></div>
-  </div>
-</section>
+<div class="work">
 
-<!-- TIMELINE — iteration history of the selected visual -->
-<div class="tlwrap">
-  <div class="tlhead"><span class="h">Iteration history</span><span class="sub" id="tlsub"></span></div>
-  <div class="tltrack" id="timeline"></div>
+  <!-- LEFT RAIL — editor library (shown only in edit mode) -->
+  <aside class="rail" id="rail">
+    <div class="rh">Add to canvas</div>
+    <div class="scroll" id="palette"></div>
+  </aside>
+
+  <!-- CENTER STAGE — focused artboard -->
+  <div class="stage" id="stage">
+    <div class="frame">
+      <div class="bar">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="type" id="heroType">—</span>
+          <span class="vtag" id="heroVer"></span>
+          <span class="chosenPill" id="heroChosen">★ Chosen</span>
+          <span class="badge" id="heroBadge">✓ In design system</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="zoom">
+            <button id="zoomOut" aria-label="Zoom out">&minus;</button>
+            <span id="zoomPct">100%</span>
+            <button id="zoomIn" aria-label="Zoom in">+</button>
+            <button id="zoomFit" aria-label="Fit to screen">Fit</button>
+          </div>
+          <span class="size">1080 × 1350 · PNG / HTML</span>
+          <button class="dots" id="heroDots" aria-label="Visual options">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>
+          </button>
+        </div>
+      </div>
+      <div id="heroStage"></div>
+      <div class="selbox" id="selbox"><span class="handle br"></span></div>
+      <div class="eltbar" id="eltbar"></div>
+    </div>
+    <div class="editHint">Drag elements to move · drag the corner to resize · drag items from the left onto the canvas · ⌫ to delete</div>
+  </div>
+
 </div>
 
-<!-- REEL — one entry per visual -->
-<div class="reelwrap">
-  <div class="reelhead">Visuals</div>
-  <div class="reel" id="reel"></div>
+<!-- BOTTOM DOCK — iteration history + visuals reel (pinned) -->
+<div class="dock">
+  <div class="tlwrap">
+    <div class="tlhead"><span class="h">Iteration history</span><span class="sub" id="tlsub"></span></div>
+    <div class="tltrack" id="timeline"></div>
+  </div>
+  <div class="reelwrap">
+    <div class="reelhead">Visuals</div>
+    <div class="reel" id="reel"></div>
+  </div>
+</div>
+
+<!-- Brief Studio slide-over -->
+<div class="briefScrim" id="briefScrim"></div>
+<div class="briefPanel" id="briefPanel">
+  <div class="bp-head">
+    <div>
+      <div class="bt" id="briefTitle">New visual — fill the brief</div>
+      <div class="bs">Tell the system what you want: post, type, the one thing to remember, sketch &amp; brand. Then ask the assistant to build 3 variants.</div>
+    </div>
+    <button class="bp-close" id="briefClose" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+  <iframe id="briefFrame" title="Brief Studio" data-src="ui_kits/brief-studio/index.html"></iframe>
 </div>
 
 <!-- ============ YOUR VISUALS · one <section class="visual"> per visual, each a timeline of rounds ============ -->
@@ -322,6 +417,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="board-editor.js"></script>
 <script src="visual-board.js"></script>
 </body>
 </html>

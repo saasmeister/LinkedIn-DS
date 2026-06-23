@@ -16,6 +16,7 @@
         "patterns": [
           {
             "group": [
+              "board-editor.js",
               "components/content/**",
               "components/illustration/**",
               "components/layout/**",
