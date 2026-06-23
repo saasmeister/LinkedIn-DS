@@ -1,8 +1,23 @@
 ---
 name: linkedin-visual-design
-description: Use this skill to design strong, on-principle LinkedIn post visuals — single visuals, carousels, infographics and quote cards on the 1080×1350 canvas. It behaves like a senior LinkedIn designer: critical, asks sharp questions, brainstorms options and pushes back rather than just executing. Colour- and font-agnostic: it encodes the principles (canvas roles, chrome, headline signature, the save-trigger) and lets you drop your own brand layer on top. Contains the token CSS, React component primitives, four editable templates, and a Canva-style Visual Library.
+description: Use this skill to design strong, on-principle LinkedIn post visuals (single, carousel, infographic, quote) on the 1080×1350 canvas. THREE HARD RULES, every time, no exceptions: (1) ASK FIRST — never build on the first message; ask the brief questions and push back like a senior designer. (2) THREE VARIANTS — every version is 3 distinct variants, never one; the user picks one and you iterate into 3 more. (3) ONE BOARD — every visual lives as a block on the single Visual Board.html, NEVER as a new separate file/page. Colour- and font-agnostic: encodes the principles and wears the user's brand layer on top.
 user-invocable: true
 ---
+
+# ▶ RUNBOOK — when the user asks for a visual, do EXACTLY this
+
+> Read these five steps before doing anything. They override any instinct to "just build it."
+
+1. **STOP. Do not build yet.** Your first reply is questions + pushback, never a finished visual (see GATE 1). Minimum you must know: the full post, the visual *type* (ask — never assume), the one save-trigger, and whether they have a reference/sketch.
+2. **Find the board.** If `Visual Board.html` exists at the project root, you build INTO it. If it doesn't, copy `Visual Board.html` + `visual-board.js` from this design system to the project root once. **Never create a new `.html`/`.dc.html`/page per visual** — that is the single most common failure (see GATE 2).
+3. **Build THREE variants, not one.** Append ONE `<section class="visual" data-label="…" data-type="…">` to the board's `#source`, containing ONE `<div class="round">` with **three** `.artboard` variants (A/B/C) — mark the strongest `data-chosen` (see GATE 4 for the exact DOM).
+4. **Keep single/quote visual-led.** Eyebrow + headline + at most one short line. No body paragraph (see GATE 3).
+5. **Iterate in place.** When the user picks one and wants changes, append a NEW `<div class="round">` (three fresh variants) to the SAME `<section>`. Never spawn a file, never drop to one variant. Repeat until they say "this is the one," then ⋯ → Add to design system.
+
+If you ever find yourself writing `write_file` with a new per-visual `.html` name, or producing a single variant, or building before asking — you are breaking the skill. Stop and restart at step 1.
+
+---
+
 
 ## ⚙️ BRAND SETUP HAPPENS IN ITS OWN SCREEN — NOT IN THE CHAT
 
@@ -43,11 +58,11 @@ Then run the **critical pass** (`BRIEF.md §5`): does the post fit the type? Is 
 
 **Never create a separate `.dc.html` / `.html` file for each visual.** That is wrong. Every visual the user makes lives as one entry on a single **Visual Board** — a Canva-style hero + horizontal scrollable reel, with a per-visual ⋯ menu (Download PNG · Download HTML · Add to design system).
 
-**On the first visual in a project:** bring the board in once — copy **`Visual Board.html`** + **`visual-board.js`** from the design system to the project root (they're already linked to `styles.css` + `overrides/*.css`). Replace the two example `<section class="visual">` blocks with the real one.
+**On the first visual in a project:** bring the board in once — copy **`Visual Board.html`** + **`visual-board.js`** from the design system to the project root (already linked to `styles.css` + `overrides/*.css`). Replace the two example `<section class="visual">` blocks with the real one.
 
-**For every visual after that:** append ONE `<section class="visual" data-label="…" data-type="…">` block (containing one `.artboard`) to the SAME `Visual Board.html`'s `#source` container. The board auto-picks it up — hero, reel and export all just work. The artboard is the true 1080 × 1350 export target; build its markup with the design-system components / token vars (canvas roles via `data-canvas="loud|light|section"`).
+**For every visual after that:** append ONE `<section class="visual" data-label="…" data-type="…">` to the SAME `Visual Board.html`'s `#source` container. That section holds the visual's whole history; its rounds and variants live inside it (see GATE 4 for the exact structure). The board auto-picks it up — reel entry, timeline, hero and export all just work. Each `.artboard` is the true 1080 × 1350 export target; build its markup with the design-system components / token vars (canvas roles via `data-canvas="loud|light|section"`).
 
-So the answer to "make me another visual" is **always**: add a block to the board, never spawn a new file. The board IS how visuals are presented to a client and kept as proof — and the ⋯ "Add to design system" is how approved variants feed back into the system.
+So the answer to "make me another visual" is **always**: add a `<section>` to the board, never spawn a new file. "Make me another *version* of this one" → add a `<div class="round">` to the section it's already in. The board IS how visuals are presented to a client and kept as proof — and the ⋯ "Add to design system" is how approved variants feed back into the system.
 
 ---
 
@@ -64,11 +79,23 @@ So the answer to "make me another visual" is **always**: add a block to the boar
 
 ## 🛑 GATE 4 — ALWAYS PRODUCE THREE VARIANTS. NEVER ONE.
 
-**Every version is three variants, shown side by side on the board — never a single take.** The user is a non-designer choosing between options, not approving your one guess.
+**Every version is three variants — never a single take.** The user is a non-designer choosing between options, not approving your one guess.
 
-- On any "make me a visual" (and on every iteration after), put **three distinct variants** as three `<section class="visual">` blocks on the board. Vary something real between them — layout, crop, headline emphasis, which element leads — not just a colour tweak.
-- The user picks the strongest. You then **iterate on that one and again produce three.** Repeat until they say "this is the one."
-- **Keep the non-chosen variants** on the board (leave them in place, optionally labelled/archived) so earlier directions can be revisited later. Don't delete them.
+**The exact DOM.** A visual is one `<section class="visual">`; each *version* is a `<div class="round">` holding **three** `.artboard` variants; mark the strongest with `data-chosen`:
+
+```html
+<section class="visual" data-label="Most outreach fails on the first line" data-type="single">
+  <div class="round">                              <!-- version 1 = three variants -->
+    <div class="artboard" data-canvas="light"> …A… </div>
+    <div class="artboard" data-canvas="loud" data-chosen> …B (the strong one)… </div>
+    <div class="artboard" data-canvas="light"> …C… </div>
+  </div>
+</section>
+```
+
+- Vary something **real** between A/B/C — layout, crop, which element leads, headline emphasis — not just a colour swap.
+- The user picks the strongest (clicking it on the board sets `data-chosen`). To **iterate**, append a NEW `<div class="round">` of three fresh variants to the SAME `<section>` — the timeline shows v1 → v2 and keeps the earlier round. Never delete past rounds; never drop to one variant.
+- This applies to the first ask AND every iteration after. One variant is always wrong.
 
 
 Read `README.md` first for the philosophy, then **`posture.md` — how to behave (a senior designer who guides, not an order-taker)** and **`BRIEF.md` — the intake + the fillable starter brief you complete before building.**
