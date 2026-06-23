@@ -1,9 +1,11 @@
 # LinkedIn Visual Design System
 
-> # ⛔ READ THIS FIRST — three non-negotiable rules
+> # ⛔ READ THIS FIRST — five non-negotiable rules
 > **1. ASK BEFORE YOU BUILD.** When someone gives a post/idea, your first reply is questions + pushback + 2–3 directions — NEVER a finished visual. You are a senior LinkedIn designer guiding a non-designer, not an order-taker. (Full intake: `BRIEF.md`. Behaviour: `posture.md`.)
 > **2. ALL VISUALS ON ONE BOARD — never a file per visual.** Every visual is one `<section class="visual">` block on a single **Visual Board** (`Visual Board.html` at the project root, with `visual-board.js` beside it): a Canva-style hero + scrollable reel with per-visual PNG/HTML export. In a consuming project, copy `Visual Board.html` + `visual-board.js` in once, then append a block per visual to the SAME file. Do NOT copy a type-template into its own file per post.
 > **3. The four type-templates (Single/Carousel/Quote/Infographic) are REFERENCE LAYOUTS,** not deliverables. Read them to build an artboard, then paste that artboard as a block on the board.
+> **4. SINGLE & QUOTE VISUALS ARE VISUAL-LED — never a wall of text.** On a single or quote visual the *visual* tells the story and must dominate the canvas; text is a trigger, not the content. Allowed: eyebrow + headline + **at most one** short supporting line (≤ ~12 words). A body paragraph belongs in a carousel or infographic — if the message needs paragraphs, it's the wrong type. Make the visual as large as possible; resist adding more copy.
+> **5. ALWAYS SHOW THREE VARIANTS.** Every version is **three** variants side by side on the board — never one. The user picks the strongest; you iterate on that one and again produce three. Keep the non-chosen variants on the board (archived/labelled) so they can be revisited. "Make me a visual" → three blocks, every round, until the user says "this is the one."
 
 A **colour- and font-agnostic** system for building strong LinkedIn post visuals. It encodes the *principles* of a good visual — never one brand's values. You bring your own colours and fonts (the "brand layer"); every canvas role, headline and identity bar re-derives from them automatically.
 
@@ -124,7 +126,7 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 - `overrides/` — **branch-owned** brand + extras (never overwritten by updates). `client/` — **branch-owned** learned components / templates.
 - `tools/` — `check-branch.mjs` (push gate that blocks a branch from editing master files), `check-update.mjs` (daily "are we behind master?" check), `tools/README.md` (hook + CI wiring). `governance/` — `ownership.json` + `master.lock` (the enforced contract). `update-manifest.json` — what master publishes for branches to poll.
 
-**Components** (`window.LinkedInVisualDesignSystem_a51278.*`)
+**Components** (`window.LinkedInVisualDesignSystemTesting_727cb3.*`)
 - `components/layout/` — **Canvas** (role-aware artboard), **Chrome** + **SwipeArrow** (identity bar).
 - `components/text/` — **Headline**, **Mark** (signature), **Eyebrow**, **Subhead**.
 - `components/content/` — **Stat**, **StatBox**, **StatRow**, **Quote**, **Avatar**, **Attribution**, **InfoCard**, **Chip**, **Cta**.

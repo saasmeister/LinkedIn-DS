@@ -86,7 +86,7 @@ The assistant treats a half-filled brief as **normal** — fill the gaps by aski
 
 ## 3. Type-specific block (branch on §1.2)
 
-**Single** — the one core message; the **one** supporting visual (chart / pie / comparison / illustration); one number or idea it centres on. No swipe arrow.
+**Single** — the one core message; the **one** supporting visual (chart / pie / comparison / illustration); one number or idea it centres on. No swipe arrow. **Visual-led & hard rule: the visual dominates the canvas; text is eyebrow + heading + at most one short line (≤ ~12 words). No body paragraph.** If the message needs paragraphs, it's the wrong type — switch to carousel or infographic.
 
 **Carousel** — the story beats: context → problem → step(s) → result → CTA. How many **steps**? The **back-cover CTA** (e.g. the DM word / link / follow). Confirm the canvas rhythm (light steps, a section slide to close a chapter, loud cover + back). Swipe arrow goes in the footer.
 
@@ -141,3 +141,4 @@ Every visual is delivered as one entry on a single **Visual Board** (`templates/
 - **Exportable per visual** from the ⋯ menu: **PNG** (rasterised at true size) or standalone **HTML** (artboard + inlined brand tokens + signature CSS). This is the client-facing proof.
 - **⋯ "Add to design system"** marks a client-approved visual so recurring patterns feed back into components/templates.
 - **Size is locked:** the `.artboard` is **never larger than 1080 × 1350** (4:5 portrait). It scales down for preview but exports at true size.
+- **Always three variants (hard rule, see SKILL.md GATE 4).** Each version is three distinct variant blocks on the board — never one. The user picks the strongest; you iterate on it and produce three again, keeping the non-chosen variants on the board for later. Repeat until the user says "this is the one."

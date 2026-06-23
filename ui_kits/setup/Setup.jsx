@@ -6,7 +6,7 @@
 (function () {
   const { useState, useEffect, useRef } = React;
   const h = React.createElement;
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const KEY = "li-vds-setup-v1";
   const DONE_KEY = "li-vds-setup-done";
 

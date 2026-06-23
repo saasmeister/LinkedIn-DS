@@ -2,7 +2,7 @@
    Each entry: { id, label, type, render() -> ReactNode (a 1080×1350 Canvas) }.
    The Visual Library renders these scaled, and exports them at true size. */
 (function () {
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const {
     Canvas, Chrome, Eyebrow, Headline, Mark, Subhead,
     Stat, StatBox, StatRow, Quote, Attribution,

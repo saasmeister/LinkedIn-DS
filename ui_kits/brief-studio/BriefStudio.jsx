@@ -5,7 +5,7 @@
    pushback on the chosen type. Generates the filled brief text on demand. */
 (function () {
   const { useState, useRef, useEffect, useCallback } = React;
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const { Canvas, Chrome, Eyebrow, Headline, Mark, Subhead, Stat, Quote, Attribution, InfoCard, Chip } = DS;
   const FeedPost = DS.FeedPost;
   const KEY = "li-vds-brief-v1";

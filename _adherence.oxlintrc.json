@@ -21,7 +21,6 @@
               "components/layout/**",
               "components/preview/**",
               "components/text/**",
-              "tools/**",
               "ui_kits/brief-studio/**",
               "ui_kits/setup/**",
               "ui_kits/update-center/**",

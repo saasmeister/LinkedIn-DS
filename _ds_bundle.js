@@ -1,8 +1,8 @@
-/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystem_a51278","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","tools/check-branch.mjs":"502b316d161a","tools/check-update.mjs":"fbb7c8502467","ui_kits/brief-studio/BriefStudio.jsx":"121d92708d6e","ui_kits/setup/Setup.jsx":"1ca8fa5ca617","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"66e360f74fcb","visual-board.js":"a898b800c49a"},"inlinedExternals":[],"unexposedExports":[]} */
+/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystemTesting_727cb3","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","ui_kits/brief-studio/BriefStudio.jsx":"2fa8347f1c4e","ui_kits/setup/Setup.jsx":"6511d7c81c06","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"b246a3729833","visual-board.js":"a554c6ced9f0"},"inlinedExternals":[],"unexposedExports":[]} */
 
 (() => {
 
-const __ds_ns = (window.LinkedInVisualDesignSystem_a51278 = window.LinkedInVisualDesignSystem_a51278 || {});
+const __ds_ns = (window.LinkedInVisualDesignSystemTesting_727cb3 = window.LinkedInVisualDesignSystemTesting_727cb3 || {});
 
 const __ds_scope = {};
 
@@ -1323,160 +1323,6 @@ function Subhead({
 Object.assign(__ds_scope, { Eyebrow, Headline, Mark, Subhead });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/text/Headline.jsx", error: String((e && e.message) || e) }); }
 
-// tools/check-branch.mjs
-try { (() => {
-/**
- * check-branch.mjs — enforces the master <-> branch ownership contract.
- * Run with Node 18+:  node tools/check-branch.mjs   (validate)
- *                     node tools/check-branch.mjs --write-lock   (master owner: regenerate lock)
- *
- * Exits NON-ZERO on a violation, so it blocks a git pre-push hook / CI gate.
- * Enforces: (1) a branch must not edit/add/delete master-owned files (vs
- * governance/master.lock); (2) no client name leaks into a master file.
- *
- * NOTE: no top-level import/export or shebang on purpose — that keeps this
- * file out of the browser design-bundle. Dependencies load via dynamic import.
- */
-async function main() {
-  const {
-    readFile,
-    readdir,
-    stat,
-    writeFile
-  } = await import("node:fs/promises");
-  const {
-    createHash
-  } = await import("node:crypto");
-  const {
-    join,
-    relative,
-    sep
-  } = await import("node:path");
-  const ROOT = process.cwd();
-  const OWNERSHIP = "governance/ownership.json";
-  const LOCK = "governance/master.lock";
-  const sha = s => createHash("sha256").update(s, "utf8").digest("hex");
-  const toGlob = p => new RegExp("^" + p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "DBLSTAR").replace(/\*/g, "[^/]*").replace(/DBLSTAR/g, ".*") + "$");
-  const match = (path, globs) => globs.some(g => toGlob(g).test(path));
-  async function walk(dir, acc = []) {
-    for (const name of await readdir(dir)) {
-      if (name === ".git" || name === "node_modules") continue;
-      const full = join(dir, name);
-      const s = await stat(full);
-      if (s.isDirectory()) await walk(full, acc);else acc.push(relative(ROOT, full).split(sep).join("/"));
-    }
-    return acc;
-  }
-  const own = JSON.parse(await readFile(join(ROOT, OWNERSHIP), "utf8"));
-  const files = (await walk(ROOT)).filter(f => f !== LOCK);
-  const isIgnored = f => match(f, own.ignored);
-  const isBranch = f => match(f, own.branchOwned);
-  const isMaster = f => !isIgnored(f) && !isBranch(f);
-  if (process.argv.includes("--write-lock")) {
-    const lock = {};
-    for (const f of files) if (isMaster(f)) lock[f] = sha(await readFile(join(ROOT, f), "utf8"));
-    await writeFile(join(ROOT, LOCK), JSON.stringify(lock, null, 0));
-    console.log("wrote " + LOCK + " (" + Object.keys(lock).length + " master files)");
-    return;
-  }
-  let lock = null;
-  try {
-    lock = JSON.parse(await readFile(join(ROOT, LOCK), "utf8"));
-  } catch {}
-  const violations = [];
-  if (lock) {
-    for (const f of files) {
-      if (!isMaster(f)) continue;
-      const cur = sha(await readFile(join(ROOT, f), "utf8"));
-      if (!(f in lock)) violations.push("NEW master-area file in branch: " + f + "\n   -> move it to client/ or overrides/, or push it from master.");else if (lock[f] !== cur) violations.push("MASTER file edited in branch: " + f + "\n   -> revert it; put your change in overrides/ or client/.");
-    }
-    for (const f of Object.keys(lock)) {
-      if (!files.includes(f)) violations.push("MASTER file deleted in branch: " + f + "\n   -> restore it; a branch cannot remove master files.");
-    }
-  } else {
-    console.log("No lock found — running master-side checks only. Generate one with --write-lock.");
-  }
-  const deny = own.forbiddenInMaster && own.forbiddenInMaster.denyClientNames || [];
-  if (deny.length) {
-    for (const f of files) {
-      if (!isMaster(f)) continue;
-      const body = await readFile(join(ROOT, f), "utf8");
-      for (const name of deny) if (body.includes(name)) violations.push('Client name "' + name + '" found in master file: ' + f + "\n   -> client-specific values belong in overrides/ or client/.");
-    }
-  }
-  if (violations.length) {
-    console.error("\npush blocked — " + violations.length + " ownership violation(s):\n");
-    violations.forEach(v => console.error("  - " + v));
-    console.error("\nSee GOVERNANCE.md. master ships fundamentals; the branch owns overrides/ + client/.\n");
-    process.exit(1);
-  }
-  console.log("ownership OK — master files untouched, no client data leaked. Safe to push.");
-}
-if (typeof process !== "undefined" && process.versions && process.versions.node) {
-  main().catch(e => {
-    console.error(e);
-    process.exit(2);
-  });
-}
-})(); } catch (e) { __ds_ns.__errors.push({ path: "tools/check-branch.mjs", error: String((e && e.message) || e) }); }
-
-// tools/check-update.mjs
-try { (() => {
-/**
- * check-update.mjs — is this branch behind master?
- * Run with Node 18+:  node tools/check-update.mjs [manifestUrl]
- *
- * Exits 10 (and prints what's pending) when the branch is behind master,
- * 0 when current — so a daily CI job can branch on the exit code.
- *
- * NOTE: no top-level import/export or shebang on purpose — keeps this file
- * out of the browser design-bundle. Dependencies load via dynamic import.
- */
-async function main() {
-  const {
-    readFile
-  } = await import("node:fs/promises");
-  const semver = v => String(v).split(".").map(Number);
-  const behind = (a, b) => {
-    const x = semver(a),
-      y = semver(b);
-    for (let i = 0; i < 3; i++) {
-      if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) < (y[i] || 0);
-    }
-    return false;
-  };
-  const branch = (await readFile("VERSION", "utf8")).trim();
-  const local = JSON.parse(await readFile("update-manifest.json", "utf8"));
-  const url = process.argv[2] || local.manifestUrl;
-  let master = local; // fallback: local manifest (demo / offline)
-  if (url && /^https?:/.test(url)) {
-    try {
-      master = await (await fetch(url)).json();
-    } catch (e) {
-      console.error("\u2022 could not fetch master manifest (" + e.message + ") — using local.");
-    }
-  }
-  if (behind(branch, master.version)) {
-    const pending = (master.releases || []).filter(r => behind(branch, r.version));
-    console.log(`\u2b06 update available: ${branch} -> ${master.version}`);
-    for (const r of pending) {
-      console.log(`\n  ${r.version} (${r.level}) — ${r.summary}`);
-      if (r.templates && r.templates.length) console.log("    templates: " + r.templates.join(", "));
-      if (r.components && r.components.length) console.log("    components: " + r.components.join(", "));
-    }
-    console.log("\nReview the changelog, then apply (Update Center -> Apply, or pull master in your repo).");
-    process.exit(10);
-  }
-  console.log(`\u2713 up to date (branch ${branch}, master ${master.version}).`);
-}
-if (typeof process !== "undefined" && process.versions && process.versions.node) {
-  main().catch(e => {
-    console.error(e);
-    process.exit(2);
-  });
-}
-})(); } catch (e) { __ds_ns.__errors.push({ path: "tools/check-update.mjs", error: String((e && e.message) || e) }); }
-
 // ui_kits/brief-studio/BriefStudio.jsx
 try { (() => {
 /* Brief Studio — the intake screen.
@@ -1491,7 +1337,7 @@ try { (() => {
     useEffect,
     useCallback
   } = React;
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const {
     Canvas,
     Chrome,
@@ -2751,7 +2597,7 @@ try { (() => {
     useRef
   } = React;
   const h = React.createElement;
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const KEY = "li-vds-setup-v1";
   const DONE_KEY = "li-vds-setup-done";
   const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora", "Fraunces", "DM Sans"];
@@ -5141,7 +4987,7 @@ try { (() => {
    Each entry: { id, label, type, render() -> ReactNode (a 1080×1350 Canvas) }.
    The Visual Library renders these scaled, and exports them at true size. */
 (function () {
-  const DS = window.LinkedInVisualDesignSystem_a51278;
+  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
   const {
     Canvas,
     Chrome,
@@ -5518,10 +5364,19 @@ try { (() => {
 // visual-board.js
 try { (() => {
 /* Visual Board — vanilla controller.
-   Reads every <section class="visual"> from #source, renders a hero + a
-   scrollable reel, and wires a per-visual ⋯ menu: PNG / HTML / approve.
-   No build step, no React — add a visual by appending a <section class="visual">
-   to the HTML and this picks it up on reload. */
+
+   Data model (in the HTML, under #source):
+     <section class="visual">            ONE visual = one reel entry
+       <div class="round"> A  B[chosen]  C </div>   an iteration = 3 variants
+       <div class="round"> A[chosen]  B  C </div>    the next iteration
+     </section>
+
+   · The REEL shows one thumb per <section> — its latest chosen variant —
+     with a badge counting every variant in the visual's history.
+   · The CANVAS shows the focused variant big, plus a TIMELINE of all rounds
+     so you can iterate further (pick a variant → it becomes the round's chosen).
+   No build step, no React — append a <div class="round"> of three variants and
+   this picks it up on reload. */
 (function () {
   function boot() {
     var source = document.getElementById("source");
@@ -5533,33 +5388,61 @@ try { (() => {
   }
   function init(source, reel) {
     var APPROVED_KEY = "li-vds-board-approved-v1";
+    var CHOSEN_KEY = "li-vds-board-chosen-v1";
     var heroStage = document.getElementById("heroStage");
     var heroType = document.getElementById("heroType");
+    var heroVer = document.getElementById("heroVer");
+    var heroChosen = document.getElementById("heroChosen");
     var heroBadge = document.getElementById("heroBadge");
     var heroDots = document.getElementById("heroDots");
+    var timelineEl = document.getElementById("timeline");
+    var tlsub = document.getElementById("tlsub");
     var menu = document.getElementById("menu");
     var menuLabel = document.getElementById("menuLabel");
     var toast = document.getElementById("toast");
     var countEl = document.getElementById("count");
     var feedEl = document.getElementById("feed");
-    var visuals = [].slice.call(source.querySelectorAll(".visual"));
+
+    /* ---- build the model ---- */
+    var visuals = [].slice.call(source.querySelectorAll(".visual")).map(function (sec, vi) {
+      var rounds = [].slice.call(sec.querySelectorAll(".round")).map(function (rd) {
+        return [].slice.call(rd.querySelectorAll(".artboard"));
+      });
+      if (!rounds.length) {
+        // fallback: loose artboards = one round
+        var loose = [].slice.call(sec.querySelectorAll(".artboard"));
+        if (loose.length) rounds = [loose];
+      }
+      return {
+        el: sec,
+        label: sec.getAttribute("data-label") || "Visual " + (vi + 1),
+        type: sec.getAttribute("data-type") || "visual",
+        rounds: rounds
+      };
+    }).filter(function (v) {
+      return v.rounds.length;
+    });
+    var chosenStore = loadJSON(CHOSEN_KEY, {}); // { "label#round": variantIdx }
+    var approved = new Set(loadJSON(APPROVED_KEY, []));
     var activeIdx = 0;
-    var menuIdx = null;
-    var approved = load();
-    function load() {
+    var focus = {
+      round: 0,
+      variant: 0
+    }; // which artboard is in the hero
+    var menuTarget = null; // {round, variant} for the menu
+
+    function loadJSON(k, d) {
       try {
-        return new Set(JSON.parse(localStorage.getItem(APPROVED_KEY) || "[]"));
+        var v = JSON.parse(localStorage.getItem(k));
+        return v == null ? d : v;
       } catch (e) {
-        return new Set();
+        return d;
       }
     }
-    function save() {
+    function saveJSON(k, v) {
       try {
-        localStorage.setItem(APPROVED_KEY, JSON.stringify([].slice.call(approved)));
+        localStorage.setItem(k, JSON.stringify(v));
       } catch (e) {}
-    }
-    function keyFor(i) {
-      return visuals[i].getAttribute("data-label") || "visual-" + i;
     }
     function slug(s) {
       return (s || "visual").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "visual";
@@ -5573,10 +5456,34 @@ try { (() => {
       }, 2800);
     }
 
+    /* chosen variant index for a given visual + round (store overrides the data-chosen attr) */
+    function chosenOf(vi, ri) {
+      var key = visuals[vi].label + "#" + ri;
+      if (chosenStore[key] != null) return chosenStore[key];
+      var arr = visuals[vi].rounds[ri];
+      for (var i = 0; i < arr.length; i++) if (arr[i].hasAttribute("data-chosen")) return i;
+      return 0;
+    }
+    function setChosen(vi, ri, varIdx) {
+      chosenStore[visuals[vi].label + "#" + ri] = varIdx;
+      saveJSON(CHOSEN_KEY, chosenStore);
+    }
+    function lastRound(vi) {
+      return visuals[vi].rounds.length - 1;
+    }
+    function variantCount(vi) {
+      return visuals[vi].rounds.reduce(function (n, r) {
+        return n + r.length;
+      }, 0);
+    }
+    function artboardAt(vi, ri, varIdx) {
+      return visuals[vi].rounds[ri][varIdx];
+    }
+
     /* clone an artboard and scale it into a fixed box */
-    function mount(into, idx, scale) {
+    function mount(into, node, scale) {
       into.innerHTML = "";
-      var art = visuals[idx].querySelector(".artboard").cloneNode(true);
+      var art = node.cloneNode(true);
       var wrap = document.createElement("div");
       wrap.style.width = "1080px";
       wrap.style.height = "1350px";
@@ -5586,42 +5493,137 @@ try { (() => {
       wrap.appendChild(art);
       into.appendChild(wrap);
     }
+
+    /* ---- hero ---- */
     function renderHero() {
-      mount(heroStage, activeIdx, 497 / 1080);
-      heroType.textContent = visuals[activeIdx].getAttribute("data-type") || "visual";
-      heroBadge.style.display = approved.has(keyFor(activeIdx)) ? "inline-flex" : "none";
+      var v = visuals[activeIdx];
+      var node = artboardAt(activeIdx, focus.round, focus.variant);
+      mount(heroStage, node, 497 / 1080);
+      heroType.textContent = v.type;
+      heroVer.innerHTML = "v<b>" + (focus.round + 1) + "</b> · variant <b>" + letter(focus.variant) + "</b>";
+      var isChosen = focus.variant === chosenOf(activeIdx, focus.round);
+      heroChosen.style.display = isChosen ? "inline-flex" : "none";
+      heroBadge.style.display = approved.has(v.label) ? "inline-flex" : "none";
     }
+    function letter(i) {
+      return String.fromCharCode(65 + i);
+    }
+
+    /* ---- timeline (history of the active visual) ---- */
+    function renderTimeline() {
+      var v = visuals[activeIdx];
+      timelineEl.innerHTML = "";
+      tlsub.textContent = "“" + v.label + "” · " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s") + " · " + variantCount(activeIdx) + " variants";
+      v.rounds.forEach(function (variants, ri) {
+        if (ri > 0) {
+          var arr = document.createElement("div");
+          arr.className = "arrow";
+          arr.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+          timelineEl.appendChild(arr);
+        }
+        var round = document.createElement("div");
+        round.className = "round";
+        var ch = chosenOf(activeIdx, ri);
+        var head = document.createElement("div");
+        head.className = "rh";
+        head.innerHTML = '<span class="rv">v' + (ri + 1) + '</span><span class="rn">picked ' + letter(ch) + '</span>';
+        round.appendChild(head);
+        var vars = document.createElement("div");
+        vars.className = "vars";
+        variants.forEach(function (node, varIdx) {
+          var cell = document.createElement("div");
+          cell.className = "tlvar" + (varIdx === ch ? " chosen" : "") + (ri === focus.round && varIdx === focus.variant ? " focused" : "");
+          mount(cell, node, 62 / 1080);
+          var ck = document.createElement("span");
+          ck.className = "ck";
+          ck.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+          cell.appendChild(ck);
+          var vk = document.createElement("span");
+          vk.className = "vk";
+          vk.textContent = letter(varIdx);
+          cell.appendChild(vk);
+          cell.addEventListener("click", function (e) {
+            focus = {
+              round: ri,
+              variant: varIdx
+            };
+            renderHero();
+            renderTimeline();
+          });
+          cell.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+            openMenu(cell, ri, varIdx);
+          });
+          vars.appendChild(cell);
+        });
+        round.appendChild(vars);
+        timelineEl.appendChild(round);
+      });
+      // "next iteration" affordance
+      var arr2 = document.createElement("div");
+      arr2.className = "arrow";
+      arr2.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+      timelineEl.appendChild(arr2);
+      var next = document.createElement("div");
+      next.className = "round next";
+      next.innerHTML = '<div class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div><div class="nt">Iterate<br>3 new variants</div>';
+      next.title = "Ask the assistant for the next round — three fresh variants off the chosen one.";
+      timelineEl.appendChild(next);
+    }
+
+    /* ---- reel (one entry per visual) ---- */
     function renderReel() {
       reel.innerHTML = "";
       visuals.forEach(function (v, i) {
+        var ri = lastRound(i),
+          ch = chosenOf(i, ri);
         var t = document.createElement("div");
-        t.className = "thumb" + (i === activeIdx ? " active" : "");
+        t.className = "thumb" + (i === activeIdx ? " active" : "") + (approved.has(v.label) ? " approved" : "");
         var frame = document.createElement("div");
         frame.className = "tframe";
-        mount(frame, i, 108 / 1080);
-        var badge = document.createElement("span");
-        badge.className = "tbadge";
-        badge.textContent = "✓";
-        badge.style.display = approved.has(keyFor(i)) ? "flex" : "none";
-        frame.appendChild(badge);
-        // ⋯ on the thumb
+        mount(frame, artboardAt(i, ri, ch), 108 / 1080);
+        // count badge — variants in this visual's history
+        var cbadge = document.createElement("span");
+        cbadge.className = "cbadge";
+        cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span>' + variantCount(i) + '</span>';
+        cbadge.title = variantCount(i) + " variants across " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s");
+        frame.appendChild(cbadge);
+        var abadge = document.createElement("span");
+        abadge.className = "abadge";
+        abadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        frame.appendChild(abadge);
+        // ⋯ on the thumb → opens menu on the visual's chosen variant
         var dots = document.createElement("button");
         dots.className = "dots";
         dots.style.cssText = "position:absolute;top:5px;right:5px;width:27px;height:27px;background:rgba(255,255,255,.92)";
         dots.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
         dots.addEventListener("click", function (e) {
           e.stopPropagation();
-          openMenu(e.currentTarget, i);
+          activeIdx = i;
+          focus = {
+            round: ri,
+            variant: ch
+          };
+          renderHero();
+          renderTimeline();
+          renderReel();
+          openMenu(e.currentTarget, ri, ch);
         });
         frame.appendChild(dots);
         var lbl = document.createElement("div");
         lbl.className = "lbl";
-        lbl.textContent = v.getAttribute("data-label") || "Visual " + (i + 1);
+        lbl.textContent = v.label;
         t.appendChild(frame);
         t.appendChild(lbl);
         t.addEventListener("click", function () {
           activeIdx = i;
+          var lr = lastRound(i);
+          focus = {
+            round: lr,
+            variant: chosenOf(i, lr)
+          };
           renderHero();
+          renderTimeline();
           renderReel();
         });
         reel.appendChild(t);
@@ -5631,21 +5633,28 @@ try { (() => {
     }
 
     /* ---- menu ---- */
-    function openMenu(anchor, idx) {
-      menuIdx = idx;
-      menuLabel.textContent = keyFor(idx);
-      var ap = approved.has(keyFor(idx));
+    function openMenu(anchor, ri, varIdx) {
+      menuTarget = {
+        round: ri,
+        variant: varIdx
+      };
+      var v = visuals[activeIdx];
+      menuLabel.textContent = v.label + " · v" + (ri + 1) + " " + letter(varIdx);
+      var isChosen = varIdx === chosenOf(activeIdx, ri);
+      var chBtn = menu.querySelector('[data-act="choose"]');
+      chBtn.style.display = isChosen ? "none" : "flex";
+      var ap = approved.has(v.label);
       var apBtn = menu.querySelector('[data-act="approve"]');
       apBtn.querySelector(".ml").textContent = ap ? "Remove from design system" : "Add to design system";
       apBtn.querySelector(".ms").textContent = ap ? "Approved variant" : "Client approved → system learns";
       var r = anchor.getBoundingClientRect();
       menu.style.display = "block";
       menu.style.left = Math.min(r.left, window.innerWidth - 280) + "px";
-      menu.style.top = r.bottom + 6 + "px";
+      menu.style.top = Math.min(r.bottom + 6, window.innerHeight - 240) + "px";
     }
     function closeMenu() {
       menu.style.display = "none";
-      menuIdx = null;
+      menuTarget = null;
     }
     document.addEventListener("click", closeMenu);
     menu.addEventListener("click", function (e) {
@@ -5653,19 +5662,27 @@ try { (() => {
     });
     heroDots.addEventListener("click", function (e) {
       e.stopPropagation();
-      openMenu(e.currentTarget, activeIdx);
+      openMenu(e.currentTarget, focus.round, focus.variant);
     });
     menu.querySelectorAll("button").forEach(function (b) {
       b.addEventListener("click", function () {
         var act = b.getAttribute("data-act");
-        if (menuIdx == null) return;
-        var i = menuIdx;
+        if (!menuTarget) return;
+        var ri = menuTarget.round,
+          varIdx = menuTarget.variant;
         closeMenu();
-        if (act === "png") exportPng(i);else if (act === "html") exportHtml(i);else if (act === "approve") toggleApprove(i);
+        if (act === "png") exportPng(ri, varIdx);else if (act === "html") exportHtml(ri, varIdx);else if (act === "choose") chooseVariant(ri, varIdx);else if (act === "approve") toggleApprove();
       });
     });
-    function toggleApprove(i) {
-      var k = keyFor(i);
+    function chooseVariant(ri, varIdx) {
+      setChosen(activeIdx, ri, varIdx);
+      flash("Picked variant " + letter(varIdx) + " for v" + (ri + 1));
+      renderHero();
+      renderTimeline();
+      renderReel();
+    }
+    function toggleApprove() {
+      var k = visuals[activeIdx].label;
       if (approved.has(k)) {
         approved.delete(k);
         flash("Removed from the design system");
@@ -5673,16 +5690,19 @@ try { (() => {
         approved.add(k);
         flash("Added — the design system will learn from this variant");
       }
-      save();
+      saveJSON(APPROVED_KEY, [].slice.call(approved));
       renderHero();
       renderReel();
     }
 
-    /* ---- export ---- */
-    function offscreen(i) {
+    /* ---- export (the focused / targeted variant) ---- */
+    function nameFor(ri, varIdx) {
+      return slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase();
+    }
+    function offscreen(node) {
       var holder = document.createElement("div");
       holder.style.cssText = "position:fixed;left:-99999px;top:0;opacity:0;pointer-events:none";
-      var art = visuals[i].querySelector(".artboard").cloneNode(true);
+      var art = node.cloneNode(true);
       holder.appendChild(art);
       document.body.appendChild(holder);
       return {
@@ -5690,21 +5710,22 @@ try { (() => {
         node: art
       };
     }
-    function exportPng(i) {
+    function exportPng(ri, varIdx) {
       if (!window.htmlToImage) {
         flash("Export library not loaded");
         return;
       }
       flash("Exporting PNG…");
-      var o = offscreen(i);
+      var o = offscreen(artboardAt(activeIdx, ri, varIdx)),
+        nm = nameFor(ri, varIdx);
       window.htmlToImage.toPng(o.node, {
         width: 1080,
         height: 1350,
         pixelRatio: 1,
         cacheBust: true
       }).then(function (url) {
-        dl(url, slug(keyFor(i)) + ".png");
-        flash("Exported " + slug(keyFor(i)) + ".png");
+        dl(url, nm + ".png");
+        flash("Exported " + nm + ".png");
       }).catch(function (e) {
         console.error(e);
         flash("Export failed — try again");
@@ -5712,18 +5733,19 @@ try { (() => {
         o.holder.remove();
       });
     }
-    function exportHtml(i) {
-      var o = offscreen(i);
-      var doc = buildDoc(o.node, keyFor(i));
+    function exportHtml(ri, varIdx) {
+      var o = offscreen(artboardAt(activeIdx, ri, varIdx)),
+        nm = nameFor(ri, varIdx);
+      var doc = buildDoc(o.node, visuals[activeIdx].label);
       o.holder.remove();
       var url = URL.createObjectURL(new Blob([doc], {
         type: "text/html"
       }));
-      dl(url, slug(keyFor(i)) + ".html");
+      dl(url, nm + ".html");
       setTimeout(function () {
         URL.revokeObjectURL(url);
       }, 4000);
-      flash("Exported " + slug(keyFor(i)) + ".html");
+      flash("Exported " + nm + ".html");
     }
     function dl(href, name) {
       var a = document.createElement("a");
@@ -5759,7 +5781,13 @@ try { (() => {
       countEl.textContent = "No visuals yet — add a <section class=\"visual\"> block";
       return;
     }
+    var lr = lastRound(0);
+    focus = {
+      round: lr,
+      variant: chosenOf(0, lr)
+    };
     renderHero();
+    renderTimeline();
     renderReel();
   }
   boot();

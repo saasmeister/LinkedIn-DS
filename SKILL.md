@@ -51,6 +51,26 @@ So the answer to "make me another visual" is **always**: add a block to the boar
 
 ---
 
+## 🛑 GATE 3 — SINGLE & QUOTE VISUALS ARE VISUAL-LED. NO WALL OF TEXT.
+
+**On a single visual or a quote visual, the visual carries the story and must dominate the canvas.** Text is a save-trigger, not the payload. This is the #1 quality failure: piling eyebrow + headline + a full body paragraph onto a single visual. Do not do it.
+
+- **Allowed on single/quote:** eyebrow, headline (the re-hook), and **at most ONE** short supporting line (≤ ~12 words). That's it.
+- **Forbidden:** a body paragraph, multiple sentences of explanation, bullet runs. If the message genuinely needs paragraphs, it is the **wrong type** — it's a carousel or an infographic. Say so and switch.
+- **Make the visual big.** The supporting illustration / chart / mock should be the largest element on the canvas, not a small graphic under three text blocks. When in doubt, cut copy and grow the visual.
+- Carousels and infographics are different — they earn more text (one idea per slide; a dense cheat-sheet). This gate is specifically about **single and quote**.
+
+---
+
+## 🛑 GATE 4 — ALWAYS PRODUCE THREE VARIANTS. NEVER ONE.
+
+**Every version is three variants, shown side by side on the board — never a single take.** The user is a non-designer choosing between options, not approving your one guess.
+
+- On any "make me a visual" (and on every iteration after), put **three distinct variants** as three `<section class="visual">` blocks on the board. Vary something real between them — layout, crop, headline emphasis, which element leads — not just a colour tweak.
+- The user picks the strongest. You then **iterate on that one and again produce three.** Repeat until they say "this is the one."
+- **Keep the non-chosen variants** on the board (leave them in place, optionally labelled/archived) so earlier directions can be revisited later. Don't delete them.
+
+
 Read `README.md` first for the philosophy, then **`posture.md` — how to behave (a senior designer who guides, not an order-taker)** and **`BRIEF.md` — the intake + the fillable starter brief you complete before building.**
 
 ## Operating posture (read `posture.md`)
@@ -73,7 +93,7 @@ A colour- and font-agnostic ruleset for LinkedIn visuals. The value is the **pri
 ## Producing artifacts
 - **Delivery is the Visual Board (GATE 2):** one board per project, every visual a `<section class="visual">` block appended to it. Never one file per visual. Export per-visual as **PNG** or standalone **HTML** from the ⋯ menu; size is locked at **1080 × 1350** (4:5), scaled down only for preview.
 - **Building an artboard:** use the four `templates/<slug>/` artboards as the reference for each type's layout, but paste the artboard markup into a board block — don't ship the template file itself as the deliverable.
-- For production code: read the token CSS and component primitives and design against the real system — link `styles.css`, mount components from `window.LinkedInVisualDesignSystem_a51278`.
+- For production code: read the token CSS and component primitives and design against the real system — link `styles.css`, mount components from `window.LinkedInVisualDesignSystemTesting_727cb3`.
 - Copy assets out rather than referencing them across projects.
 
 After the brief is filled, move to making the first visual.
