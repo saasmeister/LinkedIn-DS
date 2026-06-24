@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Reference · Trajectory (path metaphor)" description="REFERENCE LAYOUT — three variant compositions of a single visual built on a JOURNEY/PERSISTENCE metaphor. A: bouncing dashed path ending in a fork. B: rising staircase that plateaus. C: one start point diverging into two futures. The path is the dominant element; copy is a re-hook + short outcome labels. Generic & token-driven." -->
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="./ds-base.js"></script>
+<style>
+  html,body{margin:0}
+  .vrow{display:flex;gap:72px;align-items:flex-start;width:max-content;min-width:100%;min-height:100vh;padding:56px;box-sizing:border-box;background:#e6e6e6;font-family:'Inter',system-ui,sans-serif}
+  .vcol{flex:none}
+  .vlbl{font-weight:600;font-size:30px;color:#3a3f45;margin:0 0 22px 6px}
+  .vlbl span{color:#8a9098;font-weight:500}
+</style>
+</helmet>
+
+<div class="vrow">
+<div class="vcol"><div class="vlbl">A · <span>Bounce → fork</span></div>
+<div data-screen-label="Trajectory A" style="position:relative;width:1080px;height:1350px;box-sizing:border-box;padding:var(--margin);overflow:hidden;flex:none;
+  background:var(--canvas-light-bg);color:var(--canvas-light-fg);font-family:var(--font-body);box-shadow:0 8px 40px rgba(0,0,0,.12);
+  --fg:var(--canvas-light-fg);--muted:var(--canvas-light-muted);--line:var(--canvas-light-line);--soft:var(--canvas-light-soft);--sig-color:var(--brand-primary)">
+  <div style="position:absolute;top:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span>
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category / function</span>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:210px">
+    <span style="display:block;font-weight:700;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">The re-hook</span>
+    <h1 class="headline headline--lg" style="margin-top:20px">The gap between <span class="sig-underline">two outcomes</span></h1>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:430px">
+    <svg viewBox="0 0 936 404" width="100%" style="display:block;overflow:visible">
+      <path d="M 0 360 Q 127.5 150 255 360 Q 369.5 172 484 360 Q 585.5 194 687 360 Q 775.5 216 864 360 Q 900 238 936 360 Q 936 260 936 360 Q 936 282 936 360" fill="none" stroke="var(--muted)" stroke-width="3.5" stroke-dasharray="2 14" stroke-linecap="round"></path>
+      <g transform="translate(235,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(464,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(667,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(844,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(916,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(916,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M11 20 L17 26 L29 13" fill="none" stroke="var(--canvas-loud-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></g><g transform="translate(916,340)"><circle cx="20" cy="20" r="20" fill="var(--brand-primary)"></circle><path d="M12 12 L28 28 M28 12 L12 28" stroke="var(--canvas-loud-fg)" stroke-width="2.8" stroke-linecap="round"></path></g><circle cx="920" cy="360" r="16" fill="none" stroke="var(--muted)" stroke-width="2.6"></circle>
+    </svg>
+    <div style="display:flex;justify-content:space-between;margin-top:64px">
+      <div style="max-width:380px"><div style="font-family:var(--font-display);font-weight:700;font-size:46px;color:var(--fg)">&ldquo;I made it&rdquo;</div><div style="font-weight:500;font-size:24px;color:var(--muted);margin-top:8px">Kept going one more time.</div></div>
+      <div style="max-width:380px;text-align:right"><div style="font-family:var(--font-display);font-weight:700;font-size:46px;color:var(--muted)">&ldquo;I give up&rdquo;</div><div style="font-weight:500;font-size:24px;color:var(--muted);margin-top:8px">Stopped one step too early.</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:20px;color:var(--muted)">Follow <strong style="color:var(--fg)">Your name</strong> for more</span>
+    <span style="font-size:18px;font-weight:700;color:var(--canvas-loud-fg);background:var(--brand-primary);padding:11px 20px;border-radius:999px">Helpful? Repost ↻</span>
+  </div>
+</div></div>
+<div class="vcol"><div class="vlbl">B · <span>Climb → plateau</span></div>
+<div data-screen-label="Trajectory B" style="position:relative;width:1080px;height:1350px;box-sizing:border-box;padding:var(--margin);overflow:hidden;flex:none;
+  background:var(--canvas-light-bg);color:var(--canvas-light-fg);font-family:var(--font-body);box-shadow:0 8px 40px rgba(0,0,0,.12);
+  --fg:var(--canvas-light-fg);--muted:var(--canvas-light-muted);--line:var(--canvas-light-line);--soft:var(--canvas-light-soft);--sig-color:var(--brand-primary)">
+  <div style="position:absolute;top:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span>
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category / function</span>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:210px">
+    <span style="display:block;font-weight:700;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">The re-hook</span>
+    <h1 class="headline headline--lg" style="margin-top:20px">Progress, then a <span class="sig-underline">plateau</span></h1>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:460px">
+    <svg viewBox="0 0 936 720" width="100%" style="display:block;overflow:visible">
+      <line x1="0" y1="690" x2="936" y2="690" stroke="var(--line)" stroke-width="2"></line>
+      <path d="M 0 660 L 140 560 L 280 540 L 420 420 L 560 400 L 700 300 L 820 300 L 936 330" fill="none" stroke="var(--brand-primary)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="140" cy="560" r="13" fill="var(--brand-primary)"></circle><circle cx="280" cy="540" r="13" fill="var(--brand-primary)"></circle><circle cx="420" cy="420" r="13" fill="var(--brand-primary)"></circle><circle cx="560" cy="400" r="13" fill="var(--brand-primary)"></circle><circle cx="700" cy="300" r="13" fill="var(--brand-primary)"></circle><circle cx="820" cy="300" r="13" fill="var(--muted)"></circle><circle cx="936" cy="330" r="13" fill="var(--muted)"></circle>
+      <text x="700" y="250" font-family="var(--font-display)" font-weight="700" font-size="40" fill="var(--muted)">stuck here</text>
+    </svg>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);bottom:240px">
+    <span style="font-weight:500;font-size:30px;color:var(--muted)">The plateau is where most quit — and where the next level starts.</span>
+  </div>
+  <div style="position:absolute;bottom:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:20px;color:var(--muted)">Follow <strong style="color:var(--fg)">Your name</strong> for more</span>
+    <span style="font-size:18px;font-weight:700;color:var(--canvas-loud-fg);background:var(--brand-primary);padding:11px 20px;border-radius:999px">Helpful? Repost ↻</span>
+  </div>
+</div></div>
+<div class="vcol"><div class="vlbl">C · <span>Diverging futures</span></div>
+<div data-screen-label="Trajectory C" style="position:relative;width:1080px;height:1350px;box-sizing:border-box;padding:var(--margin);overflow:hidden;flex:none;
+  background:var(--canvas-light-bg);color:var(--canvas-light-fg);font-family:var(--font-body);box-shadow:0 8px 40px rgba(0,0,0,.12);
+  --fg:var(--canvas-light-fg);--muted:var(--canvas-light-muted);--line:var(--canvas-light-line);--soft:var(--canvas-light-soft);--sig-color:var(--brand-primary)">
+  <div style="position:absolute;top:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span>
+    <span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category / function</span>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:210px">
+    <span style="display:block;font-weight:700;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">The re-hook</span>
+    <h1 class="headline headline--lg" style="margin-top:20px">One choice, <span class="sig-underline">two futures</span></h1>
+  </div>
+  <div style="position:absolute;left:var(--margin);right:var(--margin);top:470px">
+    <svg viewBox="0 0 936 560" width="100%" style="display:block;overflow:visible">
+      <circle cx="40" cy="280" r="18" fill="var(--fg)"></circle>
+      <path d="M 58 274 C 360 240 560 120 900 70" fill="none" stroke="var(--brand-primary)" stroke-width="5" stroke-linecap="round"></path>
+      <path d="M 58 286 C 360 320 560 440 900 500" fill="none" stroke="var(--muted)" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 16"></path>
+      <circle cx="900" cy="70" r="15" fill="var(--brand-primary)"></circle>
+      <circle cx="900" cy="500" r="15" fill="none" stroke="var(--muted)" stroke-width="3"></circle>
+    </svg>
+    <div style="display:flex;justify-content:space-between;margin-top:30px">
+      <div style="max-width:360px"><div style="font-family:var(--font-display);font-weight:700;font-size:42px;color:var(--fg)">Keep showing up</div></div>
+      <div style="max-width:360px;text-align:right"><div style="font-family:var(--font-display);font-weight:700;font-size:42px;color:var(--muted)">Stay invisible</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:var(--margin);left:var(--margin);right:var(--margin);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:20px;color:var(--muted)">Follow <strong style="color:var(--fg)">Your name</strong> for more</span>
+    <span style="font-size:18px;font-weight:700;color:var(--canvas-loud-fg);background:var(--brand-primary);padding:11px 20px;border-radius:999px">Helpful? Repost ↻</span>
+  </div>
+</div></div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1240, &quot;height&quot;: 820 },
+  &quot;primary&quot;:   { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#0A66C2&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;secondary&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#16232B&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;accent&quot;:    { &quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#E7A33E&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;tint&quot;:      { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 7, &quot;min&quot;: 3, &quot;max&quot;: 16, &quot;tsType&quot;: &quot;number&quot; },
+  &quot;font&quot;:      { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;Inter&quot;, &quot;options&quot;: [&quot;Inter&quot;, &quot;Plus Jakarta Sans&quot;, &quot;Space Grotesk&quot;, &quot;Sora&quot;], &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  apply() {
+    const p = this.props || {};
+    const r = document.documentElement.style;
+    if (p.primary)   r.setProperty('--brand-primary', p.primary);
+    if (p.secondary) r.setProperty('--brand-secondary', p.secondary);
+    if (p.accent)    r.setProperty('--brand-accent', p.accent);
+    if (p.tint != null) r.setProperty('--brand-tint', p.tint + '%');
+    const font = p.font;
+    if (font) {
+      const id = 'tweak-font-' + font.replace(/\s+/g, '-');
+      if (!document.getElementById(id)) {
+        const l = document.createElement('link');
+        l.id = id; l.rel = 'stylesheet';
+        l.href = 'https://fonts.googleapis.com/css2?family=' + font.replace(/\s+/g, '+') + ':wght@400;500;600;700;800&display=swap';
+        document.head.appendChild(l);
+      }
+      r.setProperty('--brand-font', "'" + font + "', system-ui, sans-serif");
+      r.setProperty('--brand-font-display', "'" + font + "', system-ui, sans-serif");
+    }
+  }
+  componentDidMount() { this.apply(); }
+  componentDidUpdate() { this.apply(); }
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

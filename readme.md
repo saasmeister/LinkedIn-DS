@@ -134,12 +134,14 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 - `components/preview/` — **FeedPost** (wraps a visual in the real LinkedIn feed chrome — single image or carousel document, to preview how it lands in the timeline).
 
 **Templates** (`templates/<slug>/` — copy & edit; recolour via Tweaks)
-- `single-visual/` · `quote-visual/` · `carousel/` · `infographic/`
+- **Type references:** `single-visual/` · `quote-visual/` · `carousel/` · `infographic/`
+- **Single-visual archetypes** (generic, layout-only — give the agent more than one composition to vary across; from the Content-Design reference deck): `pictograph-visual/` (quantity / 1-vs-many metaphor) · `trajectory-visual/` (journey / persistence path ending in a fork) · `testimonial-visual/` (result headline + raw proof card + attribution) · `layered-visual/` (funnel / pyramid / stacked layers) · `data-visual/` (chart-led: donut+%, bar chart, line+annotation). Each shows 3 variant compositions (A/B/C).
+- **Infographic archetypes** (generic, layout-only; each shows 3 variant compositions): `infographic-tree/` (root → 3 categories → leaf items, + phrase bank) · `infographic-flow/` (numbered step-by-step; rows, vertical timeline, or tier ladder) · `infographic-annotated/` (a central UI mock surrounded by callout labels — replace the mock with the real product UI) · `infographic-matrix/` (2×2 quadrant, comparison table, or checklist) · `infographic-roadmap/` (milestone timeline, connected-node flow, or branching map)
+- **Carousel archetypes** (generic, layout-only; each a full multi-slide rail — cover → content → CTA, swipe arrow in every footer): `carousel-listicle/` (number-promise cover + one numbered tip per slide) · `carousel-story/` (hook → before → turning point → result → takeaway, canvas roles carry the beats) · `carousel-framework/` (named model → overview-at-a-glance → one slide per step → recap)
 
 **UI kits**
-- `ui_kits/setup/` — the **first-run setup**: a guided, stepped onboarding (identity → colours → spacing & shape → ready) with a **live single-visual preview**. Generates the branch's `overrides/brand.css` + `overrides/extras.css`, then sends the user to make visuals. Where a new client starts.
-- `ui_kits/brief-studio/` — the **Brief Studio**: a type-first intake screen (post, titles, reference upload, a sketch pad, dynamic carousel pages, brand layer) with a senior-designer **advice/pushback** panel and a **live LinkedIn feed preview** built from the brief. Generates the filled brief text.
 - `ui_kits/visual-library/` — the **Visual Library**: a Canva-style gallery (hero + scrollable reel) to browse generated visuals, export each as **PNG** or standalone **HTML** via a ⋯ menu, and **approve** visuals into the system. Approved variants are the queue the design system learns from.
+- Brand setup is the **`START HERE.html`** screen at the project root (not a kit) — identity → colours → spacing → ready, writing `overrides/brand.css` + `overrides/extras.css`.
 
 **Foundation cards** (`guidelines/*.card.html`) populate the Design System tab under Colors / Type / Spacing / Brand. **Principles cards** (`principles/*.card.html`) carry the philosophy.
 

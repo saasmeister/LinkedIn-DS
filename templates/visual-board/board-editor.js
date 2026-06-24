@@ -177,7 +177,9 @@ window.BoardEditor = (function () {
       if (!S.sel) return;
       var w = S.sel.offsetWidth, h = S.sel.offsetHeight;
       var fs = parseFloat(getComputedStyle(S.sel).fontSize) || 0;
-      drag = { mode: "resize", sx: e.clientX, sy: e.clientY, w: w, h: h, fs: fs, hadH: !!S.sel.style.height };
+      // which handle: br = uniform (scale incl. font), r = width-only, b = height-only
+      var dir = e.target.classList.contains("r") ? "x" : e.target.classList.contains("b") ? "y" : "xy";
+      drag = { mode: "resize", dir: dir, sx: e.clientX, sy: e.clientY, w: w, h: h, fs: fs, hadH: !!S.sel.style.height };
       e.preventDefault(); return;
     }
     // ignore pointer drags while a text element is being edited inline
@@ -205,10 +207,19 @@ window.BoardEditor = (function () {
       S.sel.style.top = (drag.bt + dy) + "px";
       placeSel();
     } else if (drag.mode === "resize") {
-      var ratio = Math.max(0.15, (drag.w + dx) / drag.w);
-      S.sel.style.width = Math.max(20, drag.w * ratio) + "px";
-      if (drag.hadH || S.sel.getAttribute("data-shape")) S.sel.style.height = Math.max(8, drag.h * ratio) + "px";
-      if (drag.fs) S.sel.style.fontSize = (drag.fs * ratio) + "px";
+      if (drag.dir === "x") {
+        // width only — reflow text taller/shorter, font unchanged
+        S.sel.style.width = Math.max(20, drag.w + dx) + "px";
+      } else if (drag.dir === "y") {
+        // height only
+        S.sel.style.height = Math.max(8, drag.h + dy) + "px";
+      } else {
+        // corner — uniform scale incl. font-size
+        var ratio = Math.max(0.15, (drag.w + dx) / drag.w);
+        S.sel.style.width = Math.max(20, drag.w * ratio) + "px";
+        if (drag.hadH || S.sel.getAttribute("data-shape")) S.sel.style.height = Math.max(8, drag.h * ratio) + "px";
+        if (drag.fs) S.sel.style.fontSize = (drag.fs * ratio) + "px";
+      }
       placeSel();
     }
   }

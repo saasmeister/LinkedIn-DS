@@ -55,7 +55,9 @@
   .zoom button:hover { background:#f0f1f3; }
   .zoom #zoomFit { width:auto; padding:0 9px; font-size:11.5px; font-weight:700; }
   .zoom #zoomPct { font-size:11.5px; font-weight:700; color:#1f2328; min-width:38px; text-align:center; }
-  .chosenPill { display:none; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:#fff; background:var(--brand-primary,#0A66C2); padding:4px 10px; border-radius:999px; }
+  .chosenPill { display:none; align-items:center; gap:5px; font-size:11.5px; font-weight:700; color:var(--brand-primary,#0A66C2); background:#fff; border:1.5px solid var(--brand-primary,#0A66C2); padding:4px 11px; border-radius:999px; cursor:pointer; }
+  .chosenPill:hover { background:color-mix(in srgb, var(--brand-primary,#0A66C2) 10%, #fff); }
+  .chosenPill.is-chosen { color:#fff; background:var(--brand-primary,#0A66C2); cursor:default; }
   #heroStage { border-radius:4px; overflow:hidden; box-shadow:0 12px 50px rgba(0,0,0,.16); background:#fff; position:relative; }
   body.editing #heroStage { box-shadow:0 12px 50px rgba(0,0,0,.16), 0 0 0 1px var(--brand-primary,#0A66C2); }
   body.editing #heroStage .artscale { cursor:default; }
@@ -64,6 +66,8 @@
   .selbox { position:absolute; border:1.5px solid var(--brand-primary,#0A66C2); pointer-events:none; z-index:40; display:none; }
   .selbox .handle { position:absolute; width:13px; height:13px; background:#fff; border:1.5px solid var(--brand-primary,#0A66C2); border-radius:50%; pointer-events:auto; }
   .selbox .handle.br { right:-7px; bottom:-7px; cursor:nwse-resize; }
+  .selbox .handle.r { right:-7px; top:calc(50% - 6.5px); cursor:ew-resize; }
+  .selbox .handle.b { bottom:-7px; left:calc(50% - 6.5px); cursor:ns-resize; }
   .eltbar { position:absolute; display:none; gap:2px; background:#1f2328; border-radius:9px; padding:4px; z-index:50; box-shadow:0 6px 24px rgba(0,0,0,.3); }
   .eltbar button { width:30px; height:30px; border:none; background:transparent; color:#cfd3d8; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .eltbar button:hover { background:rgba(255,255,255,.13); color:#fff; }
@@ -101,6 +105,10 @@
   .reel { display:flex; gap:14px; overflow-x:auto; padding:4px 26px 10px; align-items:flex-start; }
   .thumb { flex:none; width:96px; cursor:pointer; }
   .thumb .tframe { width:96px; height:120px; border-radius:4px; overflow:hidden; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.14); position:relative; transition:box-shadow .12s; }
+  /* carousels read as a STACK of slides, not a single card — top-aligned with singles, stack peeks bottom-right */
+  .thumb.iscarousel .tframe { margin:0 10px 14px 0; box-shadow:0 1px 4px rgba(0,0,0,.14), 5px 5px 0 -1px #fff, 5px 5px 0 0 rgba(31,35,40,.16), 10px 10px 0 -1px #fff, 10px 10px 0 0 rgba(31,35,40,.10); }
+  .thumb.iscarousel.active .tframe { box-shadow:0 0 0 3px var(--brand-primary,#0A66C2), 5px 5px 0 -1px #fff, 5px 5px 0 0 rgba(31,35,40,.16), 10px 10px 0 -1px #fff, 10px 10px 0 0 rgba(31,35,40,.10); }
+  .thumb .lbl .kind { display:block; font-size:9.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--brand-primary,#0A66C2); margin-bottom:2px; }
   .thumb.active .tframe { box-shadow:0 0 0 3px var(--brand-primary,#0A66C2); }
   .thumb .lbl { font-size:11px; color:#8a9098; margin-top:6px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .thumb.active .lbl { color:#1f2328; font-weight:600; }
@@ -117,16 +125,6 @@
 
   .dots { width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:9px; border:1px solid #e0e2e5; background:#fff; color:#5f6671; cursor:pointer; padding:0; }
 
-  /* ---- Brief Studio slide-over ---- */
-  .briefScrim { position:fixed; inset:0; background:rgba(20,24,28,.42); z-index:100; display:none; }
-  .briefScrim.on { display:block; }
-  .briefPanel { position:fixed; top:0; right:0; bottom:0; width:min(96vw,1180px); background:#f1f2f4; z-index:101; box-shadow:-12px 0 50px rgba(0,0,0,.25); transform:translateX(100%); transition:transform .22s ease; display:flex; flex-direction:column; }
-  .briefScrim.on + .briefPanel { transform:translateX(0); }
-  .briefPanel .bp-head { flex:none; display:flex; align-items:center; justify-content:space-between; padding:12px 18px; background:#fff; border-bottom:1px solid #e0e2e5; }
-  .briefPanel .bp-head .bt { font-family:var(--font-display,inherit); font-weight:700; font-size:16px; }
-  .briefPanel .bp-head .bs { font-size:12px; color:#8a9098; margin-top:2px; }
-  .briefPanel .bp-close { width:34px; height:34px; border-radius:9px; border:1px solid #e0e2e5; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#5f6671; }
-  .briefPanel iframe { flex:1; width:100%; border:none; }
   .menu { position:fixed; width:266px; background:#fff; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.18); border:1px solid #ebedf0; padding:7px; z-index:80; display:none; }
   .menu .mh { padding:8px 12px 6px; font-size:12px; color:#9aa0a6; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .menu button { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:11px 13px; border:none; background:transparent; cursor:pointer; border-radius:10px; font:inherit; color:#1f2328; }
@@ -163,6 +161,17 @@
               font-family:var(--font-body); background:var(--canvas-light-bg); color:var(--canvas-light-fg);
               --fg:var(--canvas-light-fg); --muted:var(--canvas-light-muted); --line:var(--canvas-light-line); --soft:var(--canvas-light-soft); --sig-color:var(--brand-primary); }
   .artboard[data-canvas="loud"]    { background:var(--canvas-loud-bg); color:var(--canvas-loud-fg); --fg:var(--canvas-loud-fg); --muted:var(--canvas-loud-muted); --line:var(--canvas-loud-line); --soft:rgba(255,255,255,.14); --sig-color:var(--canvas-loud-fg); }
+  .artboard[data-carousel] { background:#0c0c0c; }
+  .cslide { position:absolute; inset:0; overflow:hidden; box-sizing:border-box; background:var(--canvas-light-bg); color:var(--canvas-light-fg); --fg:var(--canvas-light-fg); --muted:var(--canvas-light-muted); --line:var(--canvas-light-line); --soft:var(--canvas-light-soft); --sig-color:var(--brand-primary); }
+  .cslide[data-canvas="loud"]    { background:var(--canvas-loud-bg); color:var(--canvas-loud-fg); --fg:var(--canvas-loud-fg); --muted:var(--canvas-loud-muted); --line:var(--canvas-loud-line); --soft:var(--canvas-loud-soft); }
+  .cslide[data-canvas="section"] { background:var(--canvas-section-bg); color:var(--canvas-section-fg); --fg:var(--canvas-section-fg); --muted:var(--canvas-section-muted); --line:var(--canvas-section-line); --soft:var(--canvas-section-soft); }
+  .cnav { position:absolute; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; border:1px solid #d8dadd; background:#fff; color:#3a3f45; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.14); z-index:20; }
+  .cnav:hover { background:#f0f1f3; }
+  .cnav[disabled] { opacity:.34; cursor:default; box-shadow:none; }
+  .cnav.prev { left:-60px; } .cnav.next { right:-60px; }
+  .cdots { position:absolute; left:0; right:0; bottom:-40px; display:flex; gap:8px; justify-content:center; z-index:20; }
+  .cdot { width:9px; height:9px; border-radius:50%; background:#cfd3d8; cursor:pointer; transition:width .12s; }
+  .cdot.on { background:var(--brand-primary,#0A66C2); width:26px; border-radius:999px; }
   .artboard[data-canvas="section"] { background:var(--canvas-section-bg); color:var(--canvas-section-fg); --fg:var(--canvas-section-fg); --muted:var(--canvas-section-muted); --line:var(--canvas-section-line); --soft:var(--canvas-section-soft); --sig-color:var(--accent); }
 </style>
 </head>
@@ -214,10 +223,10 @@
         </div>
       </div>
       <div id="heroStage"></div>
-      <div class="selbox" id="selbox"><span class="handle br"></span></div>
+      <div class="selbox" id="selbox"><span class="handle r"></span><span class="handle b"></span><span class="handle br"></span></div>
       <div class="eltbar" id="eltbar"></div>
     </div>
-    <div class="editHint">Drag elements to move · drag the corner to resize · drag items from the left onto the canvas · ⌫ to delete</div>
+    <div class="editHint">Drag to move · right edge = wider · bottom edge = taller · corner = scale · drag items from the left · ⌫ to delete</div>
   </div>
 
 </div>
@@ -232,21 +241,6 @@
     <div class="reelhead">Visuals</div>
     <div class="reel" id="reel"></div>
   </div>
-</div>
-
-<!-- Brief Studio slide-over -->
-<div class="briefScrim" id="briefScrim"></div>
-<div class="briefPanel" id="briefPanel">
-  <div class="bp-head">
-    <div>
-      <div class="bt" id="briefTitle">New visual — fill the brief</div>
-      <div class="bs">Tell the system what you want: post, type, the one thing to remember, sketch &amp; brand. Then ask the assistant to build 3 variants.</div>
-    </div>
-    <button class="bp-close" id="briefClose" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-    </button>
-  </div>
-  <iframe id="briefFrame" title="Brief Studio" data-src="ui_kits/brief-studio/index.html"></iframe>
 </div>
 
 <!-- ============ YOUR VISUALS · one <section class="visual"> per visual, each a timeline of rounds ============ -->
@@ -399,6 +393,64 @@
             <span style="font-weight:700;font-size:28px">Full name <span style="font-weight:500;color:var(--muted)">· Role</span></span>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ VISUAL 3 — carousel · one round of two 4-slide variants (swipe on the canvas) ░░ -->
+  <section class="visual" data-label="5 ways to write DMs that get replies" data-type="carousel">
+    <div class="round">
+      <div class="artboard" data-carousel data-chosen>
+        <div class="cslide" data-canvas="loud"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:300px">
+          <span style="font-weight:700;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">A carousel about</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:94px;line-height:1.04;letter-spacing:-.02em;margin:18px 0 0">5 ways to write DMs that get replies</h2>
+          <p style="font-weight:500;font-size:32px;color:var(--muted);margin-top:28px">One idea per slide — swipe →</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="light"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:120px;line-height:.9;color:var(--brand-primary);letter-spacing:-.03em">01</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:72px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Lead with their words</h2>
+          <p style="font-weight:500;font-size:30px;line-height:1.4;color:var(--muted);margin-top:24px;max-width:760px">Quote a line from their post so it can’t feel like a template.</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="light"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:120px;line-height:.9;color:var(--brand-primary);letter-spacing:-.03em">02</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:72px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Make it about them</h2>
+          <p style="font-weight:500;font-size:30px;line-height:1.4;color:var(--muted);margin-top:24px;max-width:760px">Open on their goal, not your service.</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="loud"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:300px">
+          <span style="font-weight:700;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Your turn</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:84px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Want the full script?</h2>
+          <div style="margin-top:40px;display:inline-flex;align-items:center;min-height:104px;padding:0 52px;border:1.5px solid var(--muted);border-radius:18px;font-family:var(--font-display);font-weight:700;font-size:32px">DM me ‘SCRIPT’ →</div>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="font-weight:700;font-size:19px;color:var(--canvas-loud-fg);background:var(--brand-primary);padding:11px 20px;border-radius:999px">↻ Helpful? Repost</span></div></div>
+      </div>
+      <div class="artboard" data-carousel>
+        <div class="cslide" data-canvas="section"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:300px">
+          <span style="font-weight:700;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">A carousel about</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:94px;line-height:1.04;letter-spacing:-.02em;margin:18px 0 0">5 ways to write DMs that get replies</h2>
+          <p style="font-weight:500;font-size:32px;color:var(--muted);margin-top:28px">One idea per slide — swipe →</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="light"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:120px;line-height:.9;color:var(--brand-primary);letter-spacing:-.03em">01</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:72px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Lead with their words</h2>
+          <p style="font-weight:500;font-size:30px;line-height:1.4;color:var(--muted);margin-top:24px;max-width:760px">Quote a line from their post so it can’t feel like a template.</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="light"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:120px;line-height:.9;color:var(--brand-primary);letter-spacing:-.03em">02</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:72px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Make it about them</h2>
+          <p style="font-weight:500;font-size:30px;line-height:1.4;color:var(--muted);margin-top:24px;max-width:760px">Open on their goal, not your service.</p>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="width:64px;height:64px;border-radius:50%;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--fg)">→</span></div></div>
+        <div class="cslide" data-canvas="section"><div style="position:absolute;top:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:22px;letter-spacing:.08em">Your name</span><span style="font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--muted)">Category</span></div>
+        <div style="position:absolute;left:72px;right:72px;top:300px">
+          <span style="font-weight:700;font-size:20px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Your turn</span>
+          <h2 style="font-family:var(--font-display);font-weight:700;font-size:84px;line-height:1.05;letter-spacing:-.02em;margin:18px 0 0">Want the full script?</h2>
+          <div style="margin-top:40px;display:inline-flex;align-items:center;min-height:104px;padding:0 52px;border:1.5px solid var(--muted);border-radius:18px;font-family:var(--font-display);font-weight:700;font-size:32px">DM me ‘SCRIPT’ →</div>
+        </div><div style="position:absolute;bottom:72px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:21px;color:var(--muted)">Your name</span><span style="font-weight:700;font-size:19px;color:var(--canvas-loud-fg);background:var(--brand-primary);padding:11px 20px;border-radius:999px">↻ Helpful? Repost</span></div></div>
       </div>
     </div>
   </section>

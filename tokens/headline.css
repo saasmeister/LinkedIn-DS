@@ -21,6 +21,7 @@
   line-height: var(--lh-head);
   letter-spacing: var(--tr-tight);
   margin: 0;
+  text-wrap: balance;
   --sig-color: var(--brand-primary);
 }
 .headline--lg { font-size: var(--fz-head-lg); }

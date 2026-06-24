@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystemTesting_727cb3","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"board-editor.js":"8dd7330004c6","components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","ui_kits/brief-studio/BriefStudio.jsx":"2fa8347f1c4e","ui_kits/setup/Setup.jsx":"6511d7c81c06","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"b246a3729833","visual-board.js":"06af57e472d2"},"inlinedExternals":[],"unexposedExports":[]} */
+/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystemTesting_727cb3","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"board-editor.js":"55d12d430a4b","components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","ui_kits/setup/Setup.jsx":"7b77dc00b0b1","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"b246a3729833","visual-board.js":"135f57cc37e7"},"inlinedExternals":[],"unexposedExports":[]} */
 
 (() => {
 
@@ -374,8 +374,11 @@ window.BoardEditor = function () {
       var w = S.sel.offsetWidth,
         h = S.sel.offsetHeight;
       var fs = parseFloat(getComputedStyle(S.sel).fontSize) || 0;
+      // which handle: br = uniform (scale incl. font), r = width-only, b = height-only
+      var dir = e.target.classList.contains("r") ? "x" : e.target.classList.contains("b") ? "y" : "xy";
       drag = {
         mode: "resize",
+        dir: dir,
         sx: e.clientX,
         sy: e.clientY,
         w: w,
@@ -424,10 +427,19 @@ window.BoardEditor = function () {
       S.sel.style.top = drag.bt + dy + "px";
       placeSel();
     } else if (drag.mode === "resize") {
-      var ratio = Math.max(0.15, (drag.w + dx) / drag.w);
-      S.sel.style.width = Math.max(20, drag.w * ratio) + "px";
-      if (drag.hadH || S.sel.getAttribute("data-shape")) S.sel.style.height = Math.max(8, drag.h * ratio) + "px";
-      if (drag.fs) S.sel.style.fontSize = drag.fs * ratio + "px";
+      if (drag.dir === "x") {
+        // width only — reflow text taller/shorter, font unchanged
+        S.sel.style.width = Math.max(20, drag.w + dx) + "px";
+      } else if (drag.dir === "y") {
+        // height only
+        S.sel.style.height = Math.max(8, drag.h + dy) + "px";
+      } else {
+        // corner — uniform scale incl. font-size
+        var ratio = Math.max(0.15, (drag.w + dx) / drag.w);
+        S.sel.style.width = Math.max(20, drag.w * ratio) + "px";
+        if (drag.hadH || S.sel.getAttribute("data-shape")) S.sel.style.height = Math.max(8, drag.h * ratio) + "px";
+        if (drag.fs) S.sel.style.fontSize = drag.fs * ratio + "px";
+      }
       placeSel();
     }
   }
@@ -1895,165 +1907,40 @@ function Subhead({
 Object.assign(__ds_scope, { Eyebrow, Headline, Mark, Subhead });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/text/Headline.jsx", error: String((e && e.message) || e) }); }
 
-// ui_kits/brief-studio/BriefStudio.jsx
+// ui_kits/setup/Setup.jsx
 try { (() => {
-/* Brief Studio — the intake screen.
-   Left: a fillable brief (type-first, post, titles, references, sketch,
-   dynamic carousel steps, brand layer). Right: a LIVE LinkedIn feed preview
-   built from the brief, with a senior-designer advice banner + critical
-   pushback on the chosen type. Generates the filled brief text on demand. */
+/* Brand Setup wizard — window.Setup
+   A first-run, multi-step wizard (loaded via Babel in START HERE.html).
+   Walks a non-designer through: Welcome → Brand source (Figma / GitHub / file /
+   manual) → Colours → Type & signature → Done. Produces the exact
+   `overrides/brand.css` AND a one-click "Copy for the assistant" message that
+   bundles the source + all choices, so the agent can import the Figma/GitHub
+   brand and write the overrides. A page can't post into the chat itself —
+   this makes handing it over a single paste. Choices persist to localStorage
+   and inject a live brand layer so previews reflect them. */
 (function () {
   const {
     useState,
-    useRef,
-    useEffect,
-    useCallback
+    useEffect
   } = React;
-  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
-  const {
-    Canvas,
-    Chrome,
-    Eyebrow,
-    Headline,
-    Mark,
-    Subhead,
-    Stat,
-    Quote,
-    Attribution,
-    InfoCard,
-    Chip
-  } = DS;
-  const FeedPost = DS.FeedPost;
-  const KEY = "li-vds-brief-v1";
-  const TYPES = [{
-    id: "single",
-    label: "Single",
-    desc: "One message, one visual"
-  }, {
-    id: "carousel",
-    label: "Carousel",
-    desc: "A story over slides"
-  }, {
-    id: "infographic",
-    label: "Infographic",
-    desc: "A dense cheat-sheet"
-  }, {
-    id: "quote",
-    label: "Quote",
-    desc: "One pulled sentence"
-  }];
-  const SIGS = ["underline", "block", "bubble", "plain"];
-  const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora"];
-  const SWATCHES = ["#0A66C2", "#1F8A5B", "#C2410C", "#7C3AED", "#0F766E", "#BE123C", "#16232B"];
-  const DEFAULT_STEPS = () => [{
-    role: "loud",
-    label: "Cover",
-    note: "The promise / hook"
-  }, {
-    role: "light",
-    label: "Context",
-    note: "Set up where this starts"
-  }, {
-    role: "section",
-    label: "Problem",
-    note: "The core tension"
-  }, {
-    role: "light",
-    label: "Step 1",
-    note: "First move"
-  }, {
-    role: "section",
-    label: "Result",
-    note: "Proof it worked"
-  }, {
-    role: "loud",
-    label: "Back cover",
-    note: "Your CTA"
-  }];
-  const ROLE_NEXT = {
-    loud: "light",
-    light: "section",
-    section: "loud"
-  };
-  const DEFAULT = {
-    type: "carousel",
-    post: "",
-    oneThing: "",
-    heading: "",
-    subheading: "",
-    name: "Your name",
-    category: "Your category / function",
-    second: "derive",
-    signature: "underline",
+  const LS = "li-vds-brand-setup-v1";
+  const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora", "Manrope", "Figtree", "Outfit", "DM Sans"];
+  const SIGS = [["underline", "Underline"], ["block", "Block"], ["bubble", "Bubble"], ["plain", "Plain"]];
+  const DEFAULTS = {
     primary: "#0A66C2",
+    secondary: "#16232B",
+    accent: "#E7A33E",
+    tint: 7,
     font: "Inter",
-    quote: "",
-    attrName: "",
-    attrRole: "",
-    steps: DEFAULT_STEPS()
+    signature: "underline",
+    sourceType: "manual",
+    figmaUrl: "",
+    githubUrl: "",
+    fileName: ""
   };
-  function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY));
-      if (s) return {
-        ...DEFAULT,
-        ...s
-      };
-    } catch (e) {}
-    return DEFAULT;
-  }
-
-  /* ---------- senior-designer advice (lightweight heuristics) ---------- */
-  function advise(b) {
-    const out = [];
-    const len = b.post.trim().length;
-    const hasList = /(^|\n)\s*(\d+[\.\)]|[-•])/.test(b.post);
-    const hasNumber = /\b\d+([.,]\d+)?\s?(%|x|×|k|m|\+)?\b/i.test(b.post);
-    if (!len) out.push({
-      t: "tip",
-      m: "Paste the post (or the idea) first — the visual follows the post, never the reverse."
-    });
-    if (b.type === "carousel" && len > 0 && len < 220 && !hasList) out.push({
-      t: "warn",
-      m: "This reads short for a carousel. A single visual will likely hit harder — want me to switch it?"
-    });
-    if (b.type === "single" && hasList) out.push({
-      t: "warn",
-      m: "The post lists multiple points — an infographic or carousel carries them better than one single."
-    });
-    if (b.type === "infographic" && len > 0 && !hasList && !hasNumber) out.push({
-      t: "warn",
-      m: "An infographic needs structure (steps, a matrix, stats). I don't see distinct parts yet — what are the cells?"
-    });
-    if (b.type === "quote" && !b.quote.trim()) out.push({
-      t: "tip",
-      m: "Pull the exact sentence from the post, verbatim — that's what a quote visual lives on."
-    });
-    if (b.second === "derive" && !b.heading.trim()) out.push({
-      t: "tip",
-      m: "The heading should differ from the post's first line — I'll re-hook it, not repeat it."
-    });
-    if (hasNumber && b.type === "single") out.push({
-      t: "good",
-      m: "There's a number in here — one big stat could be the whole visual. Strong save-trigger."
-    });
-    if (!out.length) out.push({
-      t: "good",
-      m: "Brief looks coherent. I'll build it and then push back on anything that fights the layout."
-    });
-    return out;
-  }
-
-  /* ---------- live visual builder (form → DS components) ---------- */
-  function themeStyle(b) {
-    return {
-      "--brand-primary": b.primary,
-      "--brand-font": `'${b.font}', system-ui, sans-serif`,
-      "--brand-font-display": `'${b.font}', system-ui, sans-serif`
-    };
-  }
+  const STEPS = ["Welcome", "Brand source", "Colours", "Type & signature", "Done"];
   function loadFont(font) {
-    const id = "bs-font-" + font.replace(/\s+/g, "-");
+    const id = "gf-" + font.replace(/\s+/g, "-");
     if (document.getElementById(id)) return;
     const l = document.createElement("link");
     l.id = id;
@@ -2061,2269 +1948,618 @@ try { (() => {
     l.href = "https://fonts.googleapis.com/css2?family=" + font.replace(/\s+/g, "+") + ":wght@400;500;600;700;800&display=swap";
     document.head.appendChild(l);
   }
-  const Mk = (heading, sig) => {
-    // wrap the last 1-2 words in a signature Mark
-    const words = (heading || "").trim().split(" ");
-    if (words.length < 2) return heading || "Your headline here";
-    const head = words.slice(0, -2).join(" ");
-    const tail = words.slice(-2).join(" ");
-    return [head + " ", React.createElement(Mark, {
-      key: "m",
-      signature: sig
-    }, tail)];
-  };
-  function buildSingle(b) {
-    return React.createElement(Canvas, {
-      role: "light"
-    }, React.createElement(Chrome, {
-      name: b.name,
-      category: b.category,
-      position: "top"
-    }), React.createElement("div", {
-      style: {
-        position: "absolute",
-        left: "var(--margin)",
-        right: "var(--margin)",
-        top: 0,
-        bottom: 0,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-      }
-    }, React.createElement(Eyebrow, null, b.oneThing || "The re-hook"), React.createElement(Headline, {
-      size: "lg",
-      style: {
-        marginTop: 18
-      }
-    }, Mk(b.heading, b.signature)), b.subheading ? React.createElement(Subhead, {
-      style: {
-        marginTop: 24
-      }
-    }, b.subheading) : null));
+  function hexToRgb(hex) {
+    const m = hex.replace("#", "");
+    const n = m.length === 3 ? m.split("").map(c => c + c).join("") : m;
+    const i = parseInt(n, 16);
+    return [i >> 16 & 255, i >> 8 & 255, i & 255];
   }
-  function buildQuote(b) {
-    return React.createElement(Canvas, {
-      role: "light"
-    }, React.createElement(Chrome, {
-      name: b.name,
-      category: b.category,
-      position: "top"
-    }), React.createElement("div", {
-      style: {
-        position: "absolute",
-        left: "var(--margin)",
-        right: "150px",
-        top: 0,
-        bottom: 0,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-      }
-    }, React.createElement(Quote, {
-      label: "QUOTE"
-    }, b.quote || "Pull the exact sentence from your post."), React.createElement(Attribution, {
-      name: b.attrName || b.name,
-      role: b.attrRole || b.category,
-      style: {
-        marginTop: 70
-      }
-    })));
+  function lightTint(hex, pct) {
+    const [r, g, b] = hexToRgb(hex);
+    const a = pct / 100;
+    const mix = c => Math.round(c * a + 255 * (1 - a));
+    return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
   }
-  function buildInfographic(b) {
-    return React.createElement(Canvas, {
-      role: "light",
-      density: "tight"
-    }, React.createElement("div", {
+  function cssText(s) {
+    return `:root {
+  /* ---- Colours -------------------------------------------- */
+  --brand-primary:   ${s.primary};
+  --brand-secondary: ${s.secondary};
+  --brand-accent:    ${s.accent};
+  --brand-tint: ${s.tint}%;
+
+  /* ---- Type ----------------------------------------------- */
+  /* Add this <link> to the page <head> too:
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${s.font.replace(/\s+/g, "+")}:wght@400;500;600;700;800&display=swap"> */
+  --brand-font:         '${s.font}', system-ui, sans-serif;
+  --brand-font-display: '${s.font}', system-ui, sans-serif;
+
+  /* ---- Headline signature --------------------------------- */
+  --signature: ${s.signature};
+}`;
+  }
+  function assistantMsg(s) {
+    let src = "No external source — use the values below.";
+    if (s.sourceType === "figma" && s.figmaUrl) src = "Figma file: " + s.figmaUrl + "\n(Pull the brand colours, fonts and logo from this Figma file.)";else if (s.sourceType === "github" && s.githubUrl) src = "GitHub repo: " + s.githubUrl + "\n(Pull theme tokens / colours / fonts from this repo.)";else if (s.sourceType === "file" && s.fileName) src = "Figma file \u201c" + s.fileName + "\u201d is attached in this chat.\n(Read it and pull the brand colours, fonts and logo from it.)";
+    return `Set up my brand for the LinkedIn Visual Design System.
+
+SOURCE
+${src}
+
+MY CHOICES (use these, or override them with what you find in the source)
+- Primary (loud canvas):   ${s.primary}
+- Secondary (section):     ${s.secondary}
+- Accent (highlight):      ${s.accent}
+- Light tint:              ${s.tint}%
+- Font:                    ${s.font}
+- Headline signature:      ${s.signature}
+
+Please write these into overrides/brand.css (load the font's <link> too) and confirm. Then I'll start making visuals.`;
+  }
+  function Setup() {
+    const [step, setStep] = useState(0);
+    const [s, setS] = useState(() => {
+      try {
+        return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS)) || {});
+      } catch (e) {
+        return Object.assign({}, DEFAULTS);
+      }
+    });
+    const [copied, setCopied] = useState("");
+    useEffect(() => {
+      loadFont(s.font);
+    }, [s.font]);
+    useEffect(() => {
+      try {
+        localStorage.setItem(LS, JSON.stringify(s));
+      } catch (e) {}
+      let el = document.getElementById("brand-live");
+      if (!el) {
+        el = document.createElement("style");
+        el.id = "brand-live";
+        document.head.appendChild(el);
+      }
+      el.textContent = cssText(s);
+    }, [s]);
+    const set = (k, v) => setS(p => Object.assign({}, p, {
+      [k]: v
+    }));
+    const light = lightTint(s.primary, s.tint);
+    const copy = (key, text) => {
+      navigator.clipboard && navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied(""), 1700);
+    };
+    const sigStyle = s.signature === "underline" ? {
+      boxShadow: `inset 0 -0.12em 0 ${s.accent}`
+    } : s.signature === "block" ? {
+      background: s.accent,
+      color: "#fff",
+      padding: "0 .12em"
+    } : s.signature === "bubble" ? {
+      border: `3px solid ${s.accent}`,
+      borderRadius: "999px",
+      padding: ".02em .35em"
+    } : {};
+
+    // ---- shared styles ----
+    const shell = {
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      fontFamily: `'${s.font}', system-ui, sans-serif`,
+      color: "#18181b"
+    };
+    const main = {
+      flex: 1,
+      display: "flex",
+      gap: 44,
+      alignItems: "flex-start",
+      maxWidth: 1140,
+      width: "100%",
+      margin: "0 auto",
+      padding: "36px 40px 0",
+      boxSizing: "border-box"
+    };
+    const colLeft = {
+      flex: "1 1 0",
+      minWidth: 0
+    };
+    const label = {
+      display: "block",
+      fontSize: 13,
+      fontWeight: 700,
+      letterSpacing: ".04em",
+      textTransform: "uppercase",
+      color: "#6b7280",
+      margin: "0 0 10px"
+    };
+    const h1 = {
+      fontFamily: `'${s.font}', sans-serif`,
+      fontWeight: 700,
+      fontSize: 38,
+      letterSpacing: "-.025em",
+      margin: "0 0 14px",
+      lineHeight: 1.08
+    };
+    const sub = {
+      fontSize: 17,
+      lineHeight: 1.55,
+      color: "#5a5a5a",
+      margin: "0 0 28px",
+      maxWidth: 560
+    };
+    const colorInput = {
+      width: 54,
+      height: 40,
+      border: "1px solid #d8dadd",
+      borderRadius: 8,
+      background: "#fff",
+      padding: 2,
+      cursor: "pointer"
+    };
+    const field = {
+      width: "100%",
+      padding: "13px 14px",
+      fontSize: 15,
+      border: "1px solid #d8dadd",
+      borderRadius: 10,
+      background: "#fff",
+      boxSizing: "border-box",
+      fontFamily: "inherit"
+    };
+    const btn = primary => ({
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "13px 26px",
+      fontSize: 16,
+      fontWeight: 700,
+      borderRadius: 11,
+      cursor: "pointer",
+      border: primary ? "none" : "1px solid #d8dadd",
+      background: primary ? s.primary : "#fff",
+      color: primary ? "#fff" : "#3a3f45"
+    });
+    function Color({
+      k,
+      name
+    }) {
+      return React.createElement("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 12
+        }
+      }, React.createElement("input", {
+        type: "color",
+        value: s[k],
+        onChange: e => set(k, e.target.value),
+        style: colorInput
+      }), React.createElement("div", null, React.createElement("div", {
+        style: {
+          fontWeight: 600,
+          fontSize: 15
+        }
+      }, name), React.createElement("div", {
+        style: {
+          fontSize: 13,
+          color: "#8a9098",
+          fontFamily: "monospace"
+        }
+      }, s[k])));
+    }
+    function Preview() {
+      const card = (bg, fg, kicker, kickerColor, title, body) => React.createElement("div", {
+        style: {
+          flex: 1,
+          aspectRatio: "4/5",
+          borderRadius: 12,
+          background: bg,
+          color: fg,
+          padding: 18,
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          boxShadow: "0 6px 22px rgba(0,0,0,.10)"
+        }
+      }, React.createElement("div", {
+        style: {
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: ".1em",
+          textTransform: "uppercase",
+          color: kickerColor
+        }
+      }, kicker), React.createElement("div", {
+        style: {
+          fontFamily: `'${s.font}', sans-serif`,
+          fontWeight: 700,
+          fontSize: 21,
+          lineHeight: 1.1,
+          marginTop: 7
+        }
+      }, title, body));
+      return React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 12
+        }
+      }, card(s.primary, "#fff", "Loud", "rgba(255,255,255,.7)", "Cover headline", null), card(light, "#18181b", "Light", "#8a9098", "A point worth ", React.createElement("span", {
+        style: sigStyle
+      }, "saving")), card(s.secondary, "#fff", "Section", s.accent, "Chapter marker", null));
+    }
+
+    // ---- step bodies ----
+    let body;
+    if (step === 0) {
+      body = React.createElement("div", {
+        style: colLeft
+      }, React.createElement("div", {
+        style: {
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: ".12em",
+          textTransform: "uppercase",
+          color: s.primary,
+          marginBottom: 18
+        }
+      }, React.createElement("span", {
+        style: {
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: s.primary
+        }
+      }), "LinkedIn Visual Design System"), React.createElement("h1", {
+        style: h1
+      }, "Welcome — let's set up your brand first."), React.createElement("p", {
+        style: sub
+      }, "Five quick steps: point us at your Figma or GitHub (optional), then pick colours, font and your headline signature. A live preview shows your style as you go. Everything you set is yours and survives every update."), React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 28,
+          margin: "8px 0 32px",
+          flexWrap: "wrap"
+        }
+      }, [["1", "Source", "Figma, GitHub, a .fig file — or skip"], ["2", "Colours", "Loud, section & accent"], ["3", "Type", "Font + headline signature"], ["4", "Hand off", "One paste to the assistant"]].map(x => React.createElement("div", {
+        key: x[0],
+        style: {
+          flex: 1,
+          minWidth: 150
+        }
+      }, React.createElement("div", {
+        style: {
+          fontWeight: 700,
+          fontSize: 14,
+          marginBottom: 4
+        }
+      }, x[0] + " · " + x[1]), React.createElement("div", {
+        style: {
+          fontSize: 13.5,
+          color: "#8a9098",
+          lineHeight: 1.45
+        }
+      }, x[2])))));
+    } else if (step === 1) {
+      const opt = (val, title, desc) => React.createElement("button", {
+        onClick: () => set("sourceType", val),
+        style: {
+          textAlign: "left",
+          width: "100%",
+          padding: "16px 18px",
+          marginBottom: 12,
+          borderRadius: 12,
+          cursor: "pointer",
+          background: "#fff",
+          border: "1.5px solid " + (s.sourceType === val ? s.primary : "#d8dadd"),
+          boxShadow: s.sourceType === val ? `0 0 0 3px ${lightTint(s.primary, 12)}` : "none"
+        }
+      }, React.createElement("div", {
+        style: {
+          fontWeight: 700,
+          fontSize: 16
+        }
+      }, title), React.createElement("div", {
+        style: {
+          fontSize: 14,
+          color: "#8a9098",
+          marginTop: 3,
+          lineHeight: 1.4
+        }
+      }, desc));
+      body = React.createElement("div", {
+        style: colLeft
+      }, React.createElement("h1", {
+        style: h1
+      }, "Where should your brand come from?"), React.createElement("p", {
+        style: sub
+      }, "If you have a Figma file or a GitHub repo, the assistant can pull your real colours, fonts and logo from it. No source? Just set it by hand in the next steps."), opt("figma", "Figma file", "Paste a share link — the assistant imports the brand from it."), s.sourceType === "figma" && React.createElement("input", {
+        style: Object.assign({}, field, {
+          marginBottom: 12
+        }),
+        placeholder: "https://www.figma.com/file/…",
+        value: s.figmaUrl,
+        onChange: e => set("figmaUrl", e.target.value)
+      }), opt("github", "GitHub repo", "Paste the repo URL — pulls theme tokens / colours / fonts."), s.sourceType === "github" && React.createElement("input", {
+        style: Object.assign({}, field, {
+          marginBottom: 12
+        }),
+        placeholder: "https://github.com/owner/repo",
+        value: s.githubUrl,
+        onChange: e => set("githubUrl", e.target.value)
+      }), opt("file", "Upload a .fig file", "Pick the file, then attach it in the chat so the assistant can read it."), s.sourceType === "file" && React.createElement("div", {
+        style: {
+          marginBottom: 12
+        }
+      }, React.createElement("label", {
+        style: Object.assign({}, btn(false), {
+          fontSize: 14,
+          padding: "10px 18px"
+        })
+      }, "Choose .fig file", React.createElement("input", {
+        type: "file",
+        accept: ".fig",
+        style: {
+          display: "none"
+        },
+        onChange: e => set("fileName", e.target.files[0] ? e.target.files[0].name : "")
+      })), s.fileName && React.createElement("div", {
+        style: {
+          fontSize: 13.5,
+          color: "#1f8a5b",
+          fontWeight: 600,
+          marginTop: 8
+        }
+      }, "✓ " + s.fileName + " — remember to also attach it in the chat."), s.fileName && React.createElement("div", {
+        style: {
+          fontSize: 13,
+          color: "#8a9098",
+          marginTop: 4,
+          lineHeight: 1.4
+        }
+      }, "A page can't send the file itself, so drag it into the chat as well.")), opt("manual", "Set it manually", "No source — pick colours and type yourself."));
+    } else if (step === 2) {
+      body = React.createElement("div", {
+        style: colLeft
+      }, React.createElement("h1", {
+        style: h1
+      }, "Your colours"), React.createElement("p", {
+        style: sub
+      }, "Three roles drive every visual: a loud cover colour, a deep section colour, and an accent for highlights."), React.createElement(Color, {
+        k: "primary",
+        name: "Primary — loud canvas (cover / back)"
+      }), React.createElement(Color, {
+        k: "secondary",
+        name: "Secondary — section canvas (chapters)"
+      }), React.createElement(Color, {
+        k: "accent",
+        name: "Accent — highlight / mark"
+      }), React.createElement("div", {
+        style: {
+          marginTop: 22
+        }
+      }, React.createElement("span", {
+        style: label
+      }, "Light-canvas tint · " + s.tint + "%"), React.createElement("input", {
+        type: "range",
+        min: 3,
+        max: 16,
+        value: s.tint,
+        onChange: e => set("tint", +e.target.value),
+        style: {
+          width: "100%",
+          accentColor: s.primary
+        }
+      })));
+    } else if (step === 3) {
+      body = React.createElement("div", {
+        style: colLeft
+      }, React.createElement("h1", {
+        style: h1
+      }, "Type & signature"), React.createElement("p", {
+        style: sub
+      }, "Pick the font everything is set in, and how a highlighted word looks in your headlines."), React.createElement("div", {
+        style: {
+          marginBottom: 24
+        }
+      }, React.createElement("span", {
+        style: label
+      }, "Font"), React.createElement("select", {
+        value: s.font,
+        onChange: e => set("font", e.target.value),
+        style: Object.assign({}, field, {
+          fontFamily: `'${s.font}', sans-serif`
+        })
+      }, FONTS.map(f => React.createElement("option", {
+        key: f,
+        value: f
+      }, f)))), React.createElement("div", null, React.createElement("span", {
+        style: label
+      }, "Headline signature"), React.createElement("div", {
+        style: {
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap"
+        }
+      }, SIGS.map(([val, name]) => React.createElement("button", {
+        key: val,
+        onClick: () => set("signature", val),
+        style: {
+          flex: 1,
+          minWidth: 84,
+          padding: "11px 8px",
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: "pointer",
+          borderRadius: 9,
+          border: "1.5px solid " + (s.signature === val ? s.primary : "#d8dadd"),
+          background: s.signature === val ? s.primary : "#fff",
+          color: s.signature === val ? "#fff" : "#3a3f45"
+        }
+      }, name)))));
+    } else {
+      // Done — hand off
+      body = React.createElement("div", {
+        style: colLeft
+      }, React.createElement("h1", {
+        style: h1
+      }, "You're set. Hand it to the assistant."), React.createElement("p", {
+        style: sub
+      }, "One paste does it: the message below tells the assistant your source and choices, so it imports your brand and writes the overrides for you. (A page can't post into the chat on its own.)"), React.createElement("button", {
+        onClick: () => copy("msg", assistantMsg(s)),
+        style: Object.assign({}, btn(true), {
+          marginBottom: 16
+        })
+      }, copied === "msg" ? "Copied — now paste in chat ✓" : "Copy for the assistant"), React.createElement("details", {
+        style: {
+          marginTop: 6
+        }
+      }, React.createElement("summary", {
+        style: {
+          cursor: "pointer",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#6b7280"
+        }
+      }, "Or paste overrides/brand.css yourself"), React.createElement("div", {
+        style: {
+          background: "#16232b",
+          borderRadius: 14,
+          overflow: "hidden",
+          marginTop: 12
+        }
+      }, React.createElement("div", {
+        style: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "12px 16px",
+          borderBottom: "1px solid rgba(255,255,255,.1)"
+        }
+      }, React.createElement("span", {
+        style: {
+          color: "#cfd3d8",
+          fontSize: 13,
+          fontWeight: 600,
+          fontFamily: "monospace"
+        }
+      }, "overrides/brand.css"), React.createElement("button", {
+        onClick: () => copy("css", cssText(s)),
+        style: {
+          background: s.primary,
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          padding: "7px 14px",
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: "pointer"
+        }
+      }, copied === "css" ? "Copied ✓" : "Copy")), React.createElement("pre", {
+        style: {
+          margin: 0,
+          padding: "16px 18px",
+          color: "#e6edf3",
+          fontSize: 12.5,
+          lineHeight: 1.5,
+          fontFamily: "monospace",
+          whiteSpace: "pre-wrap",
+          overflowX: "auto"
+        }
+      }, cssText(s)))));
+    }
+    const showPreview = step >= 2;
+    return React.createElement("div", {
+      style: shell
+    },
+    // stepper
+    React.createElement("div", {
       style: {
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
+        gap: 8,
+        justifyContent: "center",
+        padding: "26px 20px 6px",
+        flexWrap: "wrap"
+      }
+    }, STEPS.map((name, i) => React.createElement("div", {
+      key: name,
+      onClick: () => i <= step && setStep(i),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        cursor: i <= step ? "pointer" : "default",
+        opacity: i <= step ? 1 : .5
       }
     }, React.createElement("span", {
       style: {
-        fontWeight: 600,
-        fontSize: 22,
-        letterSpacing: ".06em"
-      }
-    }, b.name), React.createElement("span", {
-      style: {
-        fontWeight: 600,
-        fontSize: 22,
-        letterSpacing: ".06em",
-        color: "var(--muted)"
-      }
-    }, b.category)), React.createElement(Headline, {
-      size: "sm",
-      style: {
-        marginTop: 44
-      }
-    }, Mk(b.heading, b.signature)), React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 22,
-        marginTop: 36
-      }
-    }, React.createElement(InfoCard, {
-      number: 1,
-      label: "Step",
-      heading: "Mini-heading"
-    }, React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 10
-      }
-    }, React.createElement(Chip, null, "tag"))), React.createElement(InfoCard, {
-      number: 2,
-      label: "Step",
-      heading: "Mini-heading",
-      emphasis: true
-    })));
-  }
-  function buildPage(b, step, i, total) {
-    const isCover = i === 0,
-      isBack = i === total - 1;
-    return React.createElement(Canvas, {
-      role: step.role
-    }, React.createElement(Chrome, {
-      name: b.name,
-      category: b.category,
-      position: isCover || isBack ? "bottom" : "top",
-      swipe: !isBack
-    }), React.createElement("div", {
-      style: {
-        position: "absolute",
-        left: "var(--margin)",
-        right: "var(--margin)",
-        top: 0,
-        bottom: 0,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-      }
-    }, React.createElement(Eyebrow, {
-      color: step.role === "section" ? "var(--accent)" : undefined
-    }, step.label), React.createElement(Headline, {
-      size: isCover ? "lg" : "md",
-      style: {
-        marginTop: 16
-      }
-    }, step.note || (isCover ? b.heading || "Cover headline" : "One idea"))));
-  }
-  function Fit({
-    node,
-    w
-  }) {
-    const s = w / 1080;
-    return React.createElement("div", {
-      style: {
-        width: w,
-        height: w * 1.25,
-        overflow: "hidden"
-      }
-    }, React.createElement("div", {
-      style: {
-        width: 1080,
-        height: 1350,
-        transform: `scale(${s})`,
-        transformOrigin: "top left"
-      }
-    }, node));
-  }
-  function Preview({
-    b
-  }) {
-    useEffect(() => loadFont(b.font), [b.font]);
-    if (!FeedPost) return React.createElement("div", {
-      style: {
-        padding: "40px 20px",
-        textAlign: "center",
-        color: "#9aa0a6",
-        fontSize: 13,
-        border: "1px dashed #cfd3d8",
-        borderRadius: 12,
-        background: "#fff"
-      }
-    }, "Preview loads once the design-system bundle is compiled — reload this page.");
-    const theme = themeStyle(b);
-    const author = {
-      name: b.name,
-      headline: b.category,
-      time: "21h"
-    };
-    const W = 472;
-    if (b.type === "carousel") {
-      const pages = b.steps.map((st, i) => React.createElement("div", {
-        key: i,
-        style: theme
-      }, Fit({
-        node: buildPage(b, st, i, b.steps.length),
-        w: W - 56
-      })));
-      return React.createElement(FeedPost, {
-        mode: "carousel",
-        width: W,
-        author,
-        docTitle: b.heading || "Your carousel",
-        text: b.post || "Your post caption appears here.",
-        pages
-      });
-    }
-    const node = b.type === "quote" ? buildQuote(b) : b.type === "infographic" ? buildInfographic(b) : buildSingle(b);
-    return React.createElement(FeedPost, {
-      mode: "single",
-      width: W,
-      author,
-      text: b.post || "Your post caption appears here.",
-      media: React.createElement("div", {
-        style: theme
-      }, Fit({
-        node,
-        w: W
-      }))
-    });
-  }
-
-  /* ---------- brief text generator ---------- */
-  function briefText(b) {
-    const L = [];
-    L.push("=== LINKEDIN VISUAL — BRIEF ===", "");
-    L.push("POST OR IDEA → " + (b.post || "(empty)"), "");
-    L.push("VISUAL TYPE → " + b.type, "");
-    L.push("ONE THING → " + (b.oneThing || "(empty)"), "");
-    L.push("IDENTITY BAR → " + b.name + " · " + b.category, "");
-    L.push("SECOND HOOK → " + (b.second === "derive" ? "derive it for me" : b.heading || "(empty)"), "");
-    L.push("SUBHEADING → " + (b.subheading || "(none)"), "");
-    L.push("BRAND LAYER → primary " + b.primary + " · font " + b.font, "");
-    L.push("SIGNATURE → " + b.signature, "");
-    if (b.type === "carousel") {
-      L.push("--- carousel pages ---");
-      b.steps.forEach((s, i) => L.push(`  ${i + 1}. [${s.role}] ${s.label}${s.note ? " — " + s.note : ""}`));
-    }
-    if (b.type === "quote") {
-      L.push("QUOTE → " + (b.quote || "(empty)"));
-      L.push("ATTRIBUTION → " + b.attrName + " · " + b.attrRole);
-    }
-    L.push("", "=== END ===");
-    return L.join("\n");
-  }
-
-  /* =================== UI =================== */
-  function BriefStudio() {
-    const [b, setB] = useState(load);
-    const [refs, setRefs] = useState([]); // {url} reference images (not persisted)
-    const [toast, setToast] = useState(null);
-    const set = patch => setB(p => {
-      const n = {
-        ...p,
-        ...patch
-      };
-      try {
-        const {
-          steps,
-          ...rest
-        } = n;
-        localStorage.setItem(KEY, JSON.stringify(n));
-      } catch (e) {}
-      return n;
-    });
-    const flash = m => {
-      setToast(m);
-      clearTimeout(flash._t);
-      flash._t = setTimeout(() => setToast(null), 2400);
-    };
-    const notes = advise(b);
-    const onFiles = files => {
-      [...files].filter(f => f.type.startsWith("image/")).forEach(f => {
-        const r = new FileReader();
-        r.onload = () => setRefs(p => [...p, {
-          url: r.result,
-          name: f.name
-        }]);
-        r.readAsDataURL(f);
-      });
-    };
-
-    // carousel step ops
-    const stepOp = (i, op, patch) => set({
-      steps: (() => {
-        const s = b.steps.slice();
-        if (op === "del") s.splice(i, 1);else if (op === "up" && i > 0) {
-          [s[i - 1], s[i]] = [s[i], s[i - 1]];
-        } else if (op === "down" && i < s.length - 1) {
-          [s[i + 1], s[i]] = [s[i], s[i + 1]];
-        } else if (op === "role") s[i] = {
-          ...s[i],
-          role: ROLE_NEXT[s[i].role]
-        };else if (op === "edit") s[i] = {
-          ...s[i],
-          ...patch
-        };
-        return s;
-      })()
-    });
-    const addStep = () => set({
-      steps: [...b.steps.slice(0, -1), {
-        role: "light",
-        label: "Step " + b.steps.length,
-        note: ""
-      }, b.steps[b.steps.length - 1]]
-    });
-    return React.createElement("div", {
-      style: {
-        display: "grid",
-        gridTemplateColumns: "minmax(0,1fr) 520px",
-        minHeight: "100vh",
-        background: "#f1f2f4",
-        fontFamily: "system-ui,-apple-system,sans-serif",
-        color: "#1f2328"
-      }
-    }, [/* ---- left: the form ---- */
-    React.createElement("div", {
-      key: "form",
-      style: {
-        padding: "28px 34px",
-        overflowY: "auto",
-        maxHeight: "100vh"
-      }
-    }, [React.createElement("div", {
-      key: "h",
-      style: {
-        marginBottom: 22
-      }
-    }, [React.createElement("div", {
-      key: "t",
-      style: {
-        fontFamily: "var(--font-display)",
-        fontWeight: 700,
-        fontSize: 24,
-        letterSpacing: "-.02em"
-      }
-    }, "Brief Studio"), React.createElement("div", {
-      key: "s",
-      style: {
-        fontSize: 14,
-        color: "#6b7280",
-        marginTop: 3
-      }
-    }, "Fill the brief — I'll guide, push back, and build. You don't need to be a designer.")]), Section("1 · What type?", [React.createElement("div", {
-      key: "g",
-      style: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 10
-      }
-    }, TYPES.map(t => React.createElement("button", {
-      key: t.id,
-      onClick: () => set({
-        type: t.id
-      }),
-      style: typeCard(b.type === t.id)
-    }, [React.createElement("span", {
-      key: "l",
-      style: {
-        fontWeight: 700,
-        fontSize: 15
-      }
-    }, t.label), React.createElement("span", {
-      key: "d",
-      style: {
-        fontSize: 12.5,
-        color: b.type === t.id ? "rgba(255,255,255,.85)" : "#8a9098"
-      }
-    }, t.desc)]))), React.createElement("div", {
-      key: "hint",
-      style: {
-        fontSize: 12.5,
-        color: "#8a9098",
-        marginTop: 9
-      }
-    }, "Not sure? Paste the post below — the advice panel will tell you which type fits.")]), Section("2 · The post", [field("Post or idea (paste it all)", textarea(b.post, v => set({
-      post: v
-    }), "Paste the full LinkedIn post, or describe the idea…", 5)), field("The one thing to remember / save", input(b.oneThing, v => set({
-      oneThing: v
-    }), "e.g. cold DMs fail on the first line"))]), Section("3 · Heading & hook", [React.createElement("div", {
-      key: "seg",
-      style: {
-        display: "flex",
-        gap: 8,
-        marginBottom: 10
-      }
-    }, [["derive", "Derive the hook for me"], ["own", "I'll write it"]].map(([v, l]) => React.createElement("button", {
-      key: v,
-      onClick: () => set({
-        second: v
-      }),
-      style: seg(b.second === v)
-    }, l))), b.second === "own" ? field("Visual heading (differs from the post's first line)", input(b.heading, v => set({
-      heading: v
-    }), "Most outreach fails on the first line")) : null, field("Subheading (optional)", input(b.subheading, v => set({
-      subheading: v
-    }), "One supporting line that adds context")), field("Headline signature", React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, SIGS.map(s => React.createElement("button", {
-      key: s,
-      onClick: () => set({
-        signature: s
-      }),
-      style: seg(b.signature === s)
-    }, s))))]), Section("4 · Identity bar", [React.createElement("div", {
-      key: "r",
-      style: {
-        display: "flex",
-        gap: 12
-      }
-    }, [React.createElement("div", {
-      key: "n",
-      style: {
-        flex: 1
-      }
-    }, field("Name (left)", input(b.name, v => set({
-      name: v
-    })))), React.createElement("div", {
-      key: "c",
-      style: {
-        flex: 1
-      }
-    }, field("Category / function (right)", input(b.category, v => set({
-      category: v
-    }))))])]), b.type === "carousel" ? Section("5 · Carousel pages", [React.createElement("div", {
-      key: "steps",
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 8
-      }
-    }, b.steps.map((s, i) => React.createElement(StepRow, {
-      key: i,
-      s,
-      i,
-      total: b.steps.length,
-      stepOp
-    }))), React.createElement("button", {
-      key: "add",
-      onClick: addStep,
-      style: addBtn()
-    }, "+ Add a page"), React.createElement("div", {
-      key: "h",
-      style: {
-        fontSize: 12.5,
-        color: "#8a9098",
-        marginTop: 8
-      }
-    }, "Click the colour dot to cycle a page's role: loud (cover) · light (step) · section (chapter marker).")]) : null, b.type === "quote" ? Section("5 · The quote", [field("Exact sentence (verbatim from the post)", textarea(b.quote, v => set({
-      quote: v
-    }), "The visual carries the save, not the caption.", 3)), React.createElement("div", {
-      key: "r",
-      style: {
-        display: "flex",
-        gap: 12
-      }
-    }, [React.createElement("div", {
-      key: "n",
-      style: {
-        flex: 1
-      }
-    }, field("Attribution name", input(b.attrName, v => set({
-      attrName: v
-    }), b.name))), React.createElement("div", {
-      key: "ro",
-      style: {
-        flex: 1
-      }
-    }, field("Attribution role", input(b.attrRole, v => set({
-      attrRole: v
-    }), b.category)))])]) : null, Section("6 · References & sketch", [React.createElement(Dropzone, {
-      key: "dz",
-      onFiles,
-      refs,
-      clear: () => setRefs([])
-    }), React.createElement("div", {
-      key: "sk",
-      style: {
-        marginTop: 12
-      }
-    }, [React.createElement("div", {
-      key: "l",
-      style: labelStyle()
-    }, "Sketch how you picture it"), React.createElement(SketchPad, {
-      key: "p"
-    })])]), Section("7 · Brand layer", [field("Primary colour", React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap"
-      }
-    }, SWATCHES.map(c => React.createElement("button", {
-      key: c,
-      onClick: () => set({
-        primary: c
-      }),
-      title: c,
-      style: {
-        width: 30,
-        height: 30,
-        borderRadius: 8,
-        background: c,
-        border: b.primary === c ? "3px solid #1f2328" : "1px solid #d8dadd",
-        cursor: "pointer"
-      }
-    })))), field("Font", React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap"
-      }
-    }, FONTS.map(f => React.createElement("button", {
-      key: f,
-      onClick: () => set({
-        font: f
-      }),
-      style: seg(b.font === f)
-    }, f))))]), React.createElement("div", {
-      key: "actions",
-      style: {
-        display: "flex",
-        gap: 10,
-        margin: "8px 0 40px"
-      }
-    }, [React.createElement("button", {
-      key: "copy",
-      onClick: () => {
-        navigator.clipboard && navigator.clipboard.writeText(briefText(b));
-        flash("Brief copied — paste it to start a build");
-      },
-      style: primaryBtn(b.primary)
-    }, "Copy filled brief"), React.createElement("button", {
-      key: "reset",
-      onClick: () => {
-        setB(DEFAULT);
-        flash("Reset");
-      },
-      style: ghostBtn()
-    }, "Reset")])]), /* ---- right: live preview ---- */
-    React.createElement("div", {
-      key: "prev",
-      style: {
-        borderLeft: "1px solid #e2e4e7",
-        background: "#F4F2EE",
-        padding: "24px 26px",
-        overflowY: "auto",
-        maxHeight: "100vh",
-        position: "sticky",
-        top: 0
-      }
-    }, [React.createElement("div", {
-      key: "h",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14
-      }
-    }, [React.createElement("span", {
-      key: "t",
-      style: {
-        fontWeight: 700,
-        fontSize: 14
-      }
-    }, "Preview · in the LinkedIn feed"), React.createElement("span", {
-      key: "tag",
-      style: {
-        fontSize: 11.5,
-        fontWeight: 600,
-        color: "#6b7280",
-        background: "#fff",
-        border: "1px solid #e0e2e5",
-        borderRadius: 999,
-        padding: "3px 10px"
-      }
-    }, b.type)]), /* advice banner */
-    React.createElement("div", {
-      key: "adv",
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 7,
-        marginBottom: 16
-      }
-    }, notes.map((n, i) => React.createElement("div", {
-      key: i,
-      style: notice(n.t)
-    }, [React.createElement("span", {
-      key: "d",
-      style: {
-        fontWeight: 700,
-        marginRight: 6
-      }
-    }, n.t === "warn" ? "Pushback:" : n.t === "good" ? "Good:" : "Tip:"), n.m]))), React.createElement(Preview, {
-      key: "p",
-      b
-    }), React.createElement("div", {
-      key: "note",
-      style: {
-        fontSize: 12,
-        color: "#8a9098",
-        marginTop: 12,
-        lineHeight: 1.5
-      }
-    }, "Live mock from your brief. This is how the visual lands in the feed — single image or swipeable carousel.")]), toast ? React.createElement("div", {
-      key: "toast",
-      style: {
-        position: "fixed",
-        bottom: 26,
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "#1f2328",
-        color: "#fff",
-        padding: "11px 18px",
-        borderRadius: 11,
-        fontSize: 13.5,
-        fontWeight: 500,
-        zIndex: 80
-      }
-    }, toast) : null]);
-  }
-
-  /* ---------- small UI helpers ---------- */
-  function Section(title, children) {
-    return React.createElement("section", {
-      key: title,
-      style: {
-        marginBottom: 22,
-        background: "#fff",
-        border: "1px solid #e6e8eb",
-        borderRadius: 14,
-        padding: "16px 18px"
-      }
-    }, [React.createElement("div", {
-      key: "t",
-      style: {
-        fontWeight: 700,
-        fontSize: 13,
-        letterSpacing: ".02em",
-        textTransform: "uppercase",
-        color: "#9aa0a6",
-        marginBottom: 12
-      }
-    }, title), ...[].concat(children)]);
-  }
-  function labelStyle() {
-    return {
-      fontSize: 13,
-      fontWeight: 600,
-      color: "#3a3f45",
-      marginBottom: 6,
-      display: "block"
-    };
-  }
-  function field(label, control) {
-    return React.createElement("div", {
-      key: label,
-      style: {
-        marginBottom: 12
-      }
-    }, [React.createElement("label", {
-      key: "l",
-      style: labelStyle()
-    }, label), React.cloneElement(control, {
-      key: "ctrl"
-    })]);
-  }
-  const inputBase = {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1px solid #d8dadd",
-    borderRadius: 9,
-    padding: "9px 11px",
-    fontSize: 14,
-    fontFamily: "inherit",
-    color: "#1f2328",
-    outline: "none",
-    background: "#fff"
-  };
-  function input(val, onChange, ph) {
-    return React.createElement("input", {
-      value: val,
-      placeholder: ph || "",
-      onChange: e => onChange(e.target.value),
-      style: inputBase
-    });
-  }
-  function textarea(val, onChange, ph, rows) {
-    return React.createElement("textarea", {
-      value: val,
-      placeholder: ph || "",
-      rows: rows || 3,
-      onChange: e => onChange(e.target.value),
-      style: {
-        ...inputBase,
-        resize: "vertical",
-        lineHeight: 1.5
-      }
-    });
-  }
-  function typeCard(on) {
-    return {
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      alignItems: "flex-start",
-      textAlign: "left",
-      padding: "12px 14px",
-      borderRadius: 11,
-      cursor: "pointer",
-      border: on ? "1px solid transparent" : "1px solid #d8dadd",
-      background: on ? "#0A66C2" : "#fff",
-      color: on ? "#fff" : "#1f2328"
-    };
-  }
-  function seg(on) {
-    return {
-      padding: "7px 13px",
-      borderRadius: 8,
-      cursor: "pointer",
-      fontSize: 13,
-      fontWeight: 600,
-      textTransform: "capitalize",
-      border: on ? "1px solid transparent" : "1px solid #d8dadd",
-      background: on ? "#1f2328" : "#fff",
-      color: on ? "#fff" : "#5f6671"
-    };
-  }
-  function addBtn() {
-    return {
-      marginTop: 10,
-      padding: "9px 14px",
-      borderRadius: 9,
-      border: "1px dashed #c4c8cd",
-      background: "#fafbfc",
-      color: "#5f6671",
-      fontSize: 13.5,
-      fontWeight: 600,
-      cursor: "pointer",
-      width: "100%"
-    };
-  }
-  function primaryBtn(c) {
-    return {
-      padding: "11px 18px",
-      borderRadius: 10,
-      border: "none",
-      background: c,
-      color: "#fff",
-      fontSize: 14,
-      fontWeight: 700,
-      cursor: "pointer"
-    };
-  }
-  function ghostBtn() {
-    return {
-      padding: "11px 16px",
-      borderRadius: 10,
-      border: "1px solid #d8dadd",
-      background: "#fff",
-      color: "#5f6671",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer"
-    };
-  }
-  function notice(t) {
-    const c = t === "warn" ? {
-      bg: "#fff4e5",
-      bd: "#ffd9a8",
-      fg: "#8a5200"
-    } : t === "good" ? {
-      bg: "#e7f6ee",
-      bd: "#bce8cf",
-      fg: "#1f6b43"
-    } : {
-      bg: "#eef4fc",
-      bd: "#cfe0f5",
-      fg: "#1d4e85"
-    };
-    return {
-      background: c.bg,
-      border: "1px solid " + c.bd,
-      color: c.fg,
-      borderRadius: 10,
-      padding: "9px 12px",
-      fontSize: 12.8,
-      lineHeight: 1.45
-    };
-  }
-  function StepRow({
-    s,
-    i,
-    total,
-    stepOp
-  }) {
-    const dot = {
-      loud: "#0A66C2",
-      light: "#cdd9e8",
-      section: "#16232B"
-    }[s.role];
-    return React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        background: "#fafbfc",
-        border: "1px solid #e6e8eb",
-        borderRadius: 10,
-        padding: "7px 9px"
-      }
-    }, [React.createElement("button", {
-      key: "role",
-      onClick: () => stepOp(i, "role"),
-      title: s.role,
-      style: {
-        width: 22,
-        height: 22,
-        flex: "none",
-        borderRadius: "50%",
-        background: dot,
-        border: "1px solid rgba(0,0,0,.12)",
-        cursor: "pointer"
-      }
-    }), React.createElement("span", {
-      key: "n",
-      style: {
-        fontSize: 12,
-        color: "#9aa0a6",
-        width: 16,
-        flex: "none",
-        fontWeight: 700
-      }
-    }, i + 1), React.createElement("input", {
-      key: "lab",
-      value: s.label,
-      onChange: e => stepOp(i, "edit", {
-        label: e.target.value
-      }),
-      style: {
-        width: 92,
-        flex: "none",
-        border: "1px solid #e0e2e5",
-        borderRadius: 7,
-        padding: "5px 7px",
-        fontSize: 12.5,
-        fontWeight: 600
-      }
-    }), React.createElement("input", {
-      key: "note",
-      value: s.note,
-      placeholder: "what's on this page…",
-      onChange: e => stepOp(i, "edit", {
-        note: e.target.value
-      }),
-      style: {
-        flex: 1,
-        minWidth: 0,
-        border: "1px solid #e0e2e5",
-        borderRadius: 7,
-        padding: "5px 7px",
-        fontSize: 12.5
-      }
-    }), React.createElement("div", {
-      key: "ops",
-      style: {
-        display: "flex",
-        gap: 2
-      }
-    }, [miniBtn("↑", () => stepOp(i, "up"), i === 0), miniBtn("↓", () => stepOp(i, "down"), i === total - 1), miniBtn("✕", () => stepOp(i, "del"), total <= 2)])]);
-  }
-  function miniBtn(label, onClick, disabled) {
-    return React.createElement("button", {
-      key: label,
-      onClick,
-      disabled,
-      style: {
-        width: 24,
-        height: 24,
-        borderRadius: 6,
-        border: "1px solid #e0e2e5",
-        background: "#fff",
-        color: disabled ? "#cbced2" : "#5f6671",
-        cursor: disabled ? "default" : "pointer",
-        fontSize: 12,
-        lineHeight: 1,
-        padding: 0
-      }
-    }, label);
-  }
-  function Dropzone({
-    onFiles,
-    refs,
-    clear
-  }) {
-    const [over, setOver] = useState(false);
-    const inp = useRef(null);
-    return React.createElement("div", null, [React.createElement("div", {
-      key: "dz",
-      onClick: () => inp.current && inp.current.click(),
-      onDragOver: e => {
-        e.preventDefault();
-        setOver(true);
-      },
-      onDragLeave: () => setOver(false),
-      onDrop: e => {
-        e.preventDefault();
-        setOver(false);
-        onFiles(e.dataTransfer.files);
-      },
-      style: {
-        border: "2px dashed " + (over ? "#0A66C2" : "#cfd3d8"),
-        borderRadius: 11,
-        padding: "18px",
-        textAlign: "center",
-        cursor: "pointer",
-        background: over ? "#eef4fc" : "#fafbfc",
-        color: "#6b7280",
-        fontSize: 13
-      }
-    }, [React.createElement("div", {
-      key: "t",
-      style: {
-        fontWeight: 600
-      }
-    }, "Drop reference screenshots, or click to upload"), React.createElement("div", {
-      key: "s",
-      style: {
-        fontSize: 12,
-        marginTop: 3,
-        color: "#9aa0a6"
-      }
-    }, "Examples you love, a competitor post, anything that shows what you're after"), React.createElement("input", {
-      key: "i",
-      ref: inp,
-      type: "file",
-      accept: "image/*",
-      multiple: true,
-      onChange: e => onFiles(e.target.files),
-      style: {
-        display: "none"
-      }
-    })]), refs.length ? React.createElement("div", {
-      key: "thumbs",
-      style: {
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap",
-        marginTop: 10,
-        alignItems: "center"
-      }
-    }, [...refs.map((r, i) => React.createElement("img", {
-      key: i,
-      src: r.url,
-      alt: r.name,
-      style: {
-        width: 56,
-        height: 56,
-        objectFit: "cover",
-        borderRadius: 8,
-        border: "1px solid #e0e2e5"
-      }
-    })), React.createElement("button", {
-      key: "clr",
-      onClick: clear,
-      style: {
-        fontSize: 12,
-        color: "#9aa0a6",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        textDecoration: "underline"
-      }
-    }, "clear")]) : null]);
-  }
-  function SketchPad() {
-    const ref = useRef(null),
-      drawing = useRef(false);
-    const [color, setColor] = useState("#1f2328");
-    useEffect(() => {
-      const c = ref.current;
-      const ctx = c.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, c.width, c.height);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-    }, []);
-    const pos = e => {
-      const r = ref.current.getBoundingClientRect();
-      const t = e.touches ? e.touches[0] : e;
-      return {
-        x: t.clientX - r.left,
-        y: t.clientY - r.top
-      };
-    };
-    const start = e => {
-      drawing.current = true;
-      const ctx = ref.current.getContext("2d");
-      const p = pos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-    };
-    const move = e => {
-      if (!drawing.current) return;
-      e.preventDefault();
-      const ctx = ref.current.getContext("2d");
-      const p = pos(e);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = color === "#fff" ? 18 : 3;
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-    };
-    const end = () => {
-      drawing.current = false;
-    };
-    const clear = () => {
-      const c = ref.current,
-        ctx = c.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, c.width, c.height);
-    };
-    return React.createElement("div", null, [React.createElement("canvas", {
-      key: "c",
-      ref,
-      width: 468,
-      height: 200,
-      onMouseDown: start,
-      onMouseMove: move,
-      onMouseUp: end,
-      onMouseLeave: end,
-      onTouchStart: start,
-      onTouchMove: move,
-      onTouchEnd: end,
-      style: {
-        width: "100%",
-        height: 200,
-        border: "1px solid #d8dadd",
-        borderRadius: 11,
-        cursor: "crosshair",
-        touchAction: "none",
-        background: "#fff"
-      }
-    }), React.createElement("div", {
-      key: "tools",
-      style: {
-        display: "flex",
-        gap: 7,
-        marginTop: 8,
-        alignItems: "center"
-      }
-    }, [...["#1f2328", "#0A66C2", "#C2410C"].map(c => React.createElement("button", {
-      key: c,
-      onClick: () => setColor(c),
-      style: {
-        width: 22,
-        height: 22,
-        borderRadius: "50%",
-        background: c,
-        border: color === c ? "3px solid #9aa0a6" : "1px solid #d8dadd",
-        cursor: "pointer"
-      }
-    })), React.createElement("button", {
-      key: "erase",
-      onClick: () => setColor("#fff"),
-      style: {
-        ...segMini(color === "#fff")
-      }
-    }, "Eraser"), React.createElement("button", {
-      key: "clr",
-      onClick: clear,
-      style: segMini(false)
-    }, "Clear")])]);
-  }
-  function segMini(on) {
-    return {
-      padding: "5px 11px",
-      borderRadius: 7,
-      fontSize: 12,
-      fontWeight: 600,
-      border: on ? "1px solid transparent" : "1px solid #d8dadd",
-      background: on ? "#1f2328" : "#fff",
-      color: on ? "#fff" : "#5f6671",
-      cursor: "pointer"
-    };
-  }
-  window.BriefStudio = BriefStudio;
-})();
-})(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/brief-studio/BriefStudio.jsx", error: String((e && e.message) || e) }); }
-
-// ui_kits/setup/Setup.jsx
-try { (() => {
-/* Setup — the first-run onboarding wizard.
-   A guided, stepped setup: brand identity → colours → spacing & shape →
-   done. Left = the questions; right = a LIVE single visual that updates
-   as you choose. Ends by generating the branch's overrides/*.css to save,
-   then sends the user on to make visuals. */
-(function () {
-  const {
-    useState,
-    useEffect,
-    useRef
-  } = React;
-  const h = React.createElement;
-  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
-  const KEY = "li-vds-setup-v1";
-  const DONE_KEY = "li-vds-setup-done";
-  const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora", "Fraunces", "DM Sans"];
-  const SWATCHES = ["#0A66C2", "#1F8A5B", "#C2410C", "#7C3AED", "#0F766E", "#BE123C", "#0B7285", "#16232B"];
-  const SIGS = ["underline", "block", "bubble", "plain"];
-  const STEPS = ["Welcome", "Identity", "Colours", "Spacing & shape", "Ready"];
-  const DEFAULT = {
-    font: "Inter",
-    primary: "#0A66C2",
-    secondary: "#16232B",
-    accent: "#E7A33E",
-    tint: 7,
-    signature: "underline",
-    name: "Your name",
-    category: "Your category / function",
-    logo: null,
-    photo: null,
-    margin: 72,
-    radiusCard: 16,
-    radiusCta: 18
-  };
-  function load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY));
-      if (s) return {
-        ...DEFAULT,
-        ...s
-      };
-    } catch (e) {}
-    return DEFAULT;
-  }
-  function loadFont(font) {
-    const id = "su-font-" + font.replace(/\s+/g, "-");
-    if (document.getElementById(id)) return;
-    const l = document.createElement("link");
-    l.id = id;
-    l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=" + font.replace(/\s+/g, "+") + ":ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap";
-    document.head.appendChild(l);
-  }
-  // suggest a deep secondary derived from primary (for the section role)
-  function deriveSecondary(hex) {
-    const n = hex.replace("#", "");
-    const r = parseInt(n.slice(0, 2), 16),
-      g = parseInt(n.slice(2, 4), 16),
-      b = parseInt(n.slice(4, 6), 16);
-    const f = 0.26;
-    const d = x => Math.round(x * f).toString(16).padStart(2, "0");
-    return "#" + d(r) + d(g) + d(b);
-  }
-  function themeVars(b) {
-    return {
-      "--brand-primary": b.primary,
-      "--brand-secondary": b.secondary,
-      "--brand-accent": b.accent,
-      "--brand-tint": b.tint + "%",
-      "--brand-font": `'${b.font}', system-ui, sans-serif`,
-      "--brand-font-display": `'${b.font}', system-ui, sans-serif`,
-      "--margin": b.margin + "px",
-      "--radius-card": b.radiusCard + "px",
-      "--radius-cta": b.radiusCta + "px"
-    };
-  }
-
-  /* ---------- the live preview visual ---------- */
-  function PreviewVisual({
-    b
-  }) {
-    const {
-      Canvas,
-      Eyebrow,
-      Headline,
-      Mark,
-      Subhead
-    } = DS;
-    if (!Canvas) return h("div", {
-      style: {
-        color: "#9aa0a6",
-        fontSize: 13,
-        padding: 40
-      }
-    }, "Preview loads once the bundle is compiled — reload.");
-    return h(Canvas, {
-      role: "light"
-    }, [
-    // chrome with optional logo
-    h("div", {
-      key: "ch",
-      style: {
-        position: "absolute",
-        top: "var(--margin)",
-        left: "var(--margin)",
-        right: "var(--margin)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }
-    }, [h("div", {
-      key: "l",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 16
-      }
-    }, [b.logo ? h("img", {
-      key: "lg",
-      src: b.logo,
-      style: {
-        height: 48,
-        maxWidth: 200,
-        objectFit: "contain"
-      }
-    }) : null, h("span", {
-      key: "nm",
-      style: {
-        fontWeight: 600,
-        fontSize: 22,
-        letterSpacing: ".06em",
-        color: "var(--fg)"
-      }
-    }, b.name)]), h("span", {
-      key: "c",
-      style: {
-        fontWeight: 600,
-        fontSize: 22,
-        letterSpacing: ".06em",
-        color: "var(--muted)"
-      }
-    }, b.category)]),
-    // center message
-    h("div", {
-      key: "mid",
-      style: {
-        position: "absolute",
-        left: "var(--margin)",
-        right: "var(--margin)",
-        top: 0,
-        bottom: 0,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center"
-      }
-    }, [h(Eyebrow, {
-      key: "e"
-    }, "This is your style"), h(Headline, {
-      key: "hh",
-      size: "lg",
-      style: {
-        marginTop: 18
-      }
-    }, ["Your headline, with an ", h(Mark, {
-      key: "m",
-      signature: b.signature
-    }, "emphasis")]), h(Subhead, {
-      key: "s",
-      style: {
-        marginTop: 24
-      }
-    }, "Colours, font, spacing and shape — all set from your answers on the left.")]),
-    // footer profile lockup
-    b.photo ? h("div", {
-      key: "ft",
-      style: {
-        position: "absolute",
-        left: "var(--margin)",
-        right: "var(--margin)",
-        bottom: "var(--margin)",
-        display: "flex",
-        alignItems: "center",
-        gap: 20
-      }
-    }, [h("img", {
-      key: "p",
-      src: b.photo,
-      style: {
-        width: 84,
-        height: 84,
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "1.5px solid var(--canvas-light-line)"
-      }
-    }), h("div", {
-      key: "d",
-      style: {
-        display: "flex",
-        flexDirection: "column"
-      }
-    }, [h("span", {
-      key: "n",
-      style: {
-        fontWeight: 700,
-        fontSize: 26,
-        color: "var(--fg)"
-      }
-    }, b.name), h("span", {
-      key: "r",
-      style: {
-        fontWeight: 500,
-        fontSize: 20,
-        color: "var(--muted)"
-      }
-    }, b.category)])]) : null]);
-  }
-  function Stage({
-    b
-  }) {
-    const W = 432,
-      s = W / 1080;
-    return h("div", {
-      style: {
-        width: W,
-        height: W * 1.25,
-        borderRadius: 4,
-        overflow: "hidden",
-        boxShadow: "0 14px 50px rgba(0,0,0,.18)",
-        background: "#fff",
-        flex: "none"
-      }
-    }, h("div", {
-      style: {
-        width: 1080,
-        height: 1350,
-        transform: `scale(${s})`,
-        transformOrigin: "top left"
-      }
-    }, h(PreviewVisual, {
-      b
-    })));
-  }
-
-  /* ---------- override-file generators ---------- */
-  function brandCss(b) {
-    return `:root {
-  --brand-primary:   ${b.primary};
-  --brand-secondary: ${b.secondary};
-  --brand-accent:    ${b.accent};
-  --brand-tint: ${b.tint}%;
-  --brand-font:         '${b.font}', system-ui, sans-serif;
-  --brand-font-display: '${b.font}', system-ui, sans-serif;
-  --signature: ${b.signature};
-}`;
-  }
-  function extrasCss(b) {
-    return `:root {
-  --margin: ${b.margin}px;
-  --radius-card: ${b.radiusCard}px;
-  --radius-cta: ${b.radiusCta}px;
-}`;
-  }
-
-  /* =================== wizard =================== */
-  function Setup() {
-    const [b, setB] = useState(load);
-    const [step, setStep] = useState(0);
-    const [toast, setToast] = useState(null);
-    const set = patch => setB(p => {
-      const n = {
-        ...p,
-        ...patch
-      };
-      try {
-        localStorage.setItem(KEY, JSON.stringify(n));
-      } catch (e) {}
-      return n;
-    });
-    const flash = m => {
-      setToast(m);
-      clearTimeout(flash._t);
-      flash._t = setTimeout(() => setToast(null), 2400);
-    };
-    useEffect(() => loadFont(b.font), [b.font]);
-    // Apply brand vars to :root (not a nested div) so derived aliases
-    // (--font-display, --canvas-light-bg color-mix, etc.) re-resolve correctly.
-    useEffect(() => {
-      const r = document.documentElement.style;
-      const v = themeVars(b);
-      Object.keys(v).forEach(k => r.setProperty(k, v[k]));
-    }, [b]);
-    const onImg = (file, key) => {
-      if (!file) return;
-      const r = new FileReader();
-      r.onload = () => set({
-        [key]: r.result
-      });
-      r.readAsDataURL(file);
-    };
-    const copy = (text, what) => {
-      navigator.clipboard && navigator.clipboard.writeText(text);
-      flash(what + " copied");
-    };
-    const download = (text, filename) => {
-      const blob = new Blob([text], {
-        type: "text/css"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      flash(filename + " downloaded");
-    };
-    const finish = () => {
-      localStorage.setItem(DONE_KEY, "1");
-      setStep(4);
-    };
-    const showPreview = step >= 1 && step <= 3;
-    return h("div", {
-      style: {
-        minHeight: "100vh",
-        background: "#f1f2f4",
-        fontFamily: "system-ui,-apple-system,sans-serif",
-        color: "#1f2328",
-        display: "grid",
-        gridTemplateColumns: showPreview ? "minmax(0,1fr) 520px" : "1fr"
-      }
-    }, [/* ---- left ---- */
-    h("div", {
-      key: "l",
-      style: {
-        padding: "30px 38px",
-        overflowY: "auto",
-        maxHeight: "100vh",
-        maxWidth: showPreview ? "none" : 720,
-        margin: showPreview ? 0 : "0 auto",
-        width: "100%",
-        boxSizing: "border-box"
-      }
-    }, [
-    // progress rail
-    h("div", {
-      key: "rail",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 26
-      }
-    }, STEPS.map((s, i) => h("div", {
-      key: i,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }
-    }, [h("div", {
-      key: "d",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 7
-      }
-    }, [h("span", {
-      key: "n",
-      style: {
-        width: 24,
-        height: 24,
+        width: 26,
+        height: 26,
         borderRadius: "50%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 700,
-        background: i < step ? "#1f8a5b" : i === step ? "#0A66C2" : "#e2e4e7",
+        background: i < step ? s.primary : i === step ? s.primary : "#e2e5e9",
         color: i <= step ? "#fff" : "#9aa0a6"
       }
-    }, i < step ? "✓" : i + 1), h("span", {
-      key: "l",
+    }, i < step ? "✓" : i + 1), React.createElement("span", {
       style: {
-        fontSize: 12.5,
+        fontSize: 13.5,
         fontWeight: 600,
-        color: i === step ? "#1f2328" : "#9aa0a6",
-        whiteSpace: "nowrap"
+        color: i === step ? "#18181b" : "#9aa0a6"
       }
-    }, s)]), i < STEPS.length - 1 ? h("span", {
-      key: "sep",
+    }, name), i < STEPS.length - 1 && React.createElement("span", {
       style: {
-        width: 18,
+        width: 22,
         height: 2,
-        background: "#e2e4e7",
-        borderRadius: 2
+        background: "#e2e5e9",
+        marginLeft: 4
       }
-    }) : null]))), step === 0 ? Welcome({
-      onStart: () => setStep(1)
-    }) : null, step === 1 ? StepIdentity({
-      b,
-      set,
-      onImg
-    }) : null, step === 2 ? StepColours({
-      b,
-      set
-    }) : null, step === 3 ? StepSpacing({
-      b,
-      set
-    }) : null, step === 4 ? StepDone({
-      b,
-      brandCss: brandCss(b),
-      extrasCss: extrasCss(b),
-      copy,
-      download
-    }) : null,
-    // nav
-    step > 0 && step < 4 ? h("div", {
-      key: "nav",
+    })))), React.createElement("div", {
+      style: main
+    }, body, showPreview && React.createElement("div", {
       style: {
-        display: "flex",
-        gap: 10,
-        marginTop: 26,
-        marginBottom: 40
-      }
-    }, [h("button", {
-      key: "b",
-      onClick: () => setStep(step - 1),
-      style: ghost()
-    }, "Back"), step < 3 ? h("button", {
-      key: "n",
-      onClick: () => setStep(step + 1),
-      style: primary(b.primary)
-    }, "Continue") : h("button", {
-      key: "f",
-      onClick: finish,
-      style: primary(b.primary)
-    }, "Finish setup")]) : null, step === 4 ? h("div", {
-      key: "redo",
-      style: {
-        marginBottom: 40
-      }
-    }, h("button", {
-      onClick: () => setStep(1),
-      style: ghost()
-    }, "← Edit setup again")) : null]), /* ---- right preview ---- */
-    showPreview ? h("div", {
-      key: "r",
-      style: {
-        borderLeft: "1px solid #e2e4e7",
-        padding: "30px 26px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 16,
+        flex: "0 0 440px",
+        maxWidth: 440,
         position: "sticky",
-        top: 0,
-        maxHeight: "100vh",
-        overflowY: "auto",
-        background: "#e9ebee"
+        top: 20
       }
-    }, [h("div", {
-      key: "t",
+    }, React.createElement("span", {
+      style: label
+    }, "Live preview"), React.createElement(Preview))),
+    // nav
+    React.createElement("div", {
       style: {
-        alignSelf: "stretch",
-        fontWeight: 700,
-        fontSize: 14
-      }
-    }, "Live preview · single visual"), h(Stage, {
-      key: "s",
-      b
-    }), h("div", {
-      key: "n",
-      style: {
-        fontSize: 12,
-        color: "#8a9098",
-        textAlign: "center",
-        lineHeight: 1.5,
-        maxWidth: 420
-      }
-    }, "This is your style applied to a real visual. Carousels, infographics and quotes inherit the same brand.")]) : null, toast ? h("div", {
-      key: "toast",
-      style: {
-        position: "fixed",
-        bottom: 26,
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "#1f2328",
-        color: "#fff",
-        padding: "11px 18px",
-        borderRadius: 11,
-        fontSize: 13.5,
-        fontWeight: 500,
-        zIndex: 80
-      }
-    }, toast) : null]);
-  }
-
-  /* ---------- steps ---------- */
-  function Welcome({
-    onStart
-  }) {
-    return h("div", {
-      key: "w",
-      style: {
-        paddingTop: 30,
-        maxWidth: 560
-      }
-    }, [h("div", {
-      key: "t",
-      style: {
-        fontFamily: "var(--font-display)",
-        fontWeight: 700,
-        fontSize: 38,
-        letterSpacing: "-.025em",
-        lineHeight: 1.08
-      }
-    }, "Let's set up your brand."), h("p", {
-      key: "p",
-      style: {
-        fontSize: 16,
-        color: "#5f6671",
-        lineHeight: 1.55,
-        margin: "16px 0 26px"
-      }
-    }, "A few quick steps and every visual you make will be unmistakably yours. You'll pick your font and colours, add a logo and photo, and fine-tune spacing — with a live preview the whole way. Takes about two minutes."), h("div", {
-      key: "list",
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        marginBottom: 30
-      }
-    }, [["Identity", "Font, name, logo & profile photo"], ["Colours", "Primary, section & accent — with a smart suggestion"], ["Spacing & shape", "Margins and corner radii to taste"]].map((x, i) => h("div", {
-      key: i,
-      style: {
-        display: "flex",
-        gap: 12,
-        alignItems: "center"
-      }
-    }, [h("span", {
-      key: "n",
-      style: {
-        width: 28,
-        height: 28,
-        borderRadius: "50%",
-        background: "#eef4fc",
-        color: "#0A66C2",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: 700,
-        fontSize: 13,
-        flex: "none"
-      }
-    }, i + 1), h("div", {
-      key: "d"
-    }, [h("div", {
-      key: "t",
-      style: {
-        fontWeight: 700,
-        fontSize: 14.5
-      }
-    }, x[0]), h("div", {
-      key: "s",
-      style: {
-        fontSize: 13,
-        color: "#8a9098"
-      }
-    }, x[1])])]))), h("button", {
-      key: "go",
-      onClick: onStart,
-      style: {
-        ...primary("#0A66C2"),
-        fontSize: 15,
-        padding: "13px 26px"
-      }
-    }, "Begin setup →")]);
-  }
-  function StepIdentity({
-    b,
-    set,
-    onImg
-  }) {
-    return panel("Identity", "Your font and who you are. The font carries every headline and word.", [group("Font", h("div", {
-      style: {
-        display: "flex",
-        gap: 8,
-        flexWrap: "wrap"
-      }
-    }, FONTS.map(f => h("button", {
-      key: f,
-      onClick: () => set({
-        font: f
-      }),
-      style: {
-        ...seg(b.font === f),
-        fontFamily: `'${f}', sans-serif`,
-        fontSize: 14
-      }
-    }, f)))), row([group("Name (left of the bar)", textInput(b.name, v => set({
-      name: v
-    }))), group("Category / function (right)", textInput(b.category, v => set({
-      category: v
-    })))], "names"), row([group("Logo", uploader(b.logo, f => onImg(f, "logo"), () => set({
-      logo: null
-    }), "Upload logo (PNG/SVG)")), group("Profile photo (footer)", uploader(b.photo, f => onImg(f, "photo"), () => set({
-      photo: null
-    }), "Upload photo", true))], "uploads"), group("Headline signature", h("div", {
-      style: {
-        display: "flex",
-        gap: 8
-      }
-    }, SIGS.map(s => h("button", {
-      key: s,
-      onClick: () => set({
-        signature: s
-      }),
-      style: seg(b.signature === s)
-    }, s))))]);
-  }
-  function StepColours({
-    b,
-    set
-  }) {
-    const suggestion = deriveSecondary(b.primary);
-    return panel("Colours", "One primary does most of the work. The section colour anchors chapter slides; the accent marks and highlights.", [group("Primary — your loud canvas (cover / back)", colorField(b.primary, v => set({
-      primary: v
-    }))), group("Section — deep colour for chapter slides", h("div", null, [colorField(b.secondary, v => set({
-      secondary: v
-    })), b.secondary.toLowerCase() !== suggestion.toLowerCase() ? h("button", {
-      key: "sg",
-      onClick: () => set({
-        secondary: suggestion
-      }),
-      style: {
-        marginTop: 8,
-        fontSize: 12.5,
-        color: "#0A66C2",
-        background: "#eef4fc",
-        border: "1px solid #cfe0f5",
-        borderRadius: 8,
-        padding: "6px 11px",
-        cursor: "pointer",
-        fontWeight: 600,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 7
-      }
-    }, [h("span", {
-      key: "d",
-      style: {
-        width: 14,
-        height: 14,
-        borderRadius: 3,
-        background: suggestion
-      }
-    }), "Use a section colour derived from your primary"]) : null])), group("Accent — categorise / highlight", colorField(b.accent, v => set({
-      accent: v
-    }))), group("Light canvas tint — " + b.tint + "% of primary", slider(3, 16, 1, b.tint, v => set({
-      tint: v
-    }), "paler ← → bolder")), swatchPreview(b)]);
-  }
-  function StepSpacing({
-    b,
-    set
-  }) {
-    return panel("Spacing & shape", "Fine-tune the feel. The 24px safe band is fixed; everything else is yours to adjust.", [group("Content margin — " + b.margin + "px", slider(40, 120, 4, b.margin, v => set({
-      margin: v
-    }), "tighter ← → roomier")), group("Card radius — " + b.radiusCard + "px", slider(0, 36, 2, b.radiusCard, v => set({
-      radiusCard: v
-    }), "sharp ← → round")), group("CTA radius — " + b.radiusCta + "px", slider(0, 40, 2, b.radiusCta, v => set({
-      radiusCta: v
-    }), "sharp ← → round")), h("div", {
-      key: "shapes",
-      style: {
-        display: "flex",
-        gap: 14,
-        marginTop: 8
-      }
-    }, [shapeChip(b.radiusCard, "card"), shapeChip(b.radiusCta, "cta")])]);
-  }
-  function StepDone({
-    b,
-    brandCss,
-    extrasCss,
-    copy,
-    download
-  }) {
-    return h("div", {
-      key: "done",
-      style: {
-        maxWidth: 640
-      }
-    }, [h("div", {
-      key: "t",
-      style: {
-        fontFamily: "var(--font-display)",
-        fontWeight: 700,
-        fontSize: 30,
-        letterSpacing: "-.02em"
-      }
-    }, "Your brand is ready. 🎉"), h("p", {
-      key: "p",
-      style: {
-        fontSize: 15,
-        color: "#5f6671",
-        lineHeight: 1.55,
-        margin: "12px 0 22px"
-      }
-    }, "Download these two files and drop them into your branch — they're yours and master updates never overwrite them. Then just open a chat and start making visuals; no setup needed there."),
-    // download buttons — the primary action
-    h("div", {
-      key: "dl",
-      style: {
-        display: "flex",
-        gap: 10,
-        marginBottom: 22,
-        flexWrap: "wrap"
-      }
-    }, [h("button", {
-      key: "b1",
-      onClick: () => download(brandCss, "brand.css"),
-      style: {
-        ...primary(b.primary),
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        fontSize: 14.5
-      }
-    }, "↓ Download brand.css"), h("button", {
-      key: "b2",
-      onClick: () => download(extrasCss, "extras.css"),
-      style: {
-        ...ghost(),
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        fontSize: 14.5
-      }
-    }, "↓ Download extras.css")]),
-    // where they go
-    h("div", {
-      key: "where",
-      style: {
-        fontSize: 13.5,
-        color: "#3a3f45",
-        background: "#f3f6fb",
-        border: "1px solid #dde6f2",
-        borderRadius: 11,
-        padding: "14px 16px",
-        marginBottom: 20,
-        lineHeight: 1.6
-      }
-    }, [h("div", {
-      key: "h",
-      style: {
-        fontWeight: 700,
-        marginBottom: 6
-      }
-    }, "Where they go in your branch"), h("div", {
-      key: "1",
-      style: {
-        fontFamily: "ui-monospace,monospace",
-        fontSize: 12.5,
-        color: "#5f6671"
-      }
-    }, "overrides/brand.css   ← replace the file there"), h("div", {
-      key: "2",
-      style: {
-        fontFamily: "ui-monospace,monospace",
-        fontSize: 12.5,
-        color: "#5f6671"
-      }
-    }, "overrides/extras.css  ← replace the file there"), b.logo || b.photo ? h("div", {
-      key: "3",
-      style: {
-        fontFamily: "ui-monospace,monospace",
-        fontSize: 12.5,
-        color: "#5f6671",
-        marginTop: 4
-      }
-    }, "client/assets/         ← save your logo / photo here") : null]),
-    // collapsible: copy the raw CSS instead
-    h("details", {
-      key: "raw",
-      style: {
-        marginBottom: 18
-      }
-    }, [h("summary", {
-      key: "s",
-      style: {
-        fontSize: 13,
-        color: "#6b7280",
-        cursor: "pointer",
-        fontWeight: 600,
-        marginBottom: 12
-      }
-    }, "Prefer to copy-paste instead? Show the CSS"), codeBlock("overrides/brand.css", brandCss, () => copy(brandCss, "brand.css")), codeBlock("overrides/extras.css", extrasCss, () => copy(extrasCss, "extras.css"))]), h("p", {
-      key: "next",
-      style: {
-        fontSize: 14,
-        color: "#5f6671",
-        lineHeight: 1.55,
-        margin: "4px 0 0"
-      }
-    }, [h("b", {
-      key: "b"
-    }, "Working inside Claude? "), "Just copy the CSS above and paste it into the chat — say \u201csave this as my brand\u201d and the design system writes it to overrides/ for you. Then start making visuals."])]);
-  }
-
-  /* ---------- helpers ---------- */
-  function panel(title, sub, children) {
-    return h("div", {
-      key: title,
-      style: {
-        maxWidth: 600
-      }
-    }, [h("div", {
-      key: "t",
-      style: {
-        fontFamily: "var(--font-display)",
-        fontWeight: 700,
-        fontSize: 26,
-        letterSpacing: "-.02em"
-      }
-    }, title), h("p", {
-      key: "s",
-      style: {
-        fontSize: 14.5,
-        color: "#6b7280",
-        lineHeight: 1.5,
-        margin: "8px 0 22px"
-      }
-    }, sub), ...children]);
-  }
-  function group(label, control) {
-    return h("div", {
-      key: label,
-      style: {
-        marginBottom: 18
-      }
-    }, [h("label", {
-      key: "l",
-      style: {
-        display: "block",
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#3a3f45",
-        marginBottom: 8
-      }
-    }, label), control]);
-  }
-  function row(items, k) {
-    return h("div", {
-      key: k || "row",
-      style: {
-        display: "flex",
-        gap: 16
-      }
-    }, items.map((it, i) => h("div", {
-      key: i,
-      style: {
-        flex: 1
-      }
-    }, it)));
-  }
-  const inputBase = {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1px solid #d8dadd",
-    borderRadius: 9,
-    padding: "10px 12px",
-    fontSize: 14,
-    fontFamily: "inherit",
-    outline: "none",
-    background: "#fff",
-    color: "#1f2328"
-  };
-  function textInput(v, on) {
-    return h("input", {
-      value: v,
-      onChange: e => on(e.target.value),
-      style: inputBase
-    });
-  }
-  function seg(on) {
-    return {
-      padding: "8px 14px",
-      borderRadius: 8,
-      cursor: "pointer",
-      fontSize: 13,
-      fontWeight: 600,
-      textTransform: "capitalize",
-      border: on ? "1px solid transparent" : "1px solid #d8dadd",
-      background: on ? "#1f2328" : "#fff",
-      color: on ? "#fff" : "#5f6671"
-    };
-  }
-  function primary(c) {
-    return {
-      padding: "11px 18px",
-      borderRadius: 10,
-      border: "none",
-      background: c,
-      color: "#fff",
-      fontSize: 14,
-      fontWeight: 700,
-      cursor: "pointer"
-    };
-  }
-  function ghost() {
-    return {
-      padding: "11px 16px",
-      borderRadius: 10,
-      border: "1px solid #d8dadd",
-      background: "#fff",
-      color: "#5f6671",
-      fontSize: 14,
-      fontWeight: 600,
-      cursor: "pointer"
-    };
-  }
-  function colorField(v, on) {
-    return h("div", {
-      style: {
-        display: "flex",
-        gap: 8,
-        alignItems: "center",
-        flexWrap: "wrap"
-      }
-    }, [...SWATCHES.map(c => h("button", {
-      key: c,
-      onClick: () => on(c),
-      title: c,
-      style: {
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        background: c,
-        border: v.toLowerCase() === c.toLowerCase() ? "3px solid #1f2328" : "1px solid #d8dadd",
-        cursor: "pointer"
-      }
-    })), h("label", {
-      key: "custom",
-      style: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 7,
-        marginLeft: 4,
-        fontSize: 12.5,
-        color: "#6b7280",
-        cursor: "pointer"
-      }
-    }, [h("input", {
-      key: "i",
-      type: "color",
-      value: v,
-      onChange: e => on(e.target.value),
-      style: {
-        width: 32,
-        height: 32,
-        border: "1px solid #d8dadd",
-        borderRadius: 8,
-        padding: 0,
-        background: "none",
-        cursor: "pointer"
-      }
-    }), h("span", {
-      key: "hx",
-      style: {
-        fontFamily: "ui-monospace,monospace"
-      }
-    }, v)])]);
-  }
-  function slider(min, max, stepv, val, on, hint) {
-    return h("div", null, [h("input", {
-      key: "s",
-      type: "range",
-      min,
-      max,
-      step: stepv,
-      value: val,
-      onChange: e => on(Number(e.target.value)),
-      style: {
-        width: "100%",
-        accentColor: "#0A66C2"
-      }
-    }), hint ? h("div", {
-      key: "h",
-      style: {
-        fontSize: 11.5,
-        color: "#9aa0a6",
         display: "flex",
         justifyContent: "space-between",
-        marginTop: 2
-      }
-    }, hint.split(" ← → ").map((t, i) => h("span", {
-      key: i
-    }, t))) : null]);
-  }
-  function uploader(val, onFile, onClear, label, round) {
-    const ref = React.createRef();
-    return h("div", null, [val ? h("div", {
-      key: "p",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10
-      }
-    }, [h("img", {
-      key: "i",
-      src: val,
-      style: {
-        width: 52,
-        height: 52,
-        objectFit: round ? "cover" : "contain",
-        borderRadius: round ? "50%" : 8,
-        border: "1px solid #e0e2e5",
-        background: "#fff"
-      }
-    }), h("button", {
-      key: "c",
-      onClick: onClear,
-      style: {
-        fontSize: 12.5,
-        color: "#9aa0a6",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        textDecoration: "underline"
-      }
-    }, "remove")]) : h("button", {
-      key: "u",
-      onClick: () => ref.current && ref.current.click(),
-      style: {
+        maxWidth: 1140,
         width: "100%",
-        padding: "13px",
-        border: "2px dashed #cfd3d8",
-        borderRadius: 10,
-        background: "#fafbfc",
-        color: "#6b7280",
-        fontSize: 13,
-        cursor: "pointer",
-        fontWeight: 600
+        margin: "0 auto",
+        padding: "28px 40px 40px",
+        boxSizing: "border-box"
       }
-    }, label), h("input", {
-      key: "in",
-      ref,
-      type: "file",
-      accept: "image/*",
-      onChange: e => onFile(e.target.files[0]),
-      style: {
-        display: "none"
-      }
-    })]);
-  }
-  function swatchPreview(b) {
-    return h("div", {
-      key: "sw",
-      style: {
-        display: "flex",
-        gap: 0,
-        borderRadius: 10,
-        overflow: "hidden",
-        border: "1px solid #e0e2e5",
-        marginTop: 4
-      }
-    }, [["Loud", b.primary, "#fff"], ["Light", mix(b.primary, b.tint), "#1f2328"], ["Section", b.secondary, "#fff"], ["Accent", b.accent, "#1f2328"]].map((x, i) => h("div", {
-      key: i,
-      style: {
-        flex: 1,
-        background: x[1],
-        color: x[2],
-        padding: "12px 10px",
-        fontSize: 11.5,
-        fontWeight: 700,
-        textAlign: "center"
-      }
-    }, x[0])));
-  }
-  function mix(hex, pct) {
-    const n = hex.replace("#", "");
-    const r = parseInt(n.slice(0, 2), 16),
-      g = parseInt(n.slice(2, 4), 16),
-      b = parseInt(n.slice(4, 6), 16);
-    const f = pct / 100,
-      m = x => Math.round(x * f + 255 * (1 - f)).toString(16).padStart(2, "0");
-    return "#" + m(r) + m(g) + m(b);
-  }
-  function shapeChip(radius, label) {
-    return h("div", {
-      key: label,
-      style: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 6
-      }
-    }, [h("div", {
-      key: "b",
-      style: {
-        width: 70,
-        height: 50,
-        background: "#eef4fc",
-        border: "1.5px solid #0A66C2",
-        borderRadius: radius
-      }
-    }), h("span", {
-      key: "l",
-      style: {
-        fontSize: 11.5,
-        color: "#9aa0a6",
-        fontWeight: 600
-      }
-    }, label + " · " + radius + "px")]);
-  }
-  function codeBlock(name, code, onCopy) {
-    return h("div", {
-      key: name,
-      style: {
-        marginBottom: 16
-      }
-    }, [h("div", {
-      key: "h",
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 6
-      }
-    }, [h("span", {
-      key: "n",
-      style: {
-        fontFamily: "ui-monospace,monospace",
-        fontSize: 12.5,
-        color: "#3a3f45",
-        fontWeight: 600
-      }
-    }, name), h("button", {
-      key: "c",
-      onClick: onCopy,
-      style: {
-        fontSize: 12,
-        fontWeight: 600,
-        color: "#0A66C2",
-        background: "#eef4fc",
-        border: "1px solid #cfe0f5",
-        borderRadius: 7,
-        padding: "4px 11px",
-        cursor: "pointer"
-      }
-    }, "Copy")]), h("pre", {
-      key: "p",
-      style: {
-        margin: 0,
-        fontFamily: "ui-monospace,monospace",
-        fontSize: 12,
-        lineHeight: 1.55,
-        color: "#cfe3ff",
-        background: "#0f1419",
-        borderRadius: 10,
-        padding: "13px 15px",
-        overflowX: "auto",
-        whiteSpace: "pre"
-      }
-    }, code)]);
+    }, React.createElement("button", {
+      onClick: () => setStep(Math.max(0, step - 1)),
+      style: Object.assign({}, btn(false), {
+        visibility: step === 0 ? "hidden" : "visible"
+      })
+    }, "← Back"), step < STEPS.length - 1 ? React.createElement("button", {
+      onClick: () => setStep(step + 1),
+      style: btn(true)
+    }, step === 0 ? "Get started →" : "Next →") : React.createElement("a", {
+      href: "Visual Board.html",
+      style: Object.assign({}, btn(true), {
+        textDecoration: "none"
+      })
+    }, "Start making visuals →")));
   }
   window.Setup = Setup;
 })();
@@ -5948,7 +4184,8 @@ try { (() => {
      iteration timeline + reel so the visual never gets squeezed.
    · EDIT mode (board-editor.js) = Canva-style drag / resize / drop on the hero;
      edits persist per variant and the assistant can iterate over them.
-   · "+ New visual" / "Iterate" open the Brief Studio slide-over. */
+   · "+ New visual" / "Iterate" prompt the user back to the chat, where the
+     assistant runs the brief questions before building 3 variants. */
 (function () {
   function boot() {
     var source = document.getElementById("source");
@@ -5962,6 +4199,7 @@ try { (() => {
     var APPROVED_KEY = "li-vds-board-approved-v1";
     var CHOSEN_KEY = "li-vds-board-chosen-v1";
     var EDITS_KEY = "li-vds-board-edits-v1";
+    var SLIDES_KEY = "li-vds-board-slidepos-v1";
     var heroStage = document.getElementById("heroStage");
     var stageEl = document.getElementById("stage");
     var heroType = document.getElementById("heroType");
@@ -5998,6 +4236,7 @@ try { (() => {
     var chosenStore = loadJSON(CHOSEN_KEY, {});
     var approved = new Set(loadJSON(APPROVED_KEY, []));
     var editsStore = loadJSON(EDITS_KEY, {}); // { "label#round#variant": editedInnerHTML }
+    var slidePos = loadJSON(SLIDES_KEY, {}); // { "label#round#variant": currentSlideIndex } (carousels)
     var activeIdx = 0;
     var focus = {
       round: 0,
@@ -6006,7 +4245,8 @@ try { (() => {
     var menuTarget = null;
     var editing = false;
     var heroArt = null,
-      heroScale = 1;
+      heroScale = 1,
+      editorTarget = null;
     var zoom = 1; // 1 = fit-to-stage; user can zoom in/out
 
     function loadJSON(k, d) {
@@ -6059,6 +4299,29 @@ try { (() => {
       return visuals[vi].label + "#" + ri + "#" + varIdx;
     }
 
+    /* ---- carousel helpers (a variant can be a multi-slide carousel) ---- */
+    function slidesOf(node) {
+      return [].slice.call(node.querySelectorAll(":scope > .cslide"));
+    }
+    function slideCount(vi, ri, varIdx) {
+      return slidesOf(visuals[vi].rounds[ri][varIdx]).length;
+    }
+    function isCarousel(vi, ri, varIdx) {
+      return slideCount(vi, ri, varIdx) > 1;
+    }
+    function curSlideOf(vi, ri, varIdx) {
+      var n = slideCount(vi, ri, varIdx);
+      return Math.max(0, Math.min(slidePos[editKey(vi, ri, varIdx)] || 0, Math.max(0, n - 1)));
+    }
+    function curSlide() {
+      return curSlideOf(activeIdx, focus.round, focus.variant);
+    }
+    function gotoSlide(n) {
+      slidePos[editKey(activeIdx, focus.round, focus.variant)] = n;
+      saveJSON(SLIDES_KEY, slidePos);
+      renderHero();
+    }
+
     /* fresh artboard clone with any persisted edits applied */
     function makeClone(vi, ri, varIdx) {
       var src = visuals[vi].rounds[ri][varIdx];
@@ -6072,26 +4335,54 @@ try { (() => {
       into.innerHTML = "";
       var wrap = document.createElement("div");
       wrap.style.cssText = "width:1080px;height:1350px;transform:scale(" + scale + ");transform-origin:top left;pointer-events:none";
-      wrap.appendChild(makeClone(vi, ri, varIdx));
+      var clone = makeClone(vi, ri, varIdx);
+      wrap.appendChild(clone);
+      var cs = [].slice.call(clone.querySelectorAll(":scope > .cslide"));
+      if (cs.length > 1) cs.forEach(function (el, idx) {
+        el.style.display = idx === 0 ? "block" : "none";
+      }); // thumb = slide 1
       into.appendChild(wrap);
     }
 
     /* ---- hero (responsive: fills the stage above the dock) ---- */
+    function setZoomLabel(s) {
+      var zp = document.getElementById("zoomPct");
+      if (zp) zp.textContent = Math.round(s * 100) + "%";
+    }
+    function setHeroMeta(v, carousel, cur, n) {
+      heroType.textContent = v.type;
+      heroVer.innerHTML = "v<b>" + (focus.round + 1) + "</b> · variant <b>" + letter(focus.variant) + "</b>" + (carousel ? cur == null ? " · <b>" + n + "</b> slides" : " · slide <b>" + (cur + 1) + "/" + n + "</b>" : "");
+      var isChosen = focus.variant === chosenOf(activeIdx, focus.round);
+      heroChosen.style.display = "inline-flex";
+      heroChosen.classList.toggle("is-chosen", isChosen);
+      heroChosen.innerHTML = isChosen ? "★ Chosen" : "☆ Choose this variant";
+      heroChosen.title = isChosen ? "This is the picked variant for v" + (focus.round + 1) : "Pick this variant as the winner for v" + (focus.round + 1);
+      heroBadge.style.display = approved.has(v.label) ? "inline-flex" : "none";
+    }
     function renderHero() {
       var v = visuals[activeIdx];
       var availH = stageEl.clientHeight - 92; // top padding/bar (-34) + bottom hint room
       var availW = stageEl.clientWidth - 48;
+      var art = makeClone(activeIdx, focus.round, focus.variant);
+      var slides = slidesOf(art);
+      var carousel = slides.length > 1;
+
+      // CAROUSEL (not editing) → show ALL slides side-by-side as a scrollable filmstrip
+      if (carousel && !editing) {
+        renderFilmstrip(v, art, slides, availH, availW);
+        return;
+      }
+
+      // single visual — OR a carousel while editing (one slide at a time, so edits target it)
       var fit = Math.min(availW / 1080, availH / 1350); // scale that fits BOTH dimensions
       if (!(fit > 0)) fit = 0.3;
       var s = Math.max(0.04, fit * zoom);
-      var w = 1080 * s,
-        h = 1350 * s;
-      heroStage.style.width = Math.round(w) + "px";
-      heroStage.style.height = Math.round(h) + "px";
-      var zp = document.getElementById("zoomPct");
-      if (zp) zp.textContent = Math.round(s * 100) + "%";
+      heroStage.className = "";
+      heroStage.style.cssText = "";
+      heroStage.style.width = Math.round(1080 * s) + "px";
+      heroStage.style.height = Math.round(1350 * s) + "px";
+      setZoomLabel(s);
       heroStage.innerHTML = "";
-      var art = makeClone(activeIdx, focus.round, focus.variant);
       var wrap = document.createElement("div");
       wrap.className = "artscale";
       wrap.style.cssText = "width:1080px;height:1350px;transform:scale(" + s + ");transform-origin:top left;" + (editing ? "" : "pointer-events:none");
@@ -6099,11 +4390,105 @@ try { (() => {
       heroStage.appendChild(wrap);
       heroArt = art;
       heroScale = s;
-      if (editing && window.BoardEditor) BoardEditor.setTarget(art, s);
-      heroType.textContent = v.type;
-      heroVer.innerHTML = "v<b>" + (focus.round + 1) + "</b> · variant <b>" + letter(focus.variant) + "</b>";
-      heroChosen.style.display = focus.variant === chosenOf(activeIdx, focus.round) ? "inline-flex" : "none";
-      heroBadge.style.display = approved.has(v.label) ? "inline-flex" : "none";
+      var cur = carousel ? curSlide() : 0;
+      if (carousel) slides.forEach(function (el, idx) {
+        el.style.display = idx === cur ? "block" : "none";
+      });
+      editorTarget = carousel ? slides[cur] : art; // edits target the visible slide
+      renderCarouselNav(carousel, cur, slides.length);
+      if (editing && window.BoardEditor) BoardEditor.setTarget(editorTarget, s);
+      setHeroMeta(v, carousel, cur, slides.length);
+    }
+
+    /* carousel review = a horizontal filmstrip of every slide (scroll / drag to pan) */
+    function renderFilmstrip(v, art, slides, availH, availW) {
+      var s = Math.max(0.04, availH / 1350 * zoom);
+      var cardW = Math.round(1080 * s),
+        cardH = Math.round(1350 * s);
+      setZoomLabel(s);
+      renderCarouselNav(false, 0, 0); // no per-slide arrows/dots in the strip
+      heroStage.className = "filmstrip";
+      heroStage.style.cssText = "position:relative;width:" + Math.round(availW) + "px;height:" + cardH + "px;overflow-x:auto;overflow-y:hidden;background:transparent;box-shadow:none;border-radius:0;cursor:grab;";
+      heroStage.innerHTML = "";
+      var strip = document.createElement("div");
+      strip.style.cssText = "display:flex;gap:24px;align-items:flex-start;width:max-content;height:" + cardH + "px;padding:0 2px;";
+      slides.forEach(function (sl, idx) {
+        var card = document.createElement("div");
+        card.style.cssText = "flex:none;width:" + cardW + "px;height:" + cardH + "px;border-radius:4px;overflow:hidden;box-shadow:0 6px 26px rgba(0,0,0,.14);background:#fff;position:relative;";
+        var inner = document.createElement("div");
+        inner.style.cssText = "width:1080px;height:1350px;transform:scale(" + s + ");transform-origin:top left;position:relative;pointer-events:none;";
+        sl.style.display = "block";
+        inner.appendChild(sl);
+        card.appendChild(inner);
+        var chip = document.createElement("div");
+        chip.style.cssText = "position:absolute;top:7px;left:7px;background:rgba(31,35,40,.66);color:#fff;font:700 11px/1 system-ui,sans-serif;padding:4px 7px;border-radius:6px;";
+        chip.textContent = idx + 1 + " / " + slides.length;
+        card.appendChild(chip);
+        strip.appendChild(card);
+      });
+      heroStage.appendChild(strip);
+      heroArt = art;
+      heroScale = s;
+      editorTarget = null;
+      enableDragScroll(heroStage);
+      setHeroMeta(v, true, null, slides.length);
+    }
+    function enableDragScroll(el) {
+      if (el._dragScroll) return;
+      el._dragScroll = true;
+      var down = false,
+        sx = 0,
+        sl = 0;
+      el.addEventListener("pointerdown", function (e) {
+        if (el.className !== "filmstrip") return;
+        down = true;
+        sx = e.clientX;
+        sl = el.scrollLeft;
+        el.style.cursor = "grabbing";
+      });
+      window.addEventListener("pointerup", function () {
+        if (down) {
+          down = false;
+          if (el.className === "filmstrip") el.style.cursor = "grab";
+        }
+      });
+      el.addEventListener("pointermove", function (e) {
+        if (!down || el.className !== "filmstrip") return;
+        el.scrollLeft = sl - (e.clientX - sx);
+      });
+    }
+
+    /* carousel nav lives in .frame (OUTSIDE the scaled artboard, so always usable) */
+    function renderCarouselNav(carousel, cur, n) {
+      var frame = stageEl.querySelector(".frame");
+      [].forEach.call(frame.querySelectorAll(".cnav,.cdots"), function (e) {
+        e.remove();
+      });
+      if (!carousel) return;
+      function arrow(dir, target) {
+        var b = document.createElement("button");
+        b.className = "cnav " + dir;
+        b.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="' + (dir === "prev" ? "15 18 9 12 15 6" : "9 18 15 12 9 6") + '"></polyline></svg>';
+        if (target < 0 || target > n - 1) b.setAttribute("disabled", "");else b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          gotoSlide(target);
+        });
+        return b;
+      }
+      frame.appendChild(arrow("prev", cur - 1));
+      frame.appendChild(arrow("next", cur + 1));
+      var dots = document.createElement("div");
+      dots.className = "cdots";
+      for (var i = 0; i < n; i++) (function (idx) {
+        var d = document.createElement("div");
+        d.className = "cdot" + (idx === cur ? " on" : "");
+        d.addEventListener("click", function (e) {
+          e.stopPropagation();
+          gotoSlide(idx);
+        });
+        dots.appendChild(d);
+      })(i);
+      frame.appendChild(dots);
     }
 
     /* ---- timeline (history of the active visual) ---- */
@@ -6157,7 +4542,7 @@ try { (() => {
       next.innerHTML = '<div class="plus"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div><div class="nt">Iterate<br>3 new variants</div>';
       next.title = "Open the brief — tell the assistant what to change for the next round.";
       next.addEventListener("click", function () {
-        openBrief("Iterate “" + v.label + "” — what should change?");
+        openBrief("To iterate “" + v.label + "”: tell the assistant in the chat what to change — it'll build 3 fresh variants.");
       });
       timelineEl.appendChild(next);
     }
@@ -6175,14 +4560,21 @@ try { (() => {
         var ri = lastRound(i),
           ch = chosenOf(i, ri);
         var t = document.createElement("div");
-        t.className = "thumb" + (i === activeIdx ? " active" : "") + (approved.has(v.label) ? " approved" : "");
+        var car = isCarousel(i, ri, ch);
+        t.className = "thumb" + (i === activeIdx ? " active" : "") + (approved.has(v.label) ? " approved" : "") + (car ? " iscarousel" : "");
         var frame = document.createElement("div");
         frame.className = "tframe";
         mountThumb(frame, i, ri, ch, 96 / 1080);
         var cbadge = document.createElement("span");
         cbadge.className = "cbadge";
-        cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span>' + variantCount(i) + '</span>';
-        cbadge.title = variantCount(i) + " variants across " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s");
+        if (isCarousel(i, ri, ch)) {
+          var ns = slideCount(i, ri, ch);
+          cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg><span>' + ns + '</span>';
+          cbadge.title = ns + " slides · click, then swipe ‹ › on the canvas";
+        } else {
+          cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span>' + variantCount(i) + '</span>';
+          cbadge.title = variantCount(i) + " variants across " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s");
+        }
         frame.appendChild(cbadge);
         var abadge = document.createElement("span");
         abadge.className = "abadge";
@@ -6207,7 +4599,7 @@ try { (() => {
         frame.appendChild(dots);
         var lbl = document.createElement("div");
         lbl.className = "lbl";
-        lbl.textContent = v.label;
+        lbl.innerHTML = (car ? '<span class="kind">▤ Carousel · ' + slideCount(i, ri, ch) + ' slides</span>' : '') + v.label;
         t.appendChild(frame);
         t.appendChild(lbl);
         t.addEventListener("click", function () {
@@ -6228,7 +4620,7 @@ try { (() => {
       nv.className = "newvis";
       nv.innerHTML = '<div class="nframe"><div class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div><div class="nlbl">New visual</div>';
       nv.addEventListener("click", function () {
-        openBrief("New visual — fill the brief");
+        openBrief("New visual: describe your post in the chat. The assistant will ask the brief questions, then build 3 variants.");
       });
       reel.appendChild(nv);
       countEl.textContent = visuals.length + " visual" + (visuals.length === 1 ? "" : "s") + " · 1080 × 1350 · export PNG or HTML";
@@ -6264,6 +4656,15 @@ try { (() => {
     heroDots.addEventListener("click", function (e) {
       e.stopPropagation();
       openMenu(e.currentTarget, focus.round, focus.variant);
+    });
+    heroChosen.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (focus.variant === chosenOf(activeIdx, focus.round)) return; // already the winner
+      setChosen(activeIdx, focus.round, focus.variant);
+      flash("Picked variant " + letter(focus.variant) + " for v" + (focus.round + 1));
+      renderHero();
+      renderTimeline();
+      renderReel();
     });
     menu.querySelectorAll("button").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -6342,27 +4743,47 @@ try { (() => {
       passive: false
     });
 
-    /* ---- Brief Studio slide-over ---- */
-    function openBrief(title) {
-      document.getElementById("briefTitle").textContent = title || "New visual — fill the brief";
-      var f = document.getElementById("briefFrame");
-      if (!f.getAttribute("src")) f.setAttribute("src", f.getAttribute("data-src"));
-      document.getElementById("briefScrim").classList.add("on");
+    /* ---- keyboard: arrow keys page a focused carousel left/right ---- */
+    document.addEventListener("keydown", function (e) {
+      if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.target && e.target.getAttribute && e.target.getAttribute("contenteditable") === "true") return;
+      if (!isCarousel(activeIdx, focus.round, focus.variant)) return;
+      var n = slideCount(activeIdx, focus.round, focus.variant),
+        cur = curSlide();
+      if (e.key === "ArrowLeft" && cur > 0) {
+        e.preventDefault();
+        gotoSlide(cur - 1);
+      } else if (e.key === "ArrowRight" && cur < n - 1) {
+        e.preventDefault();
+        gotoSlide(cur + 1);
+      }
+    });
+
+    /* ---- new visual / iterate → back to the chat ----
+       The brief lives in the conversation: the assistant asks the brief
+       questions (post, type, the save-trigger, the analogy, references) and
+       only then builds 3 variants. These buttons just nudge the user there. */
+    function openBrief(msg) {
+      flash(msg || "Describe your post in the chat — the assistant will ask the brief questions, then build 3 variants.");
     }
-    function closeBrief() {
-      document.getElementById("briefScrim").classList.remove("on");
-    }
-    document.getElementById("briefScrim").addEventListener("click", closeBrief);
-    document.getElementById("briefClose").addEventListener("click", closeBrief);
 
     /* ---- export ---- */
     function nameFor(ri, varIdx) {
-      return slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase();
+      var base = slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase();
+      if (isCarousel(activeIdx, ri, varIdx)) base += "-s" + ((slidePos[editKey(activeIdx, ri, varIdx)] || 0) + 1);
+      return base;
     }
     function offscreen(vi, ri, varIdx) {
       var holder = document.createElement("div");
       holder.style.cssText = "position:fixed;left:-99999px;top:0;opacity:0;pointer-events:none";
       var art = makeClone(vi, ri, varIdx);
+      var slides = slidesOf(art);
+      if (slides.length > 1) {
+        var c = Math.max(0, Math.min(slidePos[editKey(vi, ri, varIdx)] || 0, slides.length - 1));
+        slides.forEach(function (el, idx) {
+          el.style.display = idx === c ? "block" : "none";
+        });
+      } // export the current slide
       holder.appendChild(art);
       document.body.appendChild(holder);
       return {

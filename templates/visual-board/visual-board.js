@@ -11,7 +11,8 @@
      iteration timeline + reel so the visual never gets squeezed.
    · EDIT mode (board-editor.js) = Canva-style drag / resize / drop on the hero;
      edits persist per variant and the assistant can iterate over them.
-   · "+ New visual" / "Iterate" open the Brief Studio slide-over. */
+   · "+ New visual" / "Iterate" prompt the user back to the chat, where the
+     assistant runs the brief questions before building 3 variants. */
 (function () {
   function boot() {
     var source = document.getElementById("source");
@@ -24,6 +25,7 @@
   var APPROVED_KEY = "li-vds-board-approved-v1";
   var CHOSEN_KEY = "li-vds-board-chosen-v1";
   var EDITS_KEY = "li-vds-board-edits-v1";
+  var SLIDES_KEY = "li-vds-board-slidepos-v1";
   var heroStage = document.getElementById("heroStage");
   var stageEl = document.getElementById("stage");
   var heroType = document.getElementById("heroType");
@@ -51,11 +53,12 @@
   var chosenStore = loadJSON(CHOSEN_KEY, {});
   var approved = new Set(loadJSON(APPROVED_KEY, []));
   var editsStore = loadJSON(EDITS_KEY, {});       // { "label#round#variant": editedInnerHTML }
+  var slidePos = loadJSON(SLIDES_KEY, {});        // { "label#round#variant": currentSlideIndex } (carousels)
   var activeIdx = 0;
   var focus = { round: 0, variant: 0 };
   var menuTarget = null;
   var editing = false;
-  var heroArt = null, heroScale = 1;
+  var heroArt = null, heroScale = 1, editorTarget = null;
   var zoom = 1;   // 1 = fit-to-stage; user can zoom in/out
 
   function loadJSON(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
@@ -76,6 +79,14 @@
   function variantCount(vi) { return visuals[vi].rounds.reduce(function (n, r) { return n + r.length; }, 0); }
   function editKey(vi, ri, varIdx) { return visuals[vi].label + "#" + ri + "#" + varIdx; }
 
+  /* ---- carousel helpers (a variant can be a multi-slide carousel) ---- */
+  function slidesOf(node) { return [].slice.call(node.querySelectorAll(":scope > .cslide")); }
+  function slideCount(vi, ri, varIdx) { return slidesOf(visuals[vi].rounds[ri][varIdx]).length; }
+  function isCarousel(vi, ri, varIdx) { return slideCount(vi, ri, varIdx) > 1; }
+  function curSlideOf(vi, ri, varIdx) { var n = slideCount(vi, ri, varIdx); return Math.max(0, Math.min(slidePos[editKey(vi, ri, varIdx)] || 0, Math.max(0, n - 1))); }
+  function curSlide() { return curSlideOf(activeIdx, focus.round, focus.variant); }
+  function gotoSlide(n) { slidePos[editKey(activeIdx, focus.round, focus.variant)] = n; saveJSON(SLIDES_KEY, slidePos); renderHero(); }
+
   /* fresh artboard clone with any persisted edits applied */
   function makeClone(vi, ri, varIdx) {
     var src = visuals[vi].rounds[ri][varIdx];
@@ -89,35 +100,121 @@
     into.innerHTML = "";
     var wrap = document.createElement("div");
     wrap.style.cssText = "width:1080px;height:1350px;transform:scale(" + scale + ");transform-origin:top left;pointer-events:none";
-    wrap.appendChild(makeClone(vi, ri, varIdx));
+    var clone = makeClone(vi, ri, varIdx);
+    wrap.appendChild(clone);
+    var cs = [].slice.call(clone.querySelectorAll(":scope > .cslide"));
+    if (cs.length > 1) cs.forEach(function (el, idx) { el.style.display = idx === 0 ? "block" : "none"; });   // thumb = slide 1
     into.appendChild(wrap);
   }
 
   /* ---- hero (responsive: fills the stage above the dock) ---- */
+  function setZoomLabel(s) { var zp = document.getElementById("zoomPct"); if (zp) zp.textContent = Math.round(s * 100) + "%"; }
+  function setHeroMeta(v, carousel, cur, n) {
+    heroType.textContent = v.type;
+    heroVer.innerHTML = "v<b>" + (focus.round + 1) + "</b> · variant <b>" + letter(focus.variant) + "</b>" +
+      (carousel ? (cur == null ? " · <b>" + n + "</b> slides" : " · slide <b>" + (cur + 1) + "/" + n + "</b>") : "");
+    var isChosen = focus.variant === chosenOf(activeIdx, focus.round);
+    heroChosen.style.display = "inline-flex";
+    heroChosen.classList.toggle("is-chosen", isChosen);
+    heroChosen.innerHTML = isChosen ? "★ Chosen" : "☆ Choose this variant";
+    heroChosen.title = isChosen ? "This is the picked variant for v" + (focus.round + 1) : "Pick this variant as the winner for v" + (focus.round + 1);
+    heroBadge.style.display = approved.has(v.label) ? "inline-flex" : "none";
+  }
+
   function renderHero() {
     var v = visuals[activeIdx];
     var availH = stageEl.clientHeight - 92;     // top padding/bar (-34) + bottom hint room
     var availW = stageEl.clientWidth - 48;
+    var art = makeClone(activeIdx, focus.round, focus.variant);
+    var slides = slidesOf(art);
+    var carousel = slides.length > 1;
+
+    // CAROUSEL (not editing) → show ALL slides side-by-side as a scrollable filmstrip
+    if (carousel && !editing) { renderFilmstrip(v, art, slides, availH, availW); return; }
+
+    // single visual — OR a carousel while editing (one slide at a time, so edits target it)
     var fit = Math.min(availW / 1080, availH / 1350); // scale that fits BOTH dimensions
     if (!(fit > 0)) fit = 0.3;
     var s = Math.max(0.04, fit * zoom);
-    var w = 1080 * s, h = 1350 * s;
-    heroStage.style.width = Math.round(w) + "px"; heroStage.style.height = Math.round(h) + "px";
-    var zp = document.getElementById("zoomPct"); if (zp) zp.textContent = Math.round(s * 100) + "%";
+    heroStage.className = "";
+    heroStage.style.cssText = "";
+    heroStage.style.width = Math.round(1080 * s) + "px"; heroStage.style.height = Math.round(1350 * s) + "px";
+    setZoomLabel(s);
     heroStage.innerHTML = "";
-    var art = makeClone(activeIdx, focus.round, focus.variant);
     var wrap = document.createElement("div");
     wrap.className = "artscale";
     wrap.style.cssText = "width:1080px;height:1350px;transform:scale(" + s + ");transform-origin:top left;" + (editing ? "" : "pointer-events:none");
     wrap.appendChild(art);
     heroStage.appendChild(wrap);
     heroArt = art; heroScale = s;
-    if (editing && window.BoardEditor) BoardEditor.setTarget(art, s);
+    var cur = carousel ? curSlide() : 0;
+    if (carousel) slides.forEach(function (el, idx) { el.style.display = idx === cur ? "block" : "none"; });
+    editorTarget = carousel ? slides[cur] : art;   // edits target the visible slide
+    renderCarouselNav(carousel, cur, slides.length);
+    if (editing && window.BoardEditor) BoardEditor.setTarget(editorTarget, s);
+    setHeroMeta(v, carousel, cur, slides.length);
+  }
 
-    heroType.textContent = v.type;
-    heroVer.innerHTML = "v<b>" + (focus.round + 1) + "</b> · variant <b>" + letter(focus.variant) + "</b>";
-    heroChosen.style.display = focus.variant === chosenOf(activeIdx, focus.round) ? "inline-flex" : "none";
-    heroBadge.style.display = approved.has(v.label) ? "inline-flex" : "none";
+  /* carousel review = a horizontal filmstrip of every slide (scroll / drag to pan) */
+  function renderFilmstrip(v, art, slides, availH, availW) {
+    var s = Math.max(0.04, (availH / 1350) * zoom);
+    var cardW = Math.round(1080 * s), cardH = Math.round(1350 * s);
+    setZoomLabel(s);
+    renderCarouselNav(false, 0, 0);     // no per-slide arrows/dots in the strip
+    heroStage.className = "filmstrip";
+    heroStage.style.cssText = "position:relative;width:" + Math.round(availW) + "px;height:" + cardH + "px;overflow-x:auto;overflow-y:hidden;background:transparent;box-shadow:none;border-radius:0;cursor:grab;";
+    heroStage.innerHTML = "";
+    var strip = document.createElement("div");
+    strip.style.cssText = "display:flex;gap:24px;align-items:flex-start;width:max-content;height:" + cardH + "px;padding:0 2px;";
+    slides.forEach(function (sl, idx) {
+      var card = document.createElement("div");
+      card.style.cssText = "flex:none;width:" + cardW + "px;height:" + cardH + "px;border-radius:4px;overflow:hidden;box-shadow:0 6px 26px rgba(0,0,0,.14);background:#fff;position:relative;";
+      var inner = document.createElement("div");
+      inner.style.cssText = "width:1080px;height:1350px;transform:scale(" + s + ");transform-origin:top left;position:relative;pointer-events:none;";
+      sl.style.display = "block";
+      inner.appendChild(sl);
+      card.appendChild(inner);
+      var chip = document.createElement("div");
+      chip.style.cssText = "position:absolute;top:7px;left:7px;background:rgba(31,35,40,.66);color:#fff;font:700 11px/1 system-ui,sans-serif;padding:4px 7px;border-radius:6px;";
+      chip.textContent = (idx + 1) + " / " + slides.length;
+      card.appendChild(chip);
+      strip.appendChild(card);
+    });
+    heroStage.appendChild(strip);
+    heroArt = art; heroScale = s; editorTarget = null;
+    enableDragScroll(heroStage);
+    setHeroMeta(v, true, null, slides.length);
+  }
+
+  function enableDragScroll(el) {
+    if (el._dragScroll) return; el._dragScroll = true;
+    var down = false, sx = 0, sl = 0;
+    el.addEventListener("pointerdown", function (e) { if (el.className !== "filmstrip") return; down = true; sx = e.clientX; sl = el.scrollLeft; el.style.cursor = "grabbing"; });
+    window.addEventListener("pointerup", function () { if (down) { down = false; if (el.className === "filmstrip") el.style.cursor = "grab"; } });
+    el.addEventListener("pointermove", function (e) { if (!down || el.className !== "filmstrip") return; el.scrollLeft = sl - (e.clientX - sx); });
+  }
+
+  /* carousel nav lives in .frame (OUTSIDE the scaled artboard, so always usable) */
+  function renderCarouselNav(carousel, cur, n) {
+    var frame = stageEl.querySelector(".frame");
+    [].forEach.call(frame.querySelectorAll(".cnav,.cdots"), function (e) { e.remove(); });
+    if (!carousel) return;
+    function arrow(dir, target) {
+      var b = document.createElement("button"); b.className = "cnav " + dir;
+      b.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="' + (dir === "prev" ? "15 18 9 12 15 6" : "9 18 15 12 9 6") + '"></polyline></svg>';
+      if (target < 0 || target > n - 1) b.setAttribute("disabled", "");
+      else b.addEventListener("click", function (e) { e.stopPropagation(); gotoSlide(target); });
+      return b;
+    }
+    frame.appendChild(arrow("prev", cur - 1));
+    frame.appendChild(arrow("next", cur + 1));
+    var dots = document.createElement("div"); dots.className = "cdots";
+    for (var i = 0; i < n; i++) (function (idx) {
+      var d = document.createElement("div"); d.className = "cdot" + (idx === cur ? " on" : "");
+      d.addEventListener("click", function (e) { e.stopPropagation(); gotoSlide(idx); });
+      dots.appendChild(d);
+    })(i);
+    frame.appendChild(dots);
   }
 
   /* ---- timeline (history of the active visual) ---- */
@@ -153,7 +250,7 @@
     var next = document.createElement("div"); next.className = "round next";
     next.innerHTML = '<div class="plus"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div><div class="nt">Iterate<br>3 new variants</div>';
     next.title = "Open the brief — tell the assistant what to change for the next round.";
-    next.addEventListener("click", function () { openBrief("Iterate “" + v.label + "” — what should change?"); });
+    next.addEventListener("click", function () { openBrief("To iterate “" + v.label + "”: tell the assistant in the chat what to change — it'll build 3 fresh variants."); });
     timelineEl.appendChild(next);
   }
   function chev() { var a = document.createElement("div"); a.className = "arrow"; a.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>'; return a; }
@@ -164,12 +261,19 @@
     visuals.forEach(function (v, i) {
       var ri = lastRound(i), ch = chosenOf(i, ri);
       var t = document.createElement("div");
-      t.className = "thumb" + (i === activeIdx ? " active" : "") + (approved.has(v.label) ? " approved" : "");
+      var car = isCarousel(i, ri, ch);
+      t.className = "thumb" + (i === activeIdx ? " active" : "") + (approved.has(v.label) ? " approved" : "") + (car ? " iscarousel" : "");
       var frame = document.createElement("div"); frame.className = "tframe";
       mountThumb(frame, i, ri, ch, 96 / 1080);
       var cbadge = document.createElement("span"); cbadge.className = "cbadge";
-      cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span>' + variantCount(i) + '</span>';
-      cbadge.title = variantCount(i) + " variants across " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s");
+      if (isCarousel(i, ri, ch)) {
+        var ns = slideCount(i, ri, ch);
+        cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"></rect><path d="M7 21h12a2 2 0 0 0 2-2V7"></path></svg><span>' + ns + '</span>';
+        cbadge.title = ns + " slides · click, then swipe ‹ › on the canvas";
+      } else {
+        cbadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg><span>' + variantCount(i) + '</span>';
+        cbadge.title = variantCount(i) + " variants across " + v.rounds.length + " version" + (v.rounds.length === 1 ? "" : "s");
+      }
       frame.appendChild(cbadge);
       var abadge = document.createElement("span"); abadge.className = "abadge";
       abadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
@@ -179,7 +283,8 @@
       dots.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>';
       dots.addEventListener("click", function (e) { e.stopPropagation(); activeIdx = i; focus = { round: ri, variant: ch }; renderHero(); renderTimeline(); renderReel(); openMenu(e.currentTarget, ri, ch); });
       frame.appendChild(dots);
-      var lbl = document.createElement("div"); lbl.className = "lbl"; lbl.textContent = v.label;
+      var lbl = document.createElement("div"); lbl.className = "lbl";
+      lbl.innerHTML = (car ? '<span class="kind">▤ Carousel · ' + slideCount(i, ri, ch) + ' slides</span>' : '') + v.label;
       t.appendChild(frame); t.appendChild(lbl);
       t.addEventListener("click", function () { activeIdx = i; var lr = lastRound(i); focus = { round: lr, variant: chosenOf(i, lr) }; renderHero(); renderTimeline(); renderReel(); });
       reel.appendChild(t);
@@ -187,7 +292,7 @@
     // + New visual card
     var nv = document.createElement("div"); nv.className = "newvis";
     nv.innerHTML = '<div class="nframe"><div class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div><div class="nlbl">New visual</div>';
-    nv.addEventListener("click", function () { openBrief("New visual — fill the brief"); });
+    nv.addEventListener("click", function () { openBrief("New visual: describe your post in the chat. The assistant will ask the brief questions, then build 3 variants."); });
     reel.appendChild(nv);
 
     countEl.textContent = visuals.length + " visual" + (visuals.length === 1 ? "" : "s") + " · 1080 × 1350 · export PNG or HTML";
@@ -212,6 +317,13 @@
   document.addEventListener("click", closeMenu);
   menu.addEventListener("click", function (e) { e.stopPropagation(); });
   heroDots.addEventListener("click", function (e) { e.stopPropagation(); openMenu(e.currentTarget, focus.round, focus.variant); });
+  heroChosen.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (focus.variant === chosenOf(activeIdx, focus.round)) return;   // already the winner
+    setChosen(activeIdx, focus.round, focus.variant);
+    flash("Picked variant " + letter(focus.variant) + " for v" + (focus.round + 1));
+    renderHero(); renderTimeline(); renderReel();
+  });
   menu.querySelectorAll("button").forEach(function (b) {
     b.addEventListener("click", function () {
       var act = b.getAttribute("data-act"); if (!menuTarget) return;
@@ -257,23 +369,30 @@
   document.getElementById("zoomFit").addEventListener("click", function () { setZoom(1); });
   stageEl.addEventListener("wheel", function (e) { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); setZoom(zoom * (e.deltaY < 0 ? 1.08 : 0.93)); }, { passive: false });
 
-  /* ---- Brief Studio slide-over ---- */
-  function openBrief(title) {
-    document.getElementById("briefTitle").textContent = title || "New visual — fill the brief";
-    var f = document.getElementById("briefFrame");
-    if (!f.getAttribute("src")) f.setAttribute("src", f.getAttribute("data-src"));
-    document.getElementById("briefScrim").classList.add("on");
-  }
-  function closeBrief() { document.getElementById("briefScrim").classList.remove("on"); }
-  document.getElementById("briefScrim").addEventListener("click", closeBrief);
-  document.getElementById("briefClose").addEventListener("click", closeBrief);
+  /* ---- keyboard: arrow keys page a focused carousel left/right ---- */
+  document.addEventListener("keydown", function (e) {
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (e.target && e.target.getAttribute && e.target.getAttribute("contenteditable") === "true") return;
+    if (!isCarousel(activeIdx, focus.round, focus.variant)) return;
+    var n = slideCount(activeIdx, focus.round, focus.variant), cur = curSlide();
+    if (e.key === "ArrowLeft" && cur > 0) { e.preventDefault(); gotoSlide(cur - 1); }
+    else if (e.key === "ArrowRight" && cur < n - 1) { e.preventDefault(); gotoSlide(cur + 1); }
+  });
+
+  /* ---- new visual / iterate → back to the chat ----
+     The brief lives in the conversation: the assistant asks the brief
+     questions (post, type, the save-trigger, the analogy, references) and
+     only then builds 3 variants. These buttons just nudge the user there. */
+  function openBrief(msg) { flash(msg || "Describe your post in the chat — the assistant will ask the brief questions, then build 3 variants."); }
 
   /* ---- export ---- */
-  function nameFor(ri, varIdx) { return slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase(); }
+  function nameFor(ri, varIdx) { var base = slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase(); if (isCarousel(activeIdx, ri, varIdx)) base += "-s" + ((slidePos[editKey(activeIdx, ri, varIdx)] || 0) + 1); return base; }
   function offscreen(vi, ri, varIdx) {
     var holder = document.createElement("div");
     holder.style.cssText = "position:fixed;left:-99999px;top:0;opacity:0;pointer-events:none";
     var art = makeClone(vi, ri, varIdx);
+    var slides = slidesOf(art);
+    if (slides.length > 1) { var c = Math.max(0, Math.min(slidePos[editKey(vi, ri, varIdx)] || 0, slides.length - 1)); slides.forEach(function (el, idx) { el.style.display = idx === c ? "block" : "none"; }); }   // export the current slide
     holder.appendChild(art); document.body.appendChild(holder);
     return { holder: holder, node: art };
   }

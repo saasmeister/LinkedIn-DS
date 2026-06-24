@@ -1,327 +1,234 @@
-/* Setup — the first-run onboarding wizard.
-   A guided, stepped setup: brand identity → colours → spacing & shape →
-   done. Left = the questions; right = a LIVE single visual that updates
-   as you choose. Ends by generating the branch's overrides/*.css to save,
-   then sends the user on to make visuals. */
+/* Brand Setup wizard — window.Setup
+   A first-run, multi-step wizard (loaded via Babel in START HERE.html).
+   Walks a non-designer through: Welcome → Brand source (Figma / GitHub / file /
+   manual) → Colours → Type & signature → Done. Produces the exact
+   `overrides/brand.css` AND a one-click "Copy for the assistant" message that
+   bundles the source + all choices, so the agent can import the Figma/GitHub
+   brand and write the overrides. A page can't post into the chat itself —
+   this makes handing it over a single paste. Choices persist to localStorage
+   and inject a live brand layer so previews reflect them. */
 (function () {
-  const { useState, useEffect, useRef } = React;
-  const h = React.createElement;
-  const DS = window.LinkedInVisualDesignSystemTesting_727cb3;
-  const KEY = "li-vds-setup-v1";
-  const DONE_KEY = "li-vds-setup-done";
+  const { useState, useEffect } = React;
+  const LS = "li-vds-brand-setup-v1";
 
-  const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora", "Fraunces", "DM Sans"];
-  const SWATCHES = ["#0A66C2", "#1F8A5B", "#C2410C", "#7C3AED", "#0F766E", "#BE123C", "#0B7285", "#16232B"];
-  const SIGS = ["underline", "block", "bubble", "plain"];
-  const STEPS = ["Welcome", "Identity", "Colours", "Spacing & shape", "Ready"];
-
-  const DEFAULT = {
-    font: "Inter", primary: "#0A66C2", secondary: "#16232B", accent: "#E7A33E", tint: 7,
-    signature: "underline", name: "Your name", category: "Your category / function",
-    logo: null, photo: null, margin: 72, radiusCard: 16, radiusCta: 18,
+  const FONTS = ["Inter", "Plus Jakarta Sans", "Space Grotesk", "Sora", "Manrope", "Figtree", "Outfit", "DM Sans"];
+  const SIGS = [["underline", "Underline"], ["block", "Block"], ["bubble", "Bubble"], ["plain", "Plain"]];
+  const DEFAULTS = {
+    primary: "#0A66C2", secondary: "#16232B", accent: "#E7A33E",
+    tint: 7, font: "Inter", signature: "underline",
+    sourceType: "manual", figmaUrl: "", githubUrl: "", fileName: "",
   };
+  const STEPS = ["Welcome", "Brand source", "Colours", "Type & signature", "Done"];
 
-  function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) return { ...DEFAULT, ...s }; } catch (e) {} return DEFAULT; }
   function loadFont(font) {
-    const id = "su-font-" + font.replace(/\s+/g, "-"); if (document.getElementById(id)) return;
-    const l = document.createElement("link"); l.id = id; l.rel = "stylesheet";
-    l.href = "https://fonts.googleapis.com/css2?family=" + font.replace(/\s+/g, "+") + ":ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap";
+    const id = "gf-" + font.replace(/\s+/g, "-");
+    if (document.getElementById(id)) return;
+    const l = document.createElement("link");
+    l.id = id; l.rel = "stylesheet";
+    l.href = "https://fonts.googleapis.com/css2?family=" + font.replace(/\s+/g, "+") + ":wght@400;500;600;700;800&display=swap";
     document.head.appendChild(l);
   }
-  // suggest a deep secondary derived from primary (for the section role)
-  function deriveSecondary(hex) {
-    const n = hex.replace("#", ""); const r = parseInt(n.slice(0, 2), 16), g = parseInt(n.slice(2, 4), 16), b = parseInt(n.slice(4, 6), 16);
-    const f = 0.26; const d = (x) => Math.round(x * f).toString(16).padStart(2, "0");
-    return "#" + d(r) + d(g) + d(b);
+  function hexToRgb(hex) {
+    const m = hex.replace("#", "");
+    const n = m.length === 3 ? m.split("").map(c => c + c).join("") : m;
+    const i = parseInt(n, 16);
+    return [(i >> 16) & 255, (i >> 8) & 255, i & 255];
   }
-
-  function themeVars(b) {
-    return {
-      "--brand-primary": b.primary, "--brand-secondary": b.secondary, "--brand-accent": b.accent,
-      "--brand-tint": b.tint + "%",
-      "--brand-font": `'${b.font}', system-ui, sans-serif`, "--brand-font-display": `'${b.font}', system-ui, sans-serif`,
-      "--margin": b.margin + "px", "--radius-card": b.radiusCard + "px", "--radius-cta": b.radiusCta + "px",
-    };
+  function lightTint(hex, pct) {
+    const [r, g, b] = hexToRgb(hex);
+    const a = pct / 100;
+    const mix = c => Math.round(c * a + 255 * (1 - a));
+    return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
   }
-
-  /* ---------- the live preview visual ---------- */
-  function PreviewVisual({ b }) {
-    const { Canvas, Eyebrow, Headline, Mark, Subhead } = DS;
-    if (!Canvas) return h("div", { style: { color: "#9aa0a6", fontSize: 13, padding: 40 } }, "Preview loads once the bundle is compiled — reload.");
-    return h(Canvas, { role: "light" }, [
-      // chrome with optional logo
-      h("div", { key: "ch", style: { position: "absolute", top: "var(--margin)", left: "var(--margin)", right: "var(--margin)", display: "flex", justifyContent: "space-between", alignItems: "center" } }, [
-        h("div", { key: "l", style: { display: "flex", alignItems: "center", gap: 16 } }, [
-          b.logo ? h("img", { key: "lg", src: b.logo, style: { height: 48, maxWidth: 200, objectFit: "contain" } }) : null,
-          h("span", { key: "nm", style: { fontWeight: 600, fontSize: 22, letterSpacing: ".06em", color: "var(--fg)" } }, b.name),
-        ]),
-        h("span", { key: "c", style: { fontWeight: 600, fontSize: 22, letterSpacing: ".06em", color: "var(--muted)" } }, b.category),
-      ]),
-      // center message
-      h("div", { key: "mid", style: { position: "absolute", left: "var(--margin)", right: "var(--margin)", top: 0, bottom: 0, display: "flex", flexDirection: "column", justifyContent: "center" } }, [
-        h(Eyebrow, { key: "e" }, "This is your style"),
-        h(Headline, { key: "hh", size: "lg", style: { marginTop: 18 } }, ["Your headline, with an ", h(Mark, { key: "m", signature: b.signature }, "emphasis")]),
-        h(Subhead, { key: "s", style: { marginTop: 24 } }, "Colours, font, spacing and shape — all set from your answers on the left."),
-      ]),
-      // footer profile lockup
-      b.photo ? h("div", { key: "ft", style: { position: "absolute", left: "var(--margin)", right: "var(--margin)", bottom: "var(--margin)", display: "flex", alignItems: "center", gap: 20 } }, [
-        h("img", { key: "p", src: b.photo, style: { width: 84, height: 84, borderRadius: "50%", objectFit: "cover", border: "1.5px solid var(--canvas-light-line)" } }),
-        h("div", { key: "d", style: { display: "flex", flexDirection: "column" } }, [
-          h("span", { key: "n", style: { fontWeight: 700, fontSize: 26, color: "var(--fg)" } }, b.name),
-          h("span", { key: "r", style: { fontWeight: 500, fontSize: 20, color: "var(--muted)" } }, b.category),
-        ]),
-      ]) : null,
-    ]);
-  }
-
-  function Stage({ b }) {
-    const W = 432, s = W / 1080;
-    return h("div", { style: { width: W, height: W * 1.25, borderRadius: 4, overflow: "hidden", boxShadow: "0 14px 50px rgba(0,0,0,.18)", background: "#fff", flex: "none" } },
-      h("div", { style: { width: 1080, height: 1350, transform: `scale(${s})`, transformOrigin: "top left" } },
-        h(PreviewVisual, { b })));
-  }
-
-  /* ---------- override-file generators ---------- */
-  function brandCss(b) {
+  function cssText(s) {
     return `:root {
-  --brand-primary:   ${b.primary};
-  --brand-secondary: ${b.secondary};
-  --brand-accent:    ${b.accent};
-  --brand-tint: ${b.tint}%;
-  --brand-font:         '${b.font}', system-ui, sans-serif;
-  --brand-font-display: '${b.font}', system-ui, sans-serif;
-  --signature: ${b.signature};
+  /* ---- Colours -------------------------------------------- */
+  --brand-primary:   ${s.primary};
+  --brand-secondary: ${s.secondary};
+  --brand-accent:    ${s.accent};
+  --brand-tint: ${s.tint}%;
+
+  /* ---- Type ----------------------------------------------- */
+  /* Add this <link> to the page <head> too:
+     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${s.font.replace(/\s+/g, "+")}:wght@400;500;600;700;800&display=swap"> */
+  --brand-font:         '${s.font}', system-ui, sans-serif;
+  --brand-font-display: '${s.font}', system-ui, sans-serif;
+
+  /* ---- Headline signature --------------------------------- */
+  --signature: ${s.signature};
 }`;
   }
-  function extrasCss(b) {
-    return `:root {
-  --margin: ${b.margin}px;
-  --radius-card: ${b.radiusCard}px;
-  --radius-cta: ${b.radiusCta}px;
-}`;
+  function assistantMsg(s) {
+    let src = "No external source — use the values below.";
+    if (s.sourceType === "figma" && s.figmaUrl) src = "Figma file: " + s.figmaUrl + "\n(Pull the brand colours, fonts and logo from this Figma file.)";
+    else if (s.sourceType === "github" && s.githubUrl) src = "GitHub repo: " + s.githubUrl + "\n(Pull theme tokens / colours / fonts from this repo.)";
+    else if (s.sourceType === "file" && s.fileName) src = "Figma file \u201c" + s.fileName + "\u201d is attached in this chat.\n(Read it and pull the brand colours, fonts and logo from it.)";
+    return `Set up my brand for the LinkedIn Visual Design System.
+
+SOURCE
+${src}
+
+MY CHOICES (use these, or override them with what you find in the source)
+- Primary (loud canvas):   ${s.primary}
+- Secondary (section):     ${s.secondary}
+- Accent (highlight):      ${s.accent}
+- Light tint:              ${s.tint}%
+- Font:                    ${s.font}
+- Headline signature:      ${s.signature}
+
+Please write these into overrides/brand.css (load the font's <link> too) and confirm. Then I'll start making visuals.`;
   }
 
-  /* =================== wizard =================== */
   function Setup() {
-    const [b, setB] = useState(load);
     const [step, setStep] = useState(0);
-    const [toast, setToast] = useState(null);
-    const set = (patch) => setB((p) => { const n = { ...p, ...patch }; try { localStorage.setItem(KEY, JSON.stringify(n)); } catch (e) {} return n; });
-    const flash = (m) => { setToast(m); clearTimeout(flash._t); flash._t = setTimeout(() => setToast(null), 2400); };
-    useEffect(() => loadFont(b.font), [b.font]);
-    // Apply brand vars to :root (not a nested div) so derived aliases
-    // (--font-display, --canvas-light-bg color-mix, etc.) re-resolve correctly.
+    const [s, setS] = useState(() => {
+      try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS)) || {}); }
+      catch (e) { return Object.assign({}, DEFAULTS); }
+    });
+    const [copied, setCopied] = useState("");
+
+    useEffect(() => { loadFont(s.font); }, [s.font]);
     useEffect(() => {
-      const r = document.documentElement.style;
-      const v = themeVars(b);
-      Object.keys(v).forEach((k) => r.setProperty(k, v[k]));
-    }, [b]);
+      try { localStorage.setItem(LS, JSON.stringify(s)); } catch (e) {}
+      let el = document.getElementById("brand-live");
+      if (!el) { el = document.createElement("style"); el.id = "brand-live"; document.head.appendChild(el); }
+      el.textContent = cssText(s);
+    }, [s]);
 
-    const onImg = (file, key) => { if (!file) return; const r = new FileReader(); r.onload = () => set({ [key]: r.result }); r.readAsDataURL(file); };
-    const copy = (text, what) => { navigator.clipboard && navigator.clipboard.writeText(text); flash(what + " copied"); };
-    const download = (text, filename) => {
-      const blob = new Blob([text], { type: "text/css" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-      document.body.removeChild(a); setTimeout(() => URL.revokeObjectURL(url), 1000); flash(filename + " downloaded");
-    };
-    const finish = () => { localStorage.setItem(DONE_KEY, "1"); setStep(4); };
+    const set = (k, v) => setS(p => Object.assign({}, p, { [k]: v }));
+    const light = lightTint(s.primary, s.tint);
+    const copy = (key, text) => { navigator.clipboard && navigator.clipboard.writeText(text); setCopied(key); setTimeout(() => setCopied(""), 1700); };
 
-    const showPreview = step >= 1 && step <= 3;
+    const sigStyle = s.signature === "underline" ? { boxShadow: `inset 0 -0.12em 0 ${s.accent}` }
+      : s.signature === "block" ? { background: s.accent, color: "#fff", padding: "0 .12em" }
+      : s.signature === "bubble" ? { border: `3px solid ${s.accent}`, borderRadius: "999px", padding: ".02em .35em" }
+      : {};
 
-    return h("div", { style: { minHeight: "100vh", background: "#f1f2f4", fontFamily: "system-ui,-apple-system,sans-serif", color: "#1f2328", display: "grid", gridTemplateColumns: showPreview ? "minmax(0,1fr) 520px" : "1fr" } }, [
+    // ---- shared styles ----
+    const shell = { minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: `'${s.font}', system-ui, sans-serif`, color: "#18181b" };
+    const main = { flex: 1, display: "flex", gap: 44, alignItems: "flex-start", maxWidth: 1140, width: "100%", margin: "0 auto", padding: "36px 40px 0", boxSizing: "border-box" };
+    const colLeft = { flex: "1 1 0", minWidth: 0 };
+    const label = { display: "block", fontSize: 13, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: "#6b7280", margin: "0 0 10px" };
+    const h1 = { fontFamily: `'${s.font}', sans-serif`, fontWeight: 700, fontSize: 38, letterSpacing: "-.025em", margin: "0 0 14px", lineHeight: 1.08 };
+    const sub = { fontSize: 17, lineHeight: 1.55, color: "#5a5a5a", margin: "0 0 28px", maxWidth: 560 };
+    const colorInput = { width: 54, height: 40, border: "1px solid #d8dadd", borderRadius: 8, background: "#fff", padding: 2, cursor: "pointer" };
+    const field = { width: "100%", padding: "13px 14px", fontSize: 15, border: "1px solid #d8dadd", borderRadius: 10, background: "#fff", boxSizing: "border-box", fontFamily: "inherit" };
+    const btn = (primary) => ({ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 26px", fontSize: 16, fontWeight: 700, borderRadius: 11, cursor: "pointer", border: primary ? "none" : "1px solid #d8dadd", background: primary ? s.primary : "#fff", color: primary ? "#fff" : "#3a3f45" });
 
-      /* ---- left ---- */
-      h("div", { key: "l", style: { padding: "30px 38px", overflowY: "auto", maxHeight: "100vh", maxWidth: showPreview ? "none" : 720, margin: showPreview ? 0 : "0 auto", width: "100%", boxSizing: "border-box" } }, [
-        // progress rail
-        h("div", { key: "rail", style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 26 } },
-          STEPS.map((s, i) => h("div", { key: i, style: { display: "flex", alignItems: "center", gap: 8 } }, [
-            h("div", { key: "d", style: { display: "flex", alignItems: "center", gap: 7 } }, [
-              h("span", { key: "n", style: { width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, background: i < step ? "#1f8a5b" : i === step ? "#0A66C2" : "#e2e4e7", color: i <= step ? "#fff" : "#9aa0a6" } }, i < step ? "✓" : i + 1),
-              h("span", { key: "l", style: { fontSize: 12.5, fontWeight: 600, color: i === step ? "#1f2328" : "#9aa0a6", whiteSpace: "nowrap" } }, s),
-            ]),
-            i < STEPS.length - 1 ? h("span", { key: "sep", style: { width: 18, height: 2, background: "#e2e4e7", borderRadius: 2 } }) : null,
-          ]))),
+    function Color({ k, name }) {
+      return React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12, marginBottom: 12 } },
+        React.createElement("input", { type: "color", value: s[k], onChange: e => set(k, e.target.value), style: colorInput }),
+        React.createElement("div", null,
+          React.createElement("div", { style: { fontWeight: 600, fontSize: 15 } }, name),
+          React.createElement("div", { style: { fontSize: 13, color: "#8a9098", fontFamily: "monospace" } }, s[k])
+        )
+      );
+    }
+    function Preview() {
+      const card = (bg, fg, kicker, kickerColor, title, body) =>
+        React.createElement("div", { style: { flex: 1, aspectRatio: "4/5", borderRadius: 12, background: bg, color: fg, padding: 18, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 6px 22px rgba(0,0,0,.10)" } },
+          React.createElement("div", { style: { fontSize: 10, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: kickerColor } }, kicker),
+          React.createElement("div", { style: { fontFamily: `'${s.font}', sans-serif`, fontWeight: 700, fontSize: 21, lineHeight: 1.1, marginTop: 7 } }, title, body));
+      return React.createElement("div", { style: { display: "flex", gap: 12 } },
+        card(s.primary, "#fff", "Loud", "rgba(255,255,255,.7)", "Cover headline", null),
+        card(light, "#18181b", "Light", "#8a9098", "A point worth ", React.createElement("span", { style: sigStyle }, "saving")),
+        card(s.secondary, "#fff", "Section", s.accent, "Chapter marker", null));
+    }
 
-        step === 0 ? Welcome({ onStart: () => setStep(1) }) : null,
-        step === 1 ? StepIdentity({ b, set, onImg }) : null,
-        step === 2 ? StepColours({ b, set }) : null,
-        step === 3 ? StepSpacing({ b, set }) : null,
-        step === 4 ? StepDone({ b, brandCss: brandCss(b), extrasCss: extrasCss(b), copy, download }) : null,
+    // ---- step bodies ----
+    let body;
+    if (step === 0) {
+      body = React.createElement("div", { style: colLeft },
+        React.createElement("div", { style: { display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: s.primary, marginBottom: 18 } },
+          React.createElement("span", { style: { width: 8, height: 8, borderRadius: "50%", background: s.primary } }), "LinkedIn Visual Design System"),
+        React.createElement("h1", { style: h1 }, "Welcome — let's set up your brand first."),
+        React.createElement("p", { style: sub }, "Five quick steps: point us at your Figma or GitHub (optional), then pick colours, font and your headline signature. A live preview shows your style as you go. Everything you set is yours and survives every update."),
+        React.createElement("div", { style: { display: "flex", gap: 28, margin: "8px 0 32px", flexWrap: "wrap" } },
+          [["1", "Source", "Figma, GitHub, a .fig file — or skip"], ["2", "Colours", "Loud, section & accent"], ["3", "Type", "Font + headline signature"], ["4", "Hand off", "One paste to the assistant"]].map(x =>
+            React.createElement("div", { key: x[0], style: { flex: 1, minWidth: 150 } },
+              React.createElement("div", { style: { fontWeight: 700, fontSize: 14, marginBottom: 4 } }, x[0] + " · " + x[1]),
+              React.createElement("div", { style: { fontSize: 13.5, color: "#8a9098", lineHeight: 1.45 } }, x[2])))));
+    } else if (step === 1) {
+      const opt = (val, title, desc) => React.createElement("button", { onClick: () => set("sourceType", val),
+        style: { textAlign: "left", width: "100%", padding: "16px 18px", marginBottom: 12, borderRadius: 12, cursor: "pointer", background: "#fff", border: "1.5px solid " + (s.sourceType === val ? s.primary : "#d8dadd"), boxShadow: s.sourceType === val ? `0 0 0 3px ${lightTint(s.primary, 12)}` : "none" } },
+        React.createElement("div", { style: { fontWeight: 700, fontSize: 16 } }, title),
+        React.createElement("div", { style: { fontSize: 14, color: "#8a9098", marginTop: 3, lineHeight: 1.4 } }, desc));
+      body = React.createElement("div", { style: colLeft },
+        React.createElement("h1", { style: h1 }, "Where should your brand come from?"),
+        React.createElement("p", { style: sub }, "If you have a Figma file or a GitHub repo, the assistant can pull your real colours, fonts and logo from it. No source? Just set it by hand in the next steps."),
+        opt("figma", "Figma file", "Paste a share link — the assistant imports the brand from it."),
+        s.sourceType === "figma" && React.createElement("input", { style: Object.assign({}, field, { marginBottom: 12 }), placeholder: "https://www.figma.com/file/…", value: s.figmaUrl, onChange: e => set("figmaUrl", e.target.value) }),
+        opt("github", "GitHub repo", "Paste the repo URL — pulls theme tokens / colours / fonts."),
+        s.sourceType === "github" && React.createElement("input", { style: Object.assign({}, field, { marginBottom: 12 }), placeholder: "https://github.com/owner/repo", value: s.githubUrl, onChange: e => set("githubUrl", e.target.value) }),
+        opt("file", "Upload a .fig file", "Pick the file, then attach it in the chat so the assistant can read it."),
+        s.sourceType === "file" && React.createElement("div", { style: { marginBottom: 12 } },
+          React.createElement("label", { style: Object.assign({}, btn(false), { fontSize: 14, padding: "10px 18px" }) },
+            "Choose .fig file",
+            React.createElement("input", { type: "file", accept: ".fig", style: { display: "none" }, onChange: e => set("fileName", e.target.files[0] ? e.target.files[0].name : "") })),
+          s.fileName && React.createElement("div", { style: { fontSize: 13.5, color: "#1f8a5b", fontWeight: 600, marginTop: 8 } }, "✓ " + s.fileName + " — remember to also attach it in the chat."),
+          s.fileName && React.createElement("div", { style: { fontSize: 13, color: "#8a9098", marginTop: 4, lineHeight: 1.4 } }, "A page can't send the file itself, so drag it into the chat as well.")),
+        opt("manual", "Set it manually", "No source — pick colours and type yourself."));
+    } else if (step === 2) {
+      body = React.createElement("div", { style: colLeft },
+        React.createElement("h1", { style: h1 }, "Your colours"),
+        React.createElement("p", { style: sub }, "Three roles drive every visual: a loud cover colour, a deep section colour, and an accent for highlights."),
+        React.createElement(Color, { k: "primary", name: "Primary — loud canvas (cover / back)" }),
+        React.createElement(Color, { k: "secondary", name: "Secondary — section canvas (chapters)" }),
+        React.createElement(Color, { k: "accent", name: "Accent — highlight / mark" }),
+        React.createElement("div", { style: { marginTop: 22 } },
+          React.createElement("span", { style: label }, "Light-canvas tint · " + s.tint + "%"),
+          React.createElement("input", { type: "range", min: 3, max: 16, value: s.tint, onChange: e => set("tint", +e.target.value), style: { width: "100%", accentColor: s.primary } })));
+    } else if (step === 3) {
+      body = React.createElement("div", { style: colLeft },
+        React.createElement("h1", { style: h1 }, "Type & signature"),
+        React.createElement("p", { style: sub }, "Pick the font everything is set in, and how a highlighted word looks in your headlines."),
+        React.createElement("div", { style: { marginBottom: 24 } },
+          React.createElement("span", { style: label }, "Font"),
+          React.createElement("select", { value: s.font, onChange: e => set("font", e.target.value), style: Object.assign({}, field, { fontFamily: `'${s.font}', sans-serif` }) },
+            FONTS.map(f => React.createElement("option", { key: f, value: f }, f)))),
+        React.createElement("div", null,
+          React.createElement("span", { style: label }, "Headline signature"),
+          React.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } },
+            SIGS.map(([val, name]) => React.createElement("button", { key: val, onClick: () => set("signature", val),
+              style: { flex: 1, minWidth: 84, padding: "11px 8px", fontSize: 14, fontWeight: 600, cursor: "pointer", borderRadius: 9, border: "1.5px solid " + (s.signature === val ? s.primary : "#d8dadd"), background: s.signature === val ? s.primary : "#fff", color: s.signature === val ? "#fff" : "#3a3f45" } }, name)))));
+    } else {
+      // Done — hand off
+      body = React.createElement("div", { style: colLeft },
+        React.createElement("h1", { style: h1 }, "You're set. Hand it to the assistant."),
+        React.createElement("p", { style: sub }, "One paste does it: the message below tells the assistant your source and choices, so it imports your brand and writes the overrides for you. (A page can't post into the chat on its own.)"),
+        React.createElement("button", { onClick: () => copy("msg", assistantMsg(s)), style: Object.assign({}, btn(true), { marginBottom: 16 }) }, copied === "msg" ? "Copied — now paste in chat ✓" : "Copy for the assistant"),
+        React.createElement("details", { style: { marginTop: 6 } },
+          React.createElement("summary", { style: { cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#6b7280" } }, "Or paste overrides/brand.css yourself"),
+          React.createElement("div", { style: { background: "#16232b", borderRadius: 14, overflow: "hidden", marginTop: 12 } },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.1)" } },
+              React.createElement("span", { style: { color: "#cfd3d8", fontSize: 13, fontWeight: 600, fontFamily: "monospace" } }, "overrides/brand.css"),
+              React.createElement("button", { onClick: () => copy("css", cssText(s)), style: { background: s.primary, color: "#fff", border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" } }, copied === "css" ? "Copied ✓" : "Copy")),
+            React.createElement("pre", { style: { margin: 0, padding: "16px 18px", color: "#e6edf3", fontSize: 12.5, lineHeight: 1.5, fontFamily: "monospace", whiteSpace: "pre-wrap", overflowX: "auto" } }, cssText(s)))));
+    }
 
-        // nav
-        step > 0 && step < 4 ? h("div", { key: "nav", style: { display: "flex", gap: 10, marginTop: 26, marginBottom: 40 } }, [
-          h("button", { key: "b", onClick: () => setStep(step - 1), style: ghost() }, "Back"),
-          step < 3 ? h("button", { key: "n", onClick: () => setStep(step + 1), style: primary(b.primary) }, "Continue")
-            : h("button", { key: "f", onClick: finish, style: primary(b.primary) }, "Finish setup"),
-        ]) : null,
-        step === 4 ? h("div", { key: "redo", style: { marginBottom: 40 } }, h("button", { onClick: () => setStep(1), style: ghost() }, "← Edit setup again")) : null,
-      ]),
+    const showPreview = step >= 2;
 
-      /* ---- right preview ---- */
-      showPreview ? h("div", { key: "r", style: { borderLeft: "1px solid #e2e4e7", padding: "30px 26px", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, position: "sticky", top: 0, maxHeight: "100vh", overflowY: "auto", background: "#e9ebee" } }, [
-        h("div", { key: "t", style: { alignSelf: "stretch", fontWeight: 700, fontSize: 14 } }, "Live preview · single visual"),
-        h(Stage, { key: "s", b }),
-        h("div", { key: "n", style: { fontSize: 12, color: "#8a9098", textAlign: "center", lineHeight: 1.5, maxWidth: 420 } }, "This is your style applied to a real visual. Carousels, infographics and quotes inherit the same brand."),
-      ]) : null,
+    return React.createElement("div", { style: shell },
+      // stepper
+      React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "center", padding: "26px 20px 6px", flexWrap: "wrap" } },
+        STEPS.map((name, i) => React.createElement("div", { key: name, onClick: () => i <= step && setStep(i),
+          style: { display: "flex", alignItems: "center", gap: 8, cursor: i <= step ? "pointer" : "default", opacity: i <= step ? 1 : .5 } },
+          React.createElement("span", { style: { width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: i < step ? s.primary : i === step ? s.primary : "#e2e5e9", color: i <= step ? "#fff" : "#9aa0a6" } }, i < step ? "✓" : i + 1),
+          React.createElement("span", { style: { fontSize: 13.5, fontWeight: 600, color: i === step ? "#18181b" : "#9aa0a6" } }, name),
+          i < STEPS.length - 1 && React.createElement("span", { style: { width: 22, height: 2, background: "#e2e5e9", marginLeft: 4 } })))),
 
-      toast ? h("div", { key: "toast", style: { position: "fixed", bottom: 26, left: "50%", transform: "translateX(-50%)", background: "#1f2328", color: "#fff", padding: "11px 18px", borderRadius: 11, fontSize: 13.5, fontWeight: 500, zIndex: 80 } }, toast) : null,
-    ]);
-  }
+      React.createElement("div", { style: main },
+        body,
+        showPreview && React.createElement("div", { style: { flex: "0 0 440px", maxWidth: 440, position: "sticky", top: 20 } },
+          React.createElement("span", { style: label }, "Live preview"),
+          React.createElement(Preview))),
 
-  /* ---------- steps ---------- */
-  function Welcome({ onStart }) {
-    return h("div", { key: "w", style: { paddingTop: 30, maxWidth: 560 } }, [
-      h("div", { key: "t", style: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 38, letterSpacing: "-.025em", lineHeight: 1.08 } }, "Let's set up your brand."),
-      h("p", { key: "p", style: { fontSize: 16, color: "#5f6671", lineHeight: 1.55, margin: "16px 0 26px" } }, "A few quick steps and every visual you make will be unmistakably yours. You'll pick your font and colours, add a logo and photo, and fine-tune spacing — with a live preview the whole way. Takes about two minutes."),
-      h("div", { key: "list", style: { display: "flex", flexDirection: "column", gap: 12, marginBottom: 30 } },
-        [["Identity", "Font, name, logo & profile photo"], ["Colours", "Primary, section & accent — with a smart suggestion"], ["Spacing & shape", "Margins and corner radii to taste"]].map((x, i) =>
-          h("div", { key: i, style: { display: "flex", gap: 12, alignItems: "center" } }, [
-            h("span", { key: "n", style: { width: 28, height: 28, borderRadius: "50%", background: "#eef4fc", color: "#0A66C2", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, flex: "none" } }, i + 1),
-            h("div", { key: "d" }, [h("div", { key: "t", style: { fontWeight: 700, fontSize: 14.5 } }, x[0]), h("div", { key: "s", style: { fontSize: 13, color: "#8a9098" } }, x[1])]),
-          ]))),
-      h("button", { key: "go", onClick: onStart, style: { ...primary("#0A66C2"), fontSize: 15, padding: "13px 26px" } }, "Begin setup →"),
-    ]);
-  }
-
-  function StepIdentity({ b, set, onImg }) {
-    return panel("Identity", "Your font and who you are. The font carries every headline and word.", [
-      group("Font", h("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } },
-        FONTS.map((f) => h("button", { key: f, onClick: () => set({ font: f }), style: { ...seg(b.font === f), fontFamily: `'${f}', sans-serif`, fontSize: 14 } }, f)))),
-      row([
-        group("Name (left of the bar)", textInput(b.name, (v) => set({ name: v }))),
-        group("Category / function (right)", textInput(b.category, (v) => set({ category: v }))),
-      ], "names"),
-      row([
-        group("Logo", uploader(b.logo, (f) => onImg(f, "logo"), () => set({ logo: null }), "Upload logo (PNG/SVG)")),
-        group("Profile photo (footer)", uploader(b.photo, (f) => onImg(f, "photo"), () => set({ photo: null }), "Upload photo", true)),
-      ], "uploads"),
-      group("Headline signature", h("div", { style: { display: "flex", gap: 8 } },
-        SIGS.map((s) => h("button", { key: s, onClick: () => set({ signature: s }), style: seg(b.signature === s) }, s)))),
-    ]);
-  }
-
-  function StepColours({ b, set }) {
-    const suggestion = deriveSecondary(b.primary);
-    return panel("Colours", "One primary does most of the work. The section colour anchors chapter slides; the accent marks and highlights.", [
-      group("Primary — your loud canvas (cover / back)", colorField(b.primary, (v) => set({ primary: v }))),
-      group("Section — deep colour for chapter slides", h("div", null, [
-        colorField(b.secondary, (v) => set({ secondary: v })),
-        b.secondary.toLowerCase() !== suggestion.toLowerCase() ? h("button", { key: "sg", onClick: () => set({ secondary: suggestion }), style: { marginTop: 8, fontSize: 12.5, color: "#0A66C2", background: "#eef4fc", border: "1px solid #cfe0f5", borderRadius: 8, padding: "6px 11px", cursor: "pointer", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 7 } }, [h("span", { key: "d", style: { width: 14, height: 14, borderRadius: 3, background: suggestion } }), "Use a section colour derived from your primary"]) : null,
-      ])),
-      group("Accent — categorise / highlight", colorField(b.accent, (v) => set({ accent: v }))),
-      group("Light canvas tint — " + b.tint + "% of primary", slider(3, 16, 1, b.tint, (v) => set({ tint: v }), "paler ← → bolder")),
-      swatchPreview(b),
-    ]);
-  }
-
-  function StepSpacing({ b, set }) {
-    return panel("Spacing & shape", "Fine-tune the feel. The 24px safe band is fixed; everything else is yours to adjust.", [
-      group("Content margin — " + b.margin + "px", slider(40, 120, 4, b.margin, (v) => set({ margin: v }), "tighter ← → roomier")),
-      group("Card radius — " + b.radiusCard + "px", slider(0, 36, 2, b.radiusCard, (v) => set({ radiusCard: v }), "sharp ← → round")),
-      group("CTA radius — " + b.radiusCta + "px", slider(0, 40, 2, b.radiusCta, (v) => set({ radiusCta: v }), "sharp ← → round")),
-      h("div", { key: "shapes", style: { display: "flex", gap: 14, marginTop: 8 } }, [
-        shapeChip(b.radiusCard, "card"), shapeChip(b.radiusCta, "cta"),
-      ]),
-    ]);
-  }
-
-  function StepDone({ b, brandCss, extrasCss, copy, download }) {
-    return h("div", { key: "done", style: { maxWidth: 640 } }, [
-      h("div", { key: "t", style: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 30, letterSpacing: "-.02em" } }, "Your brand is ready. 🎉"),
-      h("p", { key: "p", style: { fontSize: 15, color: "#5f6671", lineHeight: 1.55, margin: "12px 0 22px" } }, "Download these two files and drop them into your branch — they're yours and master updates never overwrite them. Then just open a chat and start making visuals; no setup needed there."),
-
-      // download buttons — the primary action
-      h("div", { key: "dl", style: { display: "flex", gap: 10, marginBottom: 22, flexWrap: "wrap" } }, [
-        h("button", { key: "b1", onClick: () => download(brandCss, "brand.css"), style: { ...primary(b.primary), display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14.5 } }, "↓ Download brand.css"),
-        h("button", { key: "b2", onClick: () => download(extrasCss, "extras.css"), style: { ...ghost(), display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14.5 } }, "↓ Download extras.css"),
-      ]),
-
-      // where they go
-      h("div", { key: "where", style: { fontSize: 13.5, color: "#3a3f45", background: "#f3f6fb", border: "1px solid #dde6f2", borderRadius: 11, padding: "14px 16px", marginBottom: 20, lineHeight: 1.6 } }, [
-        h("div", { key: "h", style: { fontWeight: 700, marginBottom: 6 } }, "Where they go in your branch"),
-        h("div", { key: "1", style: { fontFamily: "ui-monospace,monospace", fontSize: 12.5, color: "#5f6671" } }, "overrides/brand.css   ← replace the file there"),
-        h("div", { key: "2", style: { fontFamily: "ui-monospace,monospace", fontSize: 12.5, color: "#5f6671" } }, "overrides/extras.css  ← replace the file there"),
-        (b.logo || b.photo) ? h("div", { key: "3", style: { fontFamily: "ui-monospace,monospace", fontSize: 12.5, color: "#5f6671", marginTop: 4 } }, "client/assets/         ← save your logo / photo here") : null,
-      ]),
-
-      // collapsible: copy the raw CSS instead
-      h("details", { key: "raw", style: { marginBottom: 18 } }, [
-        h("summary", { key: "s", style: { fontSize: 13, color: "#6b7280", cursor: "pointer", fontWeight: 600, marginBottom: 12 } }, "Prefer to copy-paste instead? Show the CSS"),
-        codeBlock("overrides/brand.css", brandCss, () => copy(brandCss, "brand.css")),
-        codeBlock("overrides/extras.css", extrasCss, () => copy(extrasCss, "extras.css")),
-      ]),
-
-      h("p", { key: "next", style: { fontSize: 14, color: "#5f6671", lineHeight: 1.55, margin: "4px 0 0" } }, [
-        h("b", { key: "b" }, "Working inside Claude? "), "Just copy the CSS above and paste it into the chat — say \u201csave this as my brand\u201d and the design system writes it to overrides/ for you. Then start making visuals.",
-      ]),
-    ]);
-  }
-
-  /* ---------- helpers ---------- */
-  function panel(title, sub, children) {
-    return h("div", { key: title, style: { maxWidth: 600 } }, [
-      h("div", { key: "t", style: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 26, letterSpacing: "-.02em" } }, title),
-      h("p", { key: "s", style: { fontSize: 14.5, color: "#6b7280", lineHeight: 1.5, margin: "8px 0 22px" } }, sub),
-      ...children,
-    ]);
-  }
-  function group(label, control) { return h("div", { key: label, style: { marginBottom: 18 } }, [h("label", { key: "l", style: { display: "block", fontSize: 13, fontWeight: 600, color: "#3a3f45", marginBottom: 8 } }, label), control]); }
-  function row(items, k) { return h("div", { key: k || "row", style: { display: "flex", gap: 16 } }, items.map((it, i) => h("div", { key: i, style: { flex: 1 } }, it))); }
-  const inputBase = { width: "100%", boxSizing: "border-box", border: "1px solid #d8dadd", borderRadius: 9, padding: "10px 12px", fontSize: 14, fontFamily: "inherit", outline: "none", background: "#fff", color: "#1f2328" };
-  function textInput(v, on) { return h("input", { value: v, onChange: (e) => on(e.target.value), style: inputBase }); }
-  function seg(on) { return { padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 600, textTransform: "capitalize", border: on ? "1px solid transparent" : "1px solid #d8dadd", background: on ? "#1f2328" : "#fff", color: on ? "#fff" : "#5f6671" }; }
-  function primary(c) { return { padding: "11px 18px", borderRadius: 10, border: "none", background: c, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }; }
-  function ghost() { return { padding: "11px 16px", borderRadius: 10, border: "1px solid #d8dadd", background: "#fff", color: "#5f6671", fontSize: 14, fontWeight: 600, cursor: "pointer" }; }
-  function colorField(v, on) {
-    return h("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" } }, [
-      ...SWATCHES.map((c) => h("button", { key: c, onClick: () => on(c), title: c, style: { width: 32, height: 32, borderRadius: 8, background: c, border: v.toLowerCase() === c.toLowerCase() ? "3px solid #1f2328" : "1px solid #d8dadd", cursor: "pointer" } })),
-      h("label", { key: "custom", style: { display: "inline-flex", alignItems: "center", gap: 7, marginLeft: 4, fontSize: 12.5, color: "#6b7280", cursor: "pointer" } }, [
-        h("input", { key: "i", type: "color", value: v, onChange: (e) => on(e.target.value), style: { width: 32, height: 32, border: "1px solid #d8dadd", borderRadius: 8, padding: 0, background: "none", cursor: "pointer" } }),
-        h("span", { key: "hx", style: { fontFamily: "ui-monospace,monospace" } }, v),
-      ]),
-    ]);
-  }
-  function slider(min, max, stepv, val, on, hint) {
-    return h("div", null, [
-      h("input", { key: "s", type: "range", min, max, step: stepv, value: val, onChange: (e) => on(Number(e.target.value)), style: { width: "100%", accentColor: "#0A66C2" } }),
-      hint ? h("div", { key: "h", style: { fontSize: 11.5, color: "#9aa0a6", display: "flex", justifyContent: "space-between", marginTop: 2 } }, hint.split(" ← → ").map((t, i) => h("span", { key: i }, t))) : null,
-    ]);
-  }
-  function uploader(val, onFile, onClear, label, round) {
-    const ref = React.createRef();
-    return h("div", null, [
-      val ? h("div", { key: "p", style: { display: "flex", alignItems: "center", gap: 10 } }, [
-        h("img", { key: "i", src: val, style: { width: 52, height: 52, objectFit: round ? "cover" : "contain", borderRadius: round ? "50%" : 8, border: "1px solid #e0e2e5", background: "#fff" } }),
-        h("button", { key: "c", onClick: onClear, style: { fontSize: 12.5, color: "#9aa0a6", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" } }, "remove"),
-      ]) : h("button", { key: "u", onClick: () => ref.current && ref.current.click(), style: { width: "100%", padding: "13px", border: "2px dashed #cfd3d8", borderRadius: 10, background: "#fafbfc", color: "#6b7280", fontSize: 13, cursor: "pointer", fontWeight: 600 } }, label),
-      h("input", { key: "in", ref, type: "file", accept: "image/*", onChange: (e) => onFile(e.target.files[0]), style: { display: "none" } }),
-    ]);
-  }
-  function swatchPreview(b) {
-    return h("div", { key: "sw", style: { display: "flex", gap: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e0e2e5", marginTop: 4 } },
-      [["Loud", b.primary, "#fff"], ["Light", mix(b.primary, b.tint), "#1f2328"], ["Section", b.secondary, "#fff"], ["Accent", b.accent, "#1f2328"]].map((x, i) =>
-        h("div", { key: i, style: { flex: 1, background: x[1], color: x[2], padding: "12px 10px", fontSize: 11.5, fontWeight: 700, textAlign: "center" } }, x[0])));
-  }
-  function mix(hex, pct) {
-    const n = hex.replace("#", ""); const r = parseInt(n.slice(0, 2), 16), g = parseInt(n.slice(2, 4), 16), b = parseInt(n.slice(4, 6), 16);
-    const f = pct / 100, m = (x) => Math.round(x * f + 255 * (1 - f)).toString(16).padStart(2, "0");
-    return "#" + m(r) + m(g) + m(b);
-  }
-  function shapeChip(radius, label) {
-    return h("div", { key: label, style: { display: "flex", flexDirection: "column", alignItems: "center", gap: 6 } }, [
-      h("div", { key: "b", style: { width: 70, height: 50, background: "#eef4fc", border: "1.5px solid #0A66C2", borderRadius: radius } }),
-      h("span", { key: "l", style: { fontSize: 11.5, color: "#9aa0a6", fontWeight: 600 } }, label + " · " + radius + "px"),
-    ]);
-  }
-  function codeBlock(name, code, onCopy) {
-    return h("div", { key: name, style: { marginBottom: 16 } }, [
-      h("div", { key: "h", style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 } }, [
-        h("span", { key: "n", style: { fontFamily: "ui-monospace,monospace", fontSize: 12.5, color: "#3a3f45", fontWeight: 600 } }, name),
-        h("button", { key: "c", onClick: onCopy, style: { fontSize: 12, fontWeight: 600, color: "#0A66C2", background: "#eef4fc", border: "1px solid #cfe0f5", borderRadius: 7, padding: "4px 11px", cursor: "pointer" } }, "Copy"),
-      ]),
-      h("pre", { key: "p", style: { margin: 0, fontFamily: "ui-monospace,monospace", fontSize: 12, lineHeight: 1.55, color: "#cfe3ff", background: "#0f1419", borderRadius: 10, padding: "13px 15px", overflowX: "auto", whiteSpace: "pre" } }, code),
-    ]);
+      // nav
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", maxWidth: 1140, width: "100%", margin: "0 auto", padding: "28px 40px 40px", boxSizing: "border-box" } },
+        React.createElement("button", { onClick: () => setStep(Math.max(0, step - 1)), style: Object.assign({}, btn(false), { visibility: step === 0 ? "hidden" : "visible" }) }, "← Back"),
+        step < STEPS.length - 1
+          ? React.createElement("button", { onClick: () => setStep(step + 1), style: btn(true) }, step === 0 ? "Get started →" : "Next →")
+          : React.createElement("a", { href: "Visual Board.html", style: Object.assign({}, btn(true), { textDecoration: "none" }) }, "Start making visuals →")));
   }
 
   window.Setup = Setup;
