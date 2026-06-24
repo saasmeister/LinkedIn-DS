@@ -1,12 +1,30 @@
 {
   "name": "LinkedIn Visual Design System",
   "channel": "master",
-  "version": "1.1.0",
-  "published": "2026-06-22",
+  "version": "1.2.0",
+  "published": "2026-06-24",
   "manifestUrl": "REPLACE_WITH_PUBLISHED_MANIFEST_URL",
   "checkCadenceHours": 24,
   "autoApply": false,
   "releases": [
+    {
+      "version": "1.2.0",
+      "date": "2026-06-24",
+      "level": "minor",
+      "summary": "Archetype template library (9 reference templates × A/B/C variants incl. carousels-on-board), a Canva-style board editor, and winning-variant selection.",
+      "templates": [
+        "pictograph-visual", "trajectory-visual", "testimonial-visual", "layered-visual", "data-visual",
+        "infographic-tree", "infographic-flow", "infographic-annotated", "infographic-matrix", "infographic-roadmap",
+        "carousel-listicle", "carousel-story", "carousel-framework"
+      ],
+      "components": ["board-editor"],
+      "notes": [
+        "Carousels live on the Visual Board as a scrollable filmstrip; reference templates are SLIDE-CONTENT ONLY.",
+        "Board editor: select/move/resize/edit-text, library rail, duplicate/recolour, zoom, per-variant persistence.",
+        "GATE 5 (analogy-led) + GATE 6 (rotate archetypes) added; removed the Brief Studio and first-run setup kits.",
+        "START HERE is now a guided 5-step brand wizard with one-click 'Copy for the assistant'."
+      ]
+    },
     {
       "version": "1.1.0",
       "date": "2026-06-22",
