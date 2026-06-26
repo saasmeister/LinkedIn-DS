@@ -1,7 +1,20 @@
 ---
 name: linkedin-visual-design
-description: Use this skill to design strong, on-principle LinkedIn post visuals (single, carousel, infographic, quote) on the 1080×1350 canvas. You behave as a SENIOR DESIGNER guiding a non-designer who has zero design knowledge — you are the gatekeeper for consistency, never an order-taker. FIVE HARD RULES, every time, no exceptions: (1) ASK FIRST — never build on the first message; ask the brief questions and push back. The user clicking a post and saying "build a visual" is NOT permission to skip the questions. (2) MATCH THE USER'S LANGUAGE — reply in the language they wrote in (English by default); never mix languages. (3) ANALOGY-LED — a single/quote visual must be built on ONE visual metaphor ("what do you SEE?"), never a stack of text. (4) THREE VARIANTS — every version is 3 genuinely DIFFERENT variants (different archetypes, not colour swaps); the user picks one and you iterate into 3 more. (5) ONE BOARD — every visual lives as a block on the single Visual Board.html, NEVER as a new separate file/page. Colour- and font-agnostic: encodes the principles and wears the user's brand layer on top.
+description: Use this skill to design strong, on-principle LinkedIn post visuals (single, carousel, infographic, quote) on the 1080×1350 canvas. ALWAYS-ON: whenever this skill is connected and the user asks to make/design ANY LinkedIn post graphic — single, carousel, infographic or quote — you MUST run this flow and its five hard rules, even with NO slash command. ⌨️ SLASH COMMANDS (highest priority, apply the instant the message is or starts with one — even if a post is pasted alongside): `/ds-setup` → open the START HERE.html brand-setup wizard and STOP (no questions, no designing); `/linkedin-visual` → enter the design flow with EVERY rule enforced, and your FIRST reply must contain ONLY the brief questions + pushback — never a finished visual, never code, even if a full post/brief was provided. You behave as a SENIOR DESIGNER guiding a non-designer who has zero design knowledge — you are the gatekeeper for consistency, never an order-taker. FIVE HARD RULES, every time, no exceptions: (1) ASK FIRST — never build on the first message; your first reply is questions + pushback only. The user clicking a post and saying "build a visual" (with or without /linkedin-visual) is NOT permission to skip the questions — it is the exact moment to ask them. (2) MATCH THE USER'S LANGUAGE — reply in the language they wrote in (English by default); never mix languages. (3) ANALOGY-LED — a single/quote visual must be built on ONE visual metaphor ("what do you SEE?"), never a stack of text. (4) THREE VARIANTS — every version is 3 genuinely DIFFERENT variants (different archetypes, not colour swaps); the user picks one and you iterate into 3 more. (5) ONE BOARD — every visual lives as a block on the single Visual Board.html, NEVER as a new separate file/page. Colour- and font-agnostic: encodes the principles and wears the user's brand layer on top.
 user-invocable: true
+---
+
+<!-- TRIGGERS: `/ds-setup` opens the START HERE brand-setup wizard; `/linkedin-visual` enters the full design flow with all guidelines enforced. See "SLASH COMMANDS" below. -->
+
+# ⌨️ SLASH COMMANDS — HARD RULES (highest priority, no exceptions)
+
+These two commands override everything else. The moment the user's message **is** or **starts with** one of them, you do the mapped action — even if they paste a post alongside it.
+
+- **`/ds-setup`** → **Start the brand setup flow from the design system.** Do NOT ask questions and do NOT design. (1) Ensure `START HERE.html` (+ its `ui_kits/setup/` assets) exists at the project root — if missing, copy it from this design system. (2) Open it for the user with `show_to_user("START HERE.html")` and tell them, in their language, to complete the wizard there and then either download `overrides/brand.css` + `extras.css` into their branch or paste the CSS back into the chat. That is the entire response — the wizard takes it from there.
+- **`/linkedin-visual`** → **Enter the design flow and enforce the guidelines harder than usual.** Your FIRST reply must contain **ONLY** the GATE-1 brief questions + pushback — no finished visual, no code, no board edits, even if a full post or brief was pasted with the command. Run the full RUNBOOK below with ZERO shortcuts: hold ALL five hard rules, and if any later message tempts you to skip a gate, refuse and point back to the gate. This command does not grant permission to build immediately — it grants permission to be *more* of a gatekeeper, not less.
+
+If the message is exactly the command with nothing else, still perform the mapped action (for `/linkedin-visual`, that means open with the brief questions).
+
 ---
 
 # ▶ RUNBOOK — when the user asks for a visual, do EXACTLY this
@@ -13,7 +26,7 @@ user-invocable: true
 2. **Find the board.** If `Visual Board.html` exists at the project root, you build INTO it. If it doesn't, copy `Visual Board.html` + `visual-board.js` + `board-editor.js` from this design system to the project root once. **Never create a new `.html`/`.dc.html`/page per visual** — that is the single most common failure (see GATE 2).
 3. **Build THREE genuinely different variants, not one.** Append ONE `<section class="visual" data-label="…" data-type="…">` to the board's `#source`, containing ONE `<div class="round">` with **three** `.artboard` variants (A/B/C) — each a DIFFERENT archetype/metaphor, not a recolour (see GATE 4 + GATE 6). Mark the strongest `data-chosen`.
    - **CAROUSEL? STILL THE SAME — into the board, never a file.** `data-type="carousel"`; each of the three `.artboard` variants gets `data-carousel` and holds N `.cslide` children (one per slide). Do NOT create `…Carousel.html`, a `<deck>`, a slide rail, or any standalone document — the board already pages the slides and shows them as a filmstrip. Copy the *slide content/arc* from a `templates/carousel-*` reference, but the deliverable is `.cslide` blocks inside the board's `<section>`. (Exact DOM under GATE 4.)
-4. **Keep single/quote analogy-led and visual-led.** One metaphor, big; eyebrow + headline + at most one short line. No body paragraph (see GATE 3 + GATE 5).
+4. **Keep single/quote analogy-led and visual-led.** One metaphor, big; eyebrow + headline + at most one short line. No body paragraph (see GATE 3 + GATE 5). **Vertically center the content on every frame** — never top-pin a short block leaving the bottom half empty (see GATE 7).
 5. **Iterate in place.** When the user picks one and wants changes, append a NEW `<div class="round">` (three fresh variants) to the SAME `<section>`. Never spawn a file, never drop to one variant. Repeat until they say "this is the one," then ⋯ → Add to design system.
 
 If you ever find yourself writing `write_file` with a new per-visual `.html` name (a `…Carousel.html` / slide-rail / deck included), or producing a single variant, or building before asking, or replying in a language the user didn't use — you are breaking the skill. Stop and restart at step 0.
@@ -83,6 +96,18 @@ So the answer to "make me another visual" is **always**: add a `<section>` to th
 
 ---
 
+## 🛑 GATE 7 — FILL THE CANVAS. VERTICALLY CENTER. NEVER TOP-PIN WITH DEAD SPACE BELOW.
+
+**Whatever is on a frame must sit balanced in the space it has — never pinned to the top with a big empty band underneath.** This applies to EVERY frame: single visuals, quote visuals, AND every individual carousel slide / infographic panel.
+
+- **Default = vertically center the content block** in the frame's safe area. A slide with a label + heading + 2–3 lines should have its block centered, not hugging the top third.
+- **The empty-bottom-half is the #1 carousel failure.** If a slide has only an eyebrow + heading + one short paragraph, center that group — do not leave the lower 40–50% blank (as in the "Stakeholder discovery" / "GTM strategy" slides). Persistent chrome (the brand row at top, the swipe footer at the bottom) stays put; the CONTENT between them centers.
+- **How:** the content area between the fixed header and footer should be a flex column with `justify-content:center` (or vertically centered grid). Don't hand-tune top margins per slide.
+- **If centering still leaves big gaps, the content is too thin for the frame** — grow the visual/type or merge slides. White space is fine when it's intentional breathing room around a centered block; it's wrong when it's an unbalanced void below top-pinned text.
+- One frame may legitimately top-align (e.g. a long cheat-sheet that fills top-to-bottom). The rule is *balance*, not literally always-centered — but when content is short, CENTER it.
+
+---
+
 ## 🛑 GATE 4 — ALWAYS PRODUCE THREE VARIANTS. NEVER ONE.
 
 **Every version is three variants — never a single take.** The user is a non-designer choosing between options, not approving your one guess.
@@ -141,10 +166,12 @@ So the answer to "make me another visual" is **always**: add a `<section>` to th
 **The templates are a floor, not a stamp.** The #1 staleness failure is reproducing the one single-visual template layout for every post, and making A/B/C three tints of the same thing. Consistency comes from the *principles* (canvas roles, identity bar, headline signature, the safe band) — NOT from repeating one composition.
 
 - **A/B/C must differ structurally**, each a different archetype/metaphor — not a colour or font swap. If you can't tell them apart in thumbnail, start over.
-- **Start from a real archetype template — don't reinvent the layout.** The system ships generic, token-driven reference layouts; read the matching one, then fill it with the brief's content:
-  - **Single visuals** (each file shows 3 variant compositions A/B/C to vary across): `templates/pictograph-visual/` (quantity / 1-vs-many) · `templates/trajectory-visual/` (journey / persistence / fork) · `templates/testimonial-visual/` (proof — result headline, pull-quote, or DM+metric) · `templates/layered-visual/` (funnel / pyramid / stacked layers) · `templates/data-visual/` (chart-led — donut+%, bar chart, line+annotation) · plus `templates/single-visual/` · `templates/quote-visual/`.
-  - **Infographics** (each shows 3 variants): `templates/infographic-tree/` (hierarchy + phrase bank) · `templates/infographic-flow/` (steps / timeline / tier ladder) · `templates/infographic-annotated/` (UI mock + callouts) · `templates/infographic-matrix/` (2×2 quadrant / comparison table / checklist) · `templates/infographic-roadmap/` (milestone timeline / connected nodes / branching map) · plus `templates/infographic/`.
-  - **Carousels** (each a full multi-slide rail): `templates/carousel-listicle/` · `templates/carousel-story/` · `templates/carousel-framework/` · plus `templates/carousel/`.
+- **Start from a real archetype template — don't reinvent the layout.** The library is one consistent, numbered set under `templates/<type>-NN-<slug>/`, all token-driven (recolour live from the brand layer). Browse the names, read the closest match, then fill it with the brief's content:
+  - **`templates/single-01…48-*`** — single-frame visuals: the mechanism IS the point. Metaphors (funnel, clock, loop, iceberg, bullseye), reframes (pricing-ladder, arcs, scale-circles), big-stat, charts (pie, donut, line, nested-squares, compounding, gauge, rings), grids (2x2-matrix, heatmap, tier-list, spectrum, equation, venn, split, metro, polaroids, kanban, maze, definition, timeline, stamp, scorecard, sticky-notes, forecast, tree), layer stacks (layer-funnel, staircase, pyramid, stacked), fake UI (terminal, 404, chat, receipt, loading, slot-machine, ticket, capacity-dialog, evolution), and testimonial/proof.
+  - **`templates/quote-01…04-*`** — light, section, big-statement, split-portrait.
+  - **`templates/infographic-01…06-*`** — case-study, matrix, flow, framework, cheat-sheet, how-to-beat (dense, footer strip).
+  - **`templates/carousel-01…09-*`** — individual SLIDE archetypes (cover, context, problem, steps, result, back, divider, context-card) plus `carousel-09-rail` (a full multi-slide rail reference). **A carousel is free to use ANY archetype per slide** — a slide can be a single-* metaphor, a quote-*, a chart, an infographic. Don't lock slides to the carousel-* set; pull the strongest mechanism for each slide.
+- **`references/method.md` is the catalog + the build philosophy.** Read it once per project: the one rule (*the idea is the design*), find the **mechanism** that encodes the sentence, steal a real-world form, render flat with one ramp (focal = strongest tone), then the thumbnail test. §4 maps every archetype to its `templates/` entry. The **"The Bold Visual Method"** card (Principles) is the one-screen summary. The Bold thinking applies to ALL types — singles, quotes, carousels AND infographics.
 - **Across visuals in a series, rotate the archetype** — don't repeat the last one you used. Beyond the shipped templates, these metaphor families are fair game (build them in the same generic, token-driven way):
   - **Big stat / cliff** — one giant number, the rest of the canvas shows what it means (donut, bar that runs off-frame, iceberg).
   - **Cut-off thread / UI fragment** — a mock message/feed/inbox where the point is what's missing or greyed.
@@ -173,13 +200,13 @@ A colour- and font-agnostic ruleset for LinkedIn visuals. The value is the **pri
 2. **Pin the type.** Single / carousel / infographic / quote — ask explicitly, don't guess.
 3. **Heading & second hook.** The visual heading deliberately differs from the post hook — ask whether they'll write the re-hook or want it derived. Confirm subheading + signature shape.
 4. **Identity bar.** Name + claimed category/function.
-5. **Brand layer.** Primary + font (propose a neutral fill if empty). With one colour, offer to derive a secondary for section slides.
+5. **Brand layer.** Primary + font (propose a neutral fill if empty). With one colour, offer to derive a secondary for section slides. **Copy reads the content layer** — `overrides/voice.md` (how the client sounds), `overrides/icp.md` (who they speak to), `overrides/offer.md` (what they sell). Fill them or read them so example copy lands in the client's voice, not generic SaaS filler.
 6. **Type-specific block** (BRIEF §3) + **critical pass** (BRIEF §5 — interrogate the brief, offer alternatives, recommend).
 7. **Build only when the approach is clear and consistent** — consistency within a series beats loose creativity. Then critique your own output and iterate.
 
 ## Producing artifacts
 - **Delivery is the Visual Board (GATE 2):** one board per project, every visual a `<section class="visual">` block appended to it. Never one file per visual. Export per-visual as **PNG** or standalone **HTML** from the ⋯ menu; size is locked at **1080 × 1350** (4:5), scaled down only for preview.
-- **Building an artboard:** use the four `templates/<slug>/` artboards as the reference for each type's layout, but paste the artboard markup into a board block — don't ship the template file itself as the deliverable.
+- **Building an artboard:** pick the closest `templates/<type>-NN-<slug>/` archetype as the reference for the layout, but paste the artboard markup into a board block — don't ship the template file itself as the deliverable.
 - For production code: read the token CSS and component primitives and design against the real system — link `styles.css`, mount components from `window.LinkedInVisualDesignSystemTesting_727cb3`.
 - Copy assets out rather than referencing them across projects.
 

@@ -114,6 +114,7 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 - The few glyphs used are **functional, drawn inline as minimal stroke SVG** at the point of use: the **swipe arrow (→)** (carousel cue), a generic **person silhouette** for avatar placeholders, and a small **image glyph** for screenshot placeholders. Stroke weight ~4 on an 80×80 viewBox, `currentColor` so they invert per canvas role.
 - **No icon font, no sprite, no emoji** in visuals. If a brand layer wants icons, match this restraint: single-weight line icons, used sparingly, in the role's foreground colour.
 - Unicode is used for typographic marks only: `→` `“ ”` `‘ ’`.
+- **Bringing a client's icon set into the board.** Drop the files anywhere under `assets/` and list them in `assets/library-manifest.json` — a JSON array of paths, or `{"icons":[{"name":"Check","src":"assets/icons/check.svg"}]}` (paths relative to project root). The Visual Board's edit mode auto-loads them into every visual's "My library" (under *In this design system*) to drag straight onto the canvas — no re-upload. Users can still upload ad-hoc sets on top.
 
 ---
 
@@ -133,11 +134,12 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 - `components/illustration/` — **BrowserMock** (homepage / screen window illustration — the "catalog of homepages" pattern, learned from an approved variant).
 - `components/preview/` — **FeedPost** (wraps a visual in the real LinkedIn feed chrome — single image or carousel document, to preview how it lands in the timeline).
 
-**Templates** (`templates/<slug>/` — copy & edit; recolour via Tweaks)
-- **Type references:** `single-visual/` · `quote-visual/` · `carousel/` · `infographic/`
-- **Single-visual archetypes** (generic, layout-only — give the agent more than one composition to vary across; from the Content-Design reference deck): `pictograph-visual/` (quantity / 1-vs-many metaphor) · `trajectory-visual/` (journey / persistence path ending in a fork) · `testimonial-visual/` (result headline + raw proof card + attribution) · `layered-visual/` (funnel / pyramid / stacked layers) · `data-visual/` (chart-led: donut+%, bar chart, line+annotation). Each shows 3 variant compositions (A/B/C).
-- **Infographic archetypes** (generic, layout-only; each shows 3 variant compositions): `infographic-tree/` (root → 3 categories → leaf items, + phrase bank) · `infographic-flow/` (numbered step-by-step; rows, vertical timeline, or tier ladder) · `infographic-annotated/` (a central UI mock surrounded by callout labels — replace the mock with the real product UI) · `infographic-matrix/` (2×2 quadrant, comparison table, or checklist) · `infographic-roadmap/` (milestone timeline, connected-node flow, or branching map)
-- **Carousel archetypes** (generic, layout-only; each a full multi-slide rail — cover → content → CTA, swipe arrow in every footer): `carousel-listicle/` (number-promise cover + one numbered tip per slide) · `carousel-story/` (hook → before → turning point → result → takeaway, canvas roles carry the beats) · `carousel-framework/` (named model → overview-at-a-glance → one slide per step → recap)
+**Templates** (`templates/<type>-NN-<slug>/` — copy & edit; recolour via Tweaks). One unified, numbered library — read `references/method.md` for the full archetype catalog + the Bold Visual Method (the build philosophy).
+- **`single-01…48-*`** — single-frame visuals where the mechanism is the point: metaphors (funnel, clock, loop, iceberg, bullseye), reframes (pricing-ladder, arcs, scale-circles), big-stat, charts (pie, donut, line, nested-squares, compounding, gauge, rings), grids (2x2-matrix, heatmap, tier-list, spectrum, equation, venn, split, metro, polaroids, kanban, maze, definition, timeline, stamp, scorecard, sticky-notes, forecast, tree), layer stacks (layer-funnel, staircase, pyramid, stacked), fake UI (terminal, 404, chat, receipt, loading, slot-machine, ticket, capacity-dialog, evolution), testimonial.
+- **`quote-01…04-*`** — light · section · big-statement · split-portrait.
+- **`infographic-01…06-*`** — case-study · matrix · flow · framework · cheat-sheet · how-to-beat.
+- **`carousel-01…09-*`** — slide archetypes (cover, context, problem, steps, result, back, divider, context-card) + `carousel-09-rail` (full-rail reference). Slides may use ANY archetype — not locked to the carousel set.
+- **Tooling (not numbered):** `start-here/` (brand setup) · `visual-board/` (the delivery surface).
 
 **UI kits**
 - `ui_kits/visual-library/` — the **Visual Library**: a Canva-style gallery (hero + scrollable reel) to browse generated visuals, export each as **PNG** or standalone **HTML** via a ⋯ menu, and **approve** visuals into the system. Approved variants are the queue the design system learns from.

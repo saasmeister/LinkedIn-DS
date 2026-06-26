@@ -18,6 +18,7 @@
             "group": [
               "board-editor.js",
               "components/content/**",
+              "components/icons/**",
               "components/illustration/**",
               "components/layout/**",
               "components/preview/**",
@@ -25,6 +26,7 @@
               "ui_kits/setup/**",
               "ui_kits/update-center/**",
               "ui_kits/visual-library/**",
+              "uploads/Design system setup/**",
               "visual-board.js"
             ],
             "message": "Import design-system components from 'index.js', not component internals."

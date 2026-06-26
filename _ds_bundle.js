@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystemTesting_727cb3","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"board-editor.js":"55d12d430a4b","components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","ui_kits/setup/Setup.jsx":"7b77dc00b0b1","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"b246a3729833","visual-board.js":"135f57cc37e7"},"inlinedExternals":[],"unexposedExports":[]} */
+/* @ds-bundle: {"format":3,"namespace":"LinkedInVisualDesignSystemTesting_727cb3","components":[{"name":"Cta","sourcePath":"components/content/Cta.jsx"},{"name":"InfoCard","sourcePath":"components/content/InfoCard.jsx"},{"name":"Chip","sourcePath":"components/content/InfoCard.jsx"},{"name":"Quote","sourcePath":"components/content/Quote.jsx"},{"name":"Avatar","sourcePath":"components/content/Quote.jsx"},{"name":"Attribution","sourcePath":"components/content/Quote.jsx"},{"name":"Stat","sourcePath":"components/content/Stat.jsx"},{"name":"StatBox","sourcePath":"components/content/Stat.jsx"},{"name":"StatRow","sourcePath":"components/content/Stat.jsx"},{"name":"BrowserMock","sourcePath":"components/illustration/BrowserMock.jsx"},{"name":"Canvas","sourcePath":"components/layout/Canvas.jsx"},{"name":"Chrome","sourcePath":"components/layout/Chrome.jsx"},{"name":"SwipeArrow","sourcePath":"components/layout/Chrome.jsx"},{"name":"FeedPost","sourcePath":"components/preview/FeedPost.jsx"},{"name":"Eyebrow","sourcePath":"components/text/Headline.jsx"},{"name":"Headline","sourcePath":"components/text/Headline.jsx"},{"name":"Mark","sourcePath":"components/text/Headline.jsx"},{"name":"Subhead","sourcePath":"components/text/Headline.jsx"}],"sourceHashes":{"board-editor.js":"9a555150798c","components/content/Cta.jsx":"82e459098f48","components/content/InfoCard.jsx":"1c79ce656fe9","components/content/Quote.jsx":"26d86b908140","components/content/Stat.jsx":"3196afd21e95","components/icons/icon-kit.js":"d7ec43dee173","components/illustration/BrowserMock.jsx":"4ffefd5fb451","components/layout/Canvas.jsx":"c7884415425d","components/layout/Chrome.jsx":"cf4752729eb3","components/preview/FeedPost.jsx":"bd5556609d26","components/text/Headline.jsx":"0ab05c2c7576","ui_kits/setup/Setup.jsx":"f35a8d9cd90d","ui_kits/update-center/UpdateCenter.jsx":"c049b459323e","ui_kits/visual-library/VisualLibrary.jsx":"d8b82962af64","ui_kits/visual-library/sampleVisuals.jsx":"b246a3729833","uploads/Design system setup/doodle-kit.js":"5ce008ede3c4","visual-board.js":"565edc2657e0"},"inlinedExternals":[],"unexposedExports":[]} */
 
 (() => {
 
@@ -29,16 +29,112 @@ window.BoardEditor = function () {
     selbox: null,
     eltbar: null,
     palette: null,
+    cpop: null,
     onChange: function () {},
     flash: function () {},
     art: null,
     scale: 1,
     sel: null,
+    selected: [],
+    marquee: null,
+    olayer: null,
     active: false
   };
 
   /* ---------- palette: draggable elements (brand-aware) ---------- */
-  var COLORS = ["var(--brand-primary)", "var(--accent)", "var(--fg)", "var(--muted)", "var(--soft)"];
+  // Design-system colour swatches offered in the picker. Brand entries stay theme-linked
+  // (a var() string, so they re-colour with the brand); literals are fixed.
+  var SWATCHES = [{
+    label: "Primary",
+    val: "var(--brand-primary)"
+  }, {
+    label: "Secondary",
+    val: "var(--brand-secondary)"
+  }, {
+    label: "Accent",
+    val: "var(--brand-accent)"
+  }, {
+    label: "Ink",
+    val: "var(--fg)"
+  }, {
+    label: "Muted",
+    val: "var(--muted)"
+  }, {
+    label: "Soft",
+    val: "var(--soft)"
+  }, {
+    label: "White",
+    val: "#FFFFFF"
+  }, {
+    label: "Ink 900",
+    val: "#18181B"
+  }];
+  var CUSTOM_KEY = "li-vds-board-colors-v1";
+  function loadCustom() {
+    try {
+      return JSON.parse(localStorage.getItem(CUSTOM_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+  var CUSTOM = loadCustom();
+  function saveCustom() {
+    try {
+      localStorage.setItem(CUSTOM_KEY, JSON.stringify(CUSTOM));
+    } catch (e) {}
+  }
+
+  /* ---------- magnetic 12-col grid (artboard = 1080×1350) ---------- */
+  var MARGIN = 72,
+    COLS = 12,
+    GUTTER = 24;
+  var COLW = (1080 - 2 * MARGIN - (COLS - 1) * GUTTER) / COLS; // = 56
+  var ROWH = 78; // vertical rhythm
+  var SNAP = 16; // snap threshold (artboard px)
+  var GRID_KEY = "li-vds-board-grid-v1";
+  var gridState = function () {
+    try {
+      return JSON.parse(localStorage.getItem(GRID_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }();
+  var showGrid = gridState.grid !== false; // default ON
+  var showMargin = gridState.margin !== false; // default ON
+  function saveGrid() {
+    try {
+      localStorage.setItem(GRID_KEY, JSON.stringify({
+        grid: showGrid,
+        margin: showMargin
+      }));
+    } catch (e) {}
+  }
+  function xEdges() {
+    var a = [];
+    for (var i = 0; i < COLS; i++) {
+      var s = MARGIN + i * (COLW + GUTTER);
+      a.push(s);
+      a.push(s + COLW);
+    }
+    return a;
+  }
+  function yLines() {
+    var a = [];
+    for (var y = MARGIN; y <= 1350 - MARGIN + 0.5; y += ROWH) a.push(Math.round(y));
+    return a;
+  }
+  function snapTo(v, lines) {
+    var best = v,
+      bd = SNAP;
+    for (var i = 0; i < lines.length; i++) {
+      var d = Math.abs(v - lines[i]);
+      if (d < bd) {
+        bd = d;
+        best = lines[i];
+      }
+    }
+    return best;
+  }
   var LIB_KEY = "li-vds-board-lib-v1";
   function loadLib() {
     try {
@@ -53,7 +149,132 @@ window.BoardEditor = function () {
     } catch (e) {}
   }
   var LIB = loadLib();
+  var DS_LIB = []; // icons/illustrations already in the design system (auto-loaded from a manifest; read-only)
+  /* Auto-detect the design system's own icon/illustration library. The board is a static
+     file so it can't list a folder — instead it reads a small manifest the DS ships:
+       assets/library-manifest.json  (or assets/icons/manifest.json)
+     = a JSON array of paths (strings) or {"icons":[{name,src}, ...]}, paths relative to
+     project root. Every visual then shows those icons in My library, ready to drag in —
+     no re-upload. Absent (like a fresh system) → the section just shows the user's uploads. */
+  function loadDSLibrary() {
+    var bases = ["", "../../"]; // root board, then the mirrored templates/visual-board/ copy
+    var names = ["assets/library-manifest.json", "assets/icons/manifest.json"];
+    var tries = [];
+    bases.forEach(function (b) {
+      names.forEach(function (n) {
+        tries.push([b, b + n]);
+      });
+    });
+    (function next(i) {
+      if (i >= tries.length) return;
+      var base = tries[i][0],
+        url = tries[i][1];
+      fetch(url, {
+        cache: "no-store"
+      }).then(function (r) {
+        if (!r.ok) throw 0;
+        return r.json();
+      }).then(function (j) {
+        var items = Array.isArray(j) ? j : j.icons || j.items || [];
+        DS_LIB = items.map(function (it) {
+          var src = typeof it === "string" ? it : it.src || it.path || "";
+          var name = typeof it === "string" ? src.split("/").pop() : it.name || (it.src || "").split("/").pop();
+          return {
+            name: name,
+            src: /^(https?:|data:|\/)/.test(src) ? src : base + src
+          };
+        }).filter(function (x) {
+          return x.src;
+        });
+        renderLib();
+      }).catch(function () {
+        next(i + 1);
+      });
+    })(0);
+  }
   var renderLib = function () {};
+
+  /* ---------- the Icon Library (icon-kit.js) as a drag source ----------
+     Icons drawn/imported in the Icon Library view live in window.IconKit (built-ins)
+     + localStorage('icon-custom') (the user's own). They're rendered INLINE here so they
+     recolour to the brand (var(--brand-primary)/var(--icon-ink)) and can be dragged onto
+     the canvas. localStorage is shared across the app's views, so anything in the Icon
+     Library shows up here automatically — no re-upload. */
+  var KIT_LIB = []; // [{ name, svg, kind }]
+  function ensureIconCss(base) {
+    if (!document.getElementById("li-icon-css")) {
+      var l = document.createElement("link");
+      l.id = "li-icon-css";
+      l.rel = "stylesheet";
+      l.href = base + "components/icons/icon.css";
+      document.head.appendChild(l);
+    }
+    // fallback ink colour so inline icons are never invisible if icon.css is slow/absent
+    var ink = getComputedStyle(document.documentElement).getPropertyValue("--icon-ink").trim();
+    if (!ink) document.documentElement.style.setProperty("--icon-ink", "#16232b");
+  }
+  function collectKit() {
+    if (!window.IconKit) return;
+    var entries = [],
+      seen = {};
+    (IconKit.markNames || []).forEach(function (n) {
+      entries.push(["mark", n]);
+    });
+    try {
+      (JSON.parse(localStorage.getItem("icon-custom")) || []).forEach(function (n) {
+        entries.push(["mark", n]);
+      });
+    } catch (e) {}
+    (IconKit.illNames || []).forEach(function (n) {
+      entries.push(["ill", n]);
+    });
+    KIT_LIB = [];
+    entries.forEach(function (p) {
+      var key = p[0] + ":" + p[1];
+      if (seen[key]) return;
+      seen[key] = 1;
+      var svg = p[0] === "ill" ? IconKit.ill(p[1]) : IconKit.mark(p[1]);
+      if (svg && (svg.indexOf("<path") >= 0 || svg.indexOf("<circle") >= 0 || svg.indexOf("<rect") >= 0)) KIT_LIB.push({
+        name: p[1],
+        svg: svg,
+        kind: p[0]
+      });
+    });
+  }
+  function loadIconKit() {
+    var bases = ["", "../../"];
+    (function tryBase(i) {
+      if (window.IconKit) {
+        ensureIconCss(bases[Math.max(0, i - 1)] || "");
+        collectKit();
+        renderLib();
+        return;
+      }
+      if (i >= bases.length) return;
+      var s = document.createElement("script");
+      s.src = bases[i] + "components/icons/icon-kit.js";
+      s.onload = function () {
+        ensureIconCss(bases[i]);
+        collectKit();
+        renderLib();
+      };
+      s.onerror = function () {
+        tryBase(i + 1);
+      };
+      document.head.appendChild(s);
+    })(0);
+    // refresh when the user edits/adds icons in the Icon Library view
+    window.addEventListener("icon-changed", function () {
+      collectKit();
+      renderLib();
+    });
+    window.addEventListener("storage", function (e) {
+      if (e.key === "icon-custom" || e.key === "icon-overrides") {
+        collectKit();
+        renderLib();
+      }
+    });
+  }
   var history = [],
     histIndex = -1,
     clip = null; // undo/redo stack + copy buffer
@@ -110,6 +331,27 @@ window.BoardEditor = function () {
     if (html != null) d.innerHTML = html;
     return d;
   }
+
+  /* board's OWN ui icons for palette items (Inter/Lucide-style line glyphs, not the client's icon set) */
+  function ic(p) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + p + '</svg>';
+  }
+  var ICON = {
+    heading: ic('<path d="M6 4v16M18 4v16M6 12h12"/>'),
+    sub: ic('<line x1="4" y1="7" x2="20" y2="7" stroke-width="2.4"/><line x1="4" y1="13" x2="13" y2="13"/><line x1="4" y1="18" x2="10" y2="18"/>'),
+    eyebrow: ic('<path d="M3.5 12.5 11 5l8 0 0 8-7.5 7.5z"/><circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"/>'),
+    body: ic('<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="11" x2="20" y2="11"/><line x1="4" y1="16" x2="14" y2="16"/>'),
+    stat: ic('<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'),
+    quote: ic('<path d="M9 7H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a2 2 0 0 1-2 2M19 7h-4a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h2v1a2 2 0 0 1-2 2"/>'),
+    arrow: ic('<circle cx="12" cy="12" r="9"/><path d="M9 12h6M13 9l3 3-3 3"/>'),
+    avatar: ic('<circle cx="12" cy="9" r="3.2"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/>'),
+    rect: ic('<rect x="4" y="6" width="16" height="12" rx="2"/>'),
+    circle: ic('<circle cx="12" cy="12" r="8"/>'),
+    pill: ic('<rect x="3" y="8" width="18" height="8" rx="4"/>'),
+    line: ic('<line x1="4" y1="12" x2="20" y2="12"/>'),
+    donut: ic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.1"/>'),
+    bar: ic('<rect x="3" y="9" width="18" height="6" rx="2"/><line x1="13" y1="9" x2="13" y2="15"/>')
+  };
 
   // each factory returns a positioned element (absolute, sized in artboard px)
   var FACTORY = {
@@ -176,7 +418,7 @@ window.BoardEditor = function () {
     items: [["heading", "Heading"], ["sub", "Subhead"], ["eyebrow", "Eyebrow"], ["body", "Body text"], ["stat", "Big stat"]]
   }, {
     name: "Marks",
-    items: [["quote", "&ldquo; Quote"], ["arrow", "&rarr; Swipe"], ["avatar", "Avatar"]]
+    items: [["quote", "Quote"], ["arrow", "Swipe"], ["avatar", "Avatar"]]
   }, {
     name: "Shapes",
     items: [["rect", "Rectangle"], ["circle", "Circle"], ["pill", "Pill"], ["line", "Divider"], ["donut", "Donut"], ["bar", "Split bar"]]
@@ -184,6 +426,31 @@ window.BoardEditor = function () {
   function buildPalette() {
     var p = S.palette;
     p.innerHTML = "";
+    // magnetic-grid view toggles (snapping is always on; these only show/hide the guides)
+    var gb = el("div");
+    gb.className = "gridbar";
+    function tog(label, on, svg, fn) {
+      var b = el("div", "", svg + "<span>" + label + "</span>");
+      b.className = "gridtog" + (on ? " on" : "");
+      b.addEventListener("click", function () {
+        var n = fn();
+        b.classList.toggle("on", n);
+      });
+      return b;
+    }
+    gb.appendChild(tog("Grid", showGrid, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>', function () {
+      showGrid = !showGrid;
+      saveGrid();
+      applyOverlay();
+      return showGrid;
+    }));
+    gb.appendChild(tog("Margins", showMargin, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="7" y="7" width="10" height="10" rx="1" stroke-dasharray="2 2"/></svg>', function () {
+      showMargin = !showMargin;
+      saveGrid();
+      applyOverlay();
+      return showMargin;
+    }));
+    p.appendChild(gb);
     GROUPS.forEach(function (g) {
       var h = el("div", "", g.name);
       h.className = "grp";
@@ -191,7 +458,7 @@ window.BoardEditor = function () {
       var grid = el("div");
       grid.className = "palette";
       g.items.forEach(function (it) {
-        var b = el("div", "", it[1]);
+        var b = el("div", "", '<span class="ic">' + (ICON[it[0]] || "") + '</span><span class="lbl">' + it[1] + '</span>');
         b.className = "pitem";
         b.setAttribute("draggable", "true");
         b.addEventListener("dragstart", function (e) {
@@ -230,39 +497,79 @@ window.BoardEditor = function () {
       e.target.value = "";
     });
     up.appendChild(inp);
-    p.appendChild(up);
 
-    // My library — reusable icon / illustration sets (persist across visuals)
+    // My library — upload sits at the TOP of this section, then DS icons + your uploads
     var libHead = el("div", "", "My library");
     libHead.className = "grp";
     p.appendChild(libHead);
-    var libWrap = el("div", "display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px");
+    p.appendChild(up);
+    var libWrap = el("div", "display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px");
     p.appendChild(libWrap);
     renderLib = function () {
       libWrap.innerHTML = "";
-      if (!LIB.length) {
-        libWrap.appendChild(el("div", "grid-column:1/-1;font-size:11px;color:#bcc0c4;padding:6px 2px;line-height:1.4", "Upload your icon / illustration sets above — they show up here to drag in, on every visual."));
-        return;
+      // 1) icons already in the design system (auto-detected, not removable)
+      if (DS_LIB.length) {
+        libWrap.appendChild(el("div", "", "In this design system")).className = "libcap";
+        DS_LIB.forEach(function (item, i) {
+          var t = el("div", "background-image:url('" + item.src + "')");
+          t.className = "libtile";
+          t.title = item.name || "icon";
+          t.setAttribute("draggable", "true");
+          t.addEventListener("dragstart", function (ev) {
+            ev.dataTransfer.setData("text/plain", "dsimg:" + i);
+            ev.dataTransfer.effectAllowed = "copy";
+          });
+          libWrap.appendChild(t);
+        });
       }
-      LIB.forEach(function (src, i) {
-        var t = el("div", "position:relative;aspect-ratio:1;border:1px solid #e6e8eb;border-radius:9px;background:#fff center/contain no-repeat;background-image:url('" + src + "');cursor:grab");
-        t.setAttribute("draggable", "true");
-        t.addEventListener("dragstart", function (ev) {
-          ev.dataTransfer.setData("text/plain", "img:" + i);
-          ev.dataTransfer.effectAllowed = "copy";
+      // 2) icons from the Icon Library (icon-kit) — rendered inline so they wear the brand
+      if (KIT_LIB.length) {
+        libWrap.appendChild(el("div", "", "From the Icon Library")).className = "libcap";
+        KIT_LIB.forEach(function (item, i) {
+          var t = el("div", "");
+          t.className = "libtile kit";
+          t.title = item.name;
+          t.innerHTML = item.svg;
+          var sv = t.querySelector("svg");
+          if (sv) sv.style.cssText = "width:100%;height:100%;display:block";
+          t.setAttribute("draggable", "true");
+          t.addEventListener("dragstart", function (ev) {
+            ev.dataTransfer.setData("text/plain", "kit:" + i);
+            ev.dataTransfer.effectAllowed = "copy";
+          });
+          libWrap.appendChild(t);
         });
-        var x = el("button", "position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:none;background:#1f2328;color:#fff;font-size:11px;line-height:1;cursor:pointer", "&times;");
-        x.title = "Remove from library";
-        x.addEventListener("click", function (ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          LIB.splice(i, 1);
-          saveLib();
-          renderLib();
+      }
+      // 3) the user's own uploads (removable)
+      if (LIB.length) {
+        if (DS_LIB.length || KIT_LIB.length) {
+          libWrap.appendChild(el("div", "", "Your uploads")).className = "libcap";
+        }
+        LIB.forEach(function (src, i) {
+          var t = el("div", "background-image:url('" + src + "')");
+          t.className = "libtile";
+          t.setAttribute("draggable", "true");
+          t.addEventListener("dragstart", function (ev) {
+            ev.dataTransfer.setData("text/plain", "img:" + i);
+            ev.dataTransfer.effectAllowed = "copy";
+          });
+          var x = el("button", "", "&times;");
+          x.className = "rm";
+          x.title = "Remove from library";
+          x.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            LIB.splice(i, 1);
+            saveLib();
+            renderLib();
+          });
+          t.appendChild(x);
+          libWrap.appendChild(t);
         });
-        t.appendChild(x);
-        libWrap.appendChild(t);
-      });
+      }
+      if (!DS_LIB.length && !KIT_LIB.length && !LIB.length) {
+        libWrap.appendChild(el("div", "grid-column:1/-1;font-size:11px;color:#bcc0c4;padding:6px 2px;line-height:1.4", "Icons from the Icon Library show up here automatically. Upload your own sets above to add more — they appear on every visual to drag in."));
+      }
     };
     renderLib();
     var hint = el("div", "font-size:11px;color:#9aa0a6;line-height:1.4;margin-top:12px;padding:0 2px", "Drag any item onto the canvas. Double-click text to edit it. Keep single & quote visuals visual-led — don't pile on text.");
@@ -284,34 +591,80 @@ window.BoardEditor = function () {
     };
   }
   function placeSel() {
-    if (!S.sel) {
+    if (!S.selected.length) {
       S.selbox.style.display = "none";
       S.eltbar.style.display = "none";
+      renderOutlines();
       return;
     }
-    var er = S.sel.getBoundingClientRect(),
-      fr = frameRect();
-    var x = er.left - fr.left,
-      y = er.top - fr.top;
+    var fr = frameRect();
+    // group bounding box (union of all selected rects)
+    var minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+    S.selected.forEach(function (n) {
+      var r = n.getBoundingClientRect();
+      minX = Math.min(minX, r.left);
+      minY = Math.min(minY, r.top);
+      maxX = Math.max(maxX, r.right);
+      maxY = Math.max(maxY, r.bottom);
+    });
+    var x = minX - fr.left,
+      y = minY - fr.top,
+      w = maxX - minX,
+      h = maxY - minY;
+    var multi = S.selected.length > 1;
     S.selbox.style.display = "block";
     S.selbox.style.left = x + "px";
     S.selbox.style.top = y + "px";
-    S.selbox.style.width = er.width + "px";
-    S.selbox.style.height = er.height + "px";
+    S.selbox.style.width = w + "px";
+    S.selbox.style.height = h + "px";
+    // hide resize handles for multi-selection, and when a single selection is too small on screen
+    S.selbox.classList.toggle("multi", multi);
+    S.selbox.classList.toggle("tiny", !multi && Math.min(w, h) < 44);
     S.eltbar.style.display = "flex";
-    var bx = Math.max(0, Math.min(x, fr.width - 150));
+    // the toolbar tracks the (group) selection everywhere — including off-canvas
+    var bx = x;
     var by = y - 42;
-    if (by < 0) by = y + er.height + 8;
+    if (by < 0) by = y + h + 8;
     S.eltbar.style.left = bx + "px";
     S.eltbar.style.top = by + "px";
+    renderOutlines();
+  }
+  function setSelection(list) {
+    S.selected = (list || []).filter(function (n, i, a) {
+      return n && a.indexOf(n) === i;
+    });
+    S.sel = S.selected[S.selected.length - 1] || null; // primary (resize/colour anchor)
+    placeSel();
   }
   function select(node) {
-    S.sel = node;
-    placeSel();
+    setSelection(node ? [node] : []);
   }
   function deselect() {
-    S.sel = null;
-    placeSel();
+    setSelection([]);
+    closeColorPopover();
+  }
+  // is `node` (or an ancestor up to the artboard) part of the current selection?
+  function inSelection(node) {
+    var n = node;
+    while (n && n !== S.art) {
+      if (S.selected.indexOf(n) >= 0) return true;
+      n = n.parentElement;
+    }
+    return false;
+  }
+  // per-element outlines for multi-select (the selbox shows the group bounding box)
+  function renderOutlines() {
+    if (!S.olayer) return;
+    S.olayer.innerHTML = "";
+    if (S.selected.length < 2) return;
+    var fr = frameRect();
+    S.selected.forEach(function (n) {
+      var r = n.getBoundingClientRect();
+      S.olayer.appendChild(el("div", "position:absolute;left:" + (r.left - fr.left) + "px;top:" + (r.top - fr.top) + "px;width:" + r.width + "px;height:" + r.height + "px;outline:1.5px solid var(--brand-primary,#0A66C2);outline-offset:1px"));
+    });
   }
 
   /* ---------- element toolbar ---------- */
@@ -322,52 +675,184 @@ window.BoardEditor = function () {
       b.title = title;
       b.addEventListener("click", function (e) {
         e.stopPropagation();
-        fn();
+        fn(b);
       });
       S.eltbar.appendChild(b);
+      return b;
     }
     btn("Bring to front", '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>', function () {
-      if (!S.sel) return;
+      if (!S.selected.length) return;
       var max = 0;
       [].forEach.call(S.art.children, function (c) {
         max = Math.max(max, +c.style.zIndex || 0);
       });
-      S.sel.style.zIndex = max + 1;
+      S.selected.forEach(function (n) {
+        max += 1;
+        n.style.zIndex = max;
+      });
       commit();
     });
-    btn("Cycle colour", '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18"></path></svg>', function () {
-      if (!S.sel) return;
-      var shape = S.sel.getAttribute("data-shape");
-      var cur = +(S.sel.getAttribute("data-ci") || 0);
-      cur = (cur + 1) % COLORS.length;
-      S.sel.setAttribute("data-ci", cur);
-      if (shape) S.sel.style.background = COLORS[cur];else S.sel.style.color = COLORS[cur];
-      commit();
+    btn("Colour", '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="10.5" r="2.5"></circle><circle cx="8.5" cy="7.5" r="2.5"></circle><circle cx="6.5" cy="12.5" r="2.5"></circle><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 1.5-3.3 2 2 0 0 1 1.5-3.3H17a5 5 0 0 0 5-5c0-4.4-4.5-8.4-10-8.4Z"></path></svg>', function (b) {
+      openColorPopover(b);
     });
     btn("Duplicate", '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg>', function () {
-      if (!S.sel) return;
-      var c = S.sel.cloneNode(true);
-      c.style.position = "absolute";
-      c.style.left = parseFloat(S.sel.style.left || 0) + 30 + "px";
-      c.style.top = parseFloat(S.sel.style.top || 0) + 30 + "px";
-      S.art.appendChild(c);
-      select(c);
+      if (!S.selected.length) return;
+      var clones = S.selected.map(function (n) {
+        var c = n.cloneNode(true);
+        c.style.position = "absolute";
+        c.style.left = parseFloat(n.style.left || 0) + 30 + "px";
+        c.style.top = parseFloat(n.style.top || 0) + 30 + "px";
+        S.art.appendChild(c);
+        return c;
+      });
+      setSelection(clones);
       commit();
     });
     btn("Delete", '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path></svg>', function () {
-      if (!S.sel) return;
-      var n = S.sel;
-      S.sel = null;
-      n.remove();
-      placeSel();
+      if (!S.selected.length) return;
+      S.selected.forEach(function (n) {
+        n.remove();
+      });
+      setSelection([]);
       commit();
     });
+  }
+
+  /* ---------- colour picker ---------- */
+  function resolveColor(val) {
+    var probe = el("span", "color:" + val);
+    (S.art || document.body).appendChild(probe);
+    var c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  }
+  function applyColor(val) {
+    if (!S.selected.length) return;
+    S.selected.forEach(function (n) {
+      if (n.getAttribute("data-shape")) n.style.background = val;else n.style.color = val;
+    });
+    commit();
+  }
+  function buildColorPopover() {
+    var pop = S.cpop;
+    pop.innerHTML = "";
+    pop.appendChild(el("div", "", "Design-system colours")).className = "ct";
+    var sw = el("div");
+    sw.className = "sw";
+    pop.appendChild(sw);
+    SWATCHES.forEach(function (s) {
+      var c = el("div", "background:" + s.val);
+      c.className = "swatch";
+      c.title = s.label;
+      c.addEventListener("click", function (e) {
+        e.stopPropagation();
+        applyColor(s.val);
+        closeColorPopover();
+      });
+      sw.appendChild(c);
+    });
+    pop.appendChild(el("div")).className = "seg";
+    if (CUSTOM.length) {
+      pop.appendChild(el("div", "", "Your colours")).className = "ct";
+      var cs = el("div");
+      cs.className = "sw";
+      pop.appendChild(cs);
+      CUSTOM.forEach(function (hex, i) {
+        var c = el("div", "background:" + hex);
+        c.className = "swatch";
+        c.title = hex;
+        c.addEventListener("click", function (e) {
+          e.stopPropagation();
+          applyColor(hex);
+          closeColorPopover();
+        });
+        c.addEventListener("contextmenu", function (e) {
+          e.preventDefault();
+          CUSTOM.splice(i, 1);
+          saveCustom();
+          buildColorPopover();
+        });
+        cs.appendChild(c);
+      });
+      pop.appendChild(el("div")).className = "seg";
+    }
+    var row = el("div");
+    row.className = "crow";
+    var inp = el("input");
+    inp.type = "color";
+    inp.value = "#0A66C2";
+    var add = el("button", "", "Add &amp; apply");
+    add.className = "addc";
+    add.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var hex = inp.value.toUpperCase();
+      if (CUSTOM.indexOf(hex) === -1) {
+        CUSTOM.push(hex);
+        saveCustom();
+      }
+      applyColor(hex);
+      buildColorPopover();
+      closeColorPopover();
+    });
+    row.appendChild(inp);
+    row.appendChild(add);
+    pop.appendChild(row);
+    pop.appendChild(el("div", "font-size:10.5px;color:#aab0b6;margin-top:9px;line-height:1.35", "Custom colours are saved to your palette here. Right-click one to remove. To bake a colour into the design system itself, add it to overrides/brand.css."));
+  }
+  function openColorPopover(anchor) {
+    if (!S.selected.length) return;
+    buildColorPopover();
+    S.cpop.style.display = "block";
+    var r = anchor.getBoundingClientRect();
+    var w = 216,
+      x = Math.min(r.left, window.innerWidth - w - 10),
+      y = r.bottom + 8;
+    if (y + 240 > window.innerHeight) y = Math.max(10, r.top - 248);
+    S.cpop.style.left = Math.max(10, x) + "px";
+    S.cpop.style.top = y + "px";
+  }
+  function closeColorPopover() {
+    if (S.cpop) S.cpop.style.display = "none";
+  }
+
+  /* ---------- magnetic grid overlay (drawn in the scaled artboard wrap) ---------- */
+  function applyOverlay() {
+    if (!S.art) return;
+    var wrap = S.art.closest(".artscale");
+    if (!wrap) return;
+    var old = wrap.querySelector(":scope > .grid-overlay");
+    if (old) old.remove();
+    if (!S.active || !showGrid && !showMargin) return;
+    var ov = el("div");
+    ov.className = "grid-overlay";
+    var html = "";
+    if (showGrid) {
+      for (var i = 0; i < COLS; i++) {
+        var x = MARGIN + i * (COLW + GUTTER);
+        html += '<div style="position:absolute;top:' + MARGIN + 'px;height:' + (1350 - 2 * MARGIN) + 'px;left:' + x + 'px;width:' + COLW + 'px;background:rgba(90,170,255,.12);border-left:1px solid rgba(90,170,255,.45);border-right:1px solid rgba(90,170,255,.45)"></div>';
+      }
+      yLines().forEach(function (y) {
+        html += '<div style="position:absolute;left:' + MARGIN + 'px;right:' + MARGIN + 'px;top:' + y + 'px;height:1px;background:rgba(90,170,255,.3)"></div>';
+      });
+    }
+    if (showMargin) {
+      // the UNSAFE zone outside the content margin, filled red — drag into it = "in the red"
+      var innerH = 1350 - 2 * MARGIN;
+      html += '<div style="position:absolute;left:0;top:0;width:1080px;height:' + MARGIN + 'px;background:rgba(229,57,53,.24)"></div>';
+      html += '<div style="position:absolute;left:0;bottom:0;width:1080px;height:' + MARGIN + 'px;background:rgba(229,57,53,.24)"></div>';
+      html += '<div style="position:absolute;left:0;top:' + MARGIN + 'px;width:' + MARGIN + 'px;height:' + innerH + 'px;background:rgba(229,57,53,.24)"></div>';
+      html += '<div style="position:absolute;right:0;top:' + MARGIN + 'px;width:' + MARGIN + 'px;height:' + innerH + 'px;background:rgba(229,57,53,.24)"></div>';
+      html += '<div style="position:absolute;left:' + MARGIN + 'px;top:' + MARGIN + 'px;right:' + MARGIN + 'px;bottom:' + MARGIN + 'px;border:2px solid rgba(229,57,53,.9)"></div>';
+    }
+    ov.innerHTML = html;
+    wrap.appendChild(ov);
   }
 
   /* ---------- pointer: select / move / resize ---------- */
   var drag = null;
   function onPointerDown(e) {
     if (!S.active || !S.art) return;
+    closeColorPopover();
     // resize handle?
     if (e.target.classList && e.target.classList.contains("handle")) {
       if (!S.sel) return;
@@ -391,29 +876,64 @@ window.BoardEditor = function () {
     }
     // ignore pointer drags while a text element is being edited inline
     if (e.target.getAttribute && e.target.getAttribute("contenteditable") === "true") return;
-    // click inside artboard → select the SMALLEST element under the pointer
-    // (so "68%", the re-hook and the headline are each grabbable on their own)
-    var r = artRect();
-    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
     var node = e.target;
-    if (!node || node === S.art || !S.art.contains(node)) {
-      deselect();
+    var onElement = node && node !== S.art && S.art.contains(node) && !(node.classList && node.classList.contains("grid-overlay"));
+    if (!onElement) {
+      // empty area → rubber-band marquee select (shift keeps the current selection)
+      if (!e.shiftKey) setSelection([]);
+      drag = {
+        mode: "marquee",
+        ox: e.clientX,
+        oy: e.clientY,
+        add: e.shiftKey,
+        base: S.selected.slice()
+      };
+      updateMarquee(e);
+      S.marquee.style.display = "block";
+      e.preventDefault();
       return;
     }
-    select(node);
-    var bl = parseFloat(node.style.left),
-      bt = parseFloat(node.style.top);
-    var pos = getComputedStyle(node).position;
+    if (e.shiftKey) {
+      // toggle this element in/out of the selection (no drag)
+      var i = S.selected.indexOf(node);
+      if (i >= 0) S.selected.splice(i, 1);else S.selected.push(node);
+      setSelection(S.selected);
+      e.preventDefault();
+      return;
+    }
+    // plain click: keep the group if the element is already in it, else select just it
+    if (!inSelection(node)) setSelection([node]);
+    // start a group move (record each selected element's base position)
+    var items = S.selected.map(function (n) {
+      var bl = parseFloat(n.style.left),
+        bt = parseFloat(n.style.top);
+      return {
+        n: n,
+        bl: isNaN(bl) ? 0 : bl,
+        bt: isNaN(bt) ? 0 : bt,
+        pos: getComputedStyle(n).position
+      };
+    });
     drag = {
       mode: "move",
       sx: e.clientX,
       sy: e.clientY,
-      bl: isNaN(bl) ? 0 : bl,
-      bt: isNaN(bt) ? 0 : bt,
-      pos: pos,
+      items: items,
       moved: false
     };
     e.preventDefault();
+  }
+  function updateMarquee(e) {
+    if (!S.marquee) return;
+    var fr = frameRect();
+    var x1 = Math.min(drag.ox, e.clientX),
+      y1 = Math.min(drag.oy, e.clientY);
+    var x2 = Math.max(drag.ox, e.clientX),
+      y2 = Math.max(drag.oy, e.clientY);
+    S.marquee.style.left = x1 - fr.left + "px";
+    S.marquee.style.top = y1 - fr.top + "px";
+    S.marquee.style.width = x2 - x1 + "px";
+    S.marquee.style.height = y2 - y1 + "px";
   }
   function onPointerMove(e) {
     if (!drag) return;
@@ -422,10 +942,24 @@ window.BoardEditor = function () {
     if (drag.mode === "move") {
       if (!drag.moved && Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) < 3) return;
       drag.moved = true;
-      if (drag.pos === "static") S.sel.style.position = "relative";
-      S.sel.style.left = drag.bl + dx + "px";
-      S.sel.style.top = drag.bt + dy + "px";
+      var primary = drag.items[drag.items.length - 1] || drag.items[0];
+      var pnx = primary.bl + dx,
+        pny = primary.bt + dy;
+      // magnetic only INSIDE the canvas; crossing the edge to park releases the snap.
+      if (!e.altKey) {
+        if (pnx >= 0 && pnx <= 1080) pnx = snapTo(pnx, xEdges());
+        if (pny >= 0 && pny <= 1350) pny = snapTo(pny, yLines());
+      }
+      var sdx = pnx - primary.bl,
+        sdy = pny - primary.bt; // snapped delta, applied to the whole group
+      drag.items.forEach(function (it) {
+        if (it.pos === "static") it.n.style.position = "relative";
+        it.n.style.left = it.bl + sdx + "px";
+        it.n.style.top = it.bt + sdy + "px";
+      });
       placeSel();
+    } else if (drag.mode === "marquee") {
+      updateMarquee(e);
     } else if (drag.mode === "resize") {
       if (drag.dir === "x") {
         // width only — reflow text taller/shorter, font unchanged
@@ -444,6 +978,22 @@ window.BoardEditor = function () {
     }
   }
   function onPointerUp() {
+    if (drag && drag.mode === "marquee") {
+      var mb = S.marquee.getBoundingClientRect();
+      S.marquee.style.display = "none";
+      var moved = mb.width > 4 || mb.height > 4;
+      if (moved) {
+        var hits = [].filter.call(S.art.children, function (c) {
+          if (c.classList && c.classList.contains("grid-overlay")) return false;
+          var r = c.getBoundingClientRect();
+          return !(r.right < mb.left || r.left > mb.right || r.bottom < mb.top || r.top > mb.bottom);
+        });
+        setSelection(drag.add ? drag.base.concat(hits) : hits);
+      }
+      // a plain click on empty space (no drag) already cleared via setSelection([]) in pointerdown
+      drag = null;
+      return;
+    }
     if (drag && (drag.mode === "resize" || drag.mode === "move" && drag.moved)) commit();
     drag = null;
   }
@@ -458,9 +1008,10 @@ window.BoardEditor = function () {
   function onDrop(e) {
     if (!S.active || !S.art) return;
     var data = e.dataTransfer.getData("text/plain") || "";
-    if (data.indexOf("img:") === 0) {
-      // a library image
-      var src = LIB[+data.slice(4)];
+    if (data.indexOf("dsimg:") === 0 || data.indexOf("img:") === 0) {
+      // a library image (DS-provided or uploaded)
+      var ds = data.indexOf("dsimg:") === 0;
+      var src = ds ? (DS_LIB[+data.slice(6)] || {}).src : LIB[+data.slice(4)];
       if (!src) return;
       e.preventDefault();
       var im = el("img", "position:absolute;width:300px;height:auto");
@@ -474,6 +1025,24 @@ window.BoardEditor = function () {
         S.onChange();
       };
       select(im);
+      commit();
+      return;
+    }
+    if (data.indexOf("kit:") === 0) {
+      // an icon from the Icon Library — inserted inline so it recolours to the brand
+      var kit = KIT_LIB[+data.slice(4)];
+      if (!kit) return;
+      e.preventDefault();
+      var wrap = el("div", "position:absolute;width:200px;height:200px");
+      wrap.innerHTML = kit.svg;
+      var sv2 = wrap.querySelector("svg");
+      if (sv2) sv2.style.cssText = "width:100%;height:100%;display:block";
+      wrap.setAttribute("data-shape", "icon");
+      S.art.appendChild(wrap);
+      var pk = toArt(e.clientX, e.clientY);
+      wrap.style.left = Math.round(pk.x - 100) + "px";
+      wrap.style.top = Math.round(pk.y - 100) + "px";
+      select(wrap);
       commit();
       return;
     }
@@ -521,13 +1090,13 @@ window.BoardEditor = function () {
       }
       return;
     }
-    if (!S.sel || editingText) return;
+    if (!S.selected.length || editingText) return;
     if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
-      var n = S.sel;
-      S.sel = null;
-      n.remove();
-      placeSel();
+      S.selected.forEach(function (n) {
+        n.remove();
+      });
+      setSelection([]);
       commit();
     } else if (e.key === "Escape") deselect();
   }
@@ -560,29 +1129,69 @@ window.BoardEditor = function () {
   return {
     init: function (opts) {
       Object.assign(S, opts);
+      // selection chrome created on the fly: a rubber-band marquee + a per-element outline layer
+      S.marquee = el("div", "position:absolute;border:1px solid var(--brand-primary,#0A66C2);background:rgba(10,102,194,.10);z-index:45;display:none;pointer-events:none");
+      S.olayer = el("div", "position:absolute;inset:0;pointer-events:none;z-index:39");
+      if (S.frame) {
+        S.frame.appendChild(S.olayer);
+        S.frame.appendChild(S.marquee);
+      }
       buildPalette();
       buildToolbar();
+      loadDSLibrary();
+      loadIconKit();
       S.heroStage.addEventListener("pointerdown", onPointerDown);
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onPointerUp);
       S.selbox.addEventListener("pointerdown", onPointerDown);
-      S.heroStage.addEventListener("dragover", onDragOver);
-      S.heroStage.addEventListener("drop", onDrop);
+      // accept drops anywhere on the stage (card AND the pasteboard around it), so new
+      // elements can be dropped outside the canvas too. Stage contains heroStage, so one
+      // listener covers both; drops resolve to artboard coords (negative = off-canvas).
+      var dropZone = S.frame && S.frame.parentNode || S.heroStage;
+      dropZone.addEventListener("dragover", onDragOver);
+      dropZone.addEventListener("drop", onDrop);
       S.heroStage.addEventListener("dblclick", onDbl);
       document.addEventListener("keydown", onKey);
+      // clicking/dragging on the empty pasteboard (outside the card) marquee-selects (or clears)
+      var stage = S.frame && S.frame.parentNode;
+      if (stage) stage.addEventListener("pointerdown", function (e) {
+        if (!S.active) return;
+        if (S.heroStage.contains(e.target) || S.selbox.contains(e.target) || S.eltbar.contains(e.target) || S.cpop && S.cpop.contains(e.target)) return;
+        if (!e.shiftKey) setSelection([]);
+        drag = {
+          mode: "marquee",
+          ox: e.clientX,
+          oy: e.clientY,
+          add: e.shiftKey,
+          base: S.selected.slice()
+        };
+        updateMarquee(e);
+        S.marquee.style.display = "block";
+      });
+      document.addEventListener("click", function (e) {
+        if (S.cpop && S.cpop.style.display === "block" && !S.cpop.contains(e.target) && !S.eltbar.contains(e.target)) closeColorPopover();
+      });
       window.addEventListener("resize", function () {
-        if (S.active) placeSel();
+        if (S.active) {
+          placeSel();
+          applyOverlay();
+        }
       });
     },
     setActive: function (on) {
       S.active = on;
-      if (!on) deselect();
+      if (!on) {
+        deselect();
+        closeColorPopover();
+      }
+      applyOverlay();
     },
     // called by the controller after each hero render
     setTarget: function (artEl, scale) {
       S.art = artEl;
       S.scale = scale;
       deselect();
+      applyOverlay();
       history = [artEl.innerHTML];
       histIndex = 0;
     },
@@ -1008,6 +1617,725 @@ function StatRow({
 }
 Object.assign(__ds_scope, { Stat, StatBox, StatRow });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/content/Stat.jsx", error: String((e && e.message) || e) }); }
+
+// components/icons/icon-kit.js
+try { (() => {
+/* ============================================================
+   ICON KIT — MORE THAN SAID
+   Reusable hand-drawn icon library for the LinkedIn visuals.
+   Brand-agnostic engine + editor. Ships with an EMPTY icon set; populate per project.
+
+   USAGE
+     <link rel="stylesheet" href="icon.css">
+     <script src="icon-kit.js"></script>
+     <icon-mark name="rocket"></icon-mark>
+     <icon-ill  name="research"></icon-ill>
+     el.innerHTML = IconKit.mark('funnel');
+
+   EDIT MODE (node editor)
+     IconKit.capture(name)         -> [{ci,type,pts:[[x,y]..]}]  (anchor points)
+     IconKit.setPoint(name,ci,pi,x,y)   move one anchor (persisted)
+     IconKit.resetMark(name)            clear edits for one mark
+     Edits live in localStorage('icon-overrides') and every live
+     <icon-mark>/<icon-ill> re-renders on the 'icon-changed' event.
+
+   Colour: line = var(--icon-ink) (defaults to --brand-secondary),
+   accent = var(--brand-primary). Size with CSS width/height.
+   ============================================================ */
+(function (root) {
+  function mul(a) {
+    return function () {
+      a |= 0;
+      a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function f(n) {
+    return Math.round(n * 10) / 10;
+  }
+
+  // ---- edit state (module scope, shared with Pen primitives) ----
+  var STORE = {},
+    OV = null,
+    CIDX = 0,
+    CAP = null,
+    CAPTURE = false,
+    CUSTOM = {};
+  try {
+    STORE = JSON.parse(root.localStorage.getItem('icon-overrides')) || {};
+  } catch (e) {
+    STORE = {};
+  }
+  try {
+    (JSON.parse(root.localStorage.getItem('icon-custom')) || []).forEach(function (n) {
+      CUSTOM[n] = true;
+    });
+  } catch (e) {}
+  function NOOP() {}
+  function persist() {
+    try {
+      root.localStorage.setItem('icon-overrides', JSON.stringify(STORE));
+    } catch (e) {}
+  }
+  function persistCustom() {
+    try {
+      root.localStorage.setItem('icon-custom', JSON.stringify(Object.keys(CUSTOM)));
+    } catch (e) {}
+  }
+  function ovGet(ci) {
+    return OV ? OV[ci] : null;
+  }
+  function applyMoves(ci, pts) {
+    var o = ovGet(ci);
+    if (o) {
+      for (var k in o) {
+        if (k.charAt(0) !== '_') pts[+k] = [o[k][0], o[k][1]];
+      }
+    }
+    return pts;
+  }
+  function cap(rec) {
+    if (CAPTURE) CAP.push(rec);
+  }
+  // build an SVG path from anchors ([x,y] corner, or [x,y,hx,hy] with a symmetric bezier handle)
+  function anchorPath(A, closed) {
+    if (!A || !A.length) return '';
+    function hx(a) {
+      return a.length > 2 ? a[2] : 0;
+    }
+    function hy(a) {
+      return a.length > 3 ? a[3] : 0;
+    }
+    var d = 'M' + f(A[0][0]) + ' ' + f(A[0][1]),
+      n = A.length,
+      segs = closed ? n : n - 1;
+    for (var i = 0; i < segs; i++) {
+      var a = A[i],
+        b = A[(i + 1) % n];
+      if (hx(a) || hy(a) || hx(b) || hy(b)) {
+        d += ' C ' + f(a[0] + hx(a)) + ' ' + f(a[1] + hy(a)) + ' ' + f(b[0] - hx(b)) + ' ' + f(b[1] - hy(b)) + ' ' + f(b[0]) + ' ' + f(b[1]);
+      } else d += ' L ' + f(b[0]) + ' ' + f(b[1]);
+    }
+    if (closed) d += ' Z';
+    return d;
+  }
+  function profileOutline(A, baseW, profile, closed) {
+    if (!A || A.length < 2) return '';
+    function hx(a) {
+      return a.length > 2 ? a[2] : 0;
+    }
+    function hy(a) {
+      return a.length > 3 ? a[3] : 0;
+    }
+    var segEnd = closed ? A.length : A.length - 1,
+      pts = [];
+    for (var i = 0; i < segEnd; i++) {
+      var a = A[i],
+        b = A[(i + 1) % A.length];
+      var c1x = a[0] + hx(a),
+        c1y = a[1] + hy(a),
+        c2x = b[0] - hx(b),
+        c2y = b[1] - hy(b),
+        sub = 14;
+      for (var s2 = 0; s2 < sub; s2++) {
+        var t = s2 / sub,
+          mt = 1 - t;
+        pts.push([mt * mt * mt * a[0] + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * b[0], mt * mt * mt * a[1] + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * b[1]]);
+      }
+    }
+    if (!closed) pts.push([A[A.length - 1][0], A[A.length - 1][1]]);
+    var n = pts.length,
+      T = [0];
+    for (var i = 1; i < n; i++) T[i] = T[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    var L = T[n - 1] || 1;
+    for (var i = 0; i < n; i++) T[i] /= L;
+    function wf(t) {
+      var v;
+      if (profile === 'bulge') v = Math.sin(Math.PI * t);else if (profile === 'taper') v = 1 - t;else if (profile === 'reverse') v = t;else if (profile === 'waist') v = Math.abs(2 * t - 1);else v = 1;
+      return baseW * (0.14 + 0.95 * v);
+    }
+    function norm(i) {
+      var a = pts[(i - 1 + n) % n],
+        b = pts[(i + 1) % n];
+      if (!closed) {
+        a = pts[Math.max(0, i - 1)];
+        b = pts[Math.min(n - 1, i + 1)];
+      }
+      var dx = b[0] - a[0],
+        dy = b[1] - a[1],
+        len = Math.hypot(dx, dy) || 1;
+      return [-dy / len, dx / len];
+    }
+    var left = [],
+      right = [];
+    for (var i = 0; i < n; i++) {
+      var hw = wf(T[i]) / 2,
+        nb = norm(i);
+      left.push([pts[i][0] + nb[0] * hw, pts[i][1] + nb[1] * hw]);
+      right.push([pts[i][0] - nb[0] * hw, pts[i][1] - nb[1] * hw]);
+    }
+    if (closed) {
+      var d1 = 'M' + f(left[0][0]) + ' ' + f(left[0][1]);
+      for (var i = 1; i < n; i++) d1 += ' L ' + f(left[i][0]) + ' ' + f(left[i][1]);
+      d1 += ' Z';
+      var d2 = 'M' + f(right[0][0]) + ' ' + f(right[0][1]);
+      for (var i = 1; i < n; i++) d2 += ' L ' + f(right[i][0]) + ' ' + f(right[i][1]);
+      d2 += ' Z';
+      return d1 + ' ' + d2;
+    }
+    var d = 'M' + f(left[0][0]) + ' ' + f(left[0][1]);
+    for (var i = 1; i < n; i++) d += ' L ' + f(left[i][0]) + ' ' + f(left[i][1]);
+    for (var i = n - 1; i >= 0; i--) d += ' L ' + f(right[i][0]) + ' ' + f(right[i][1]);
+    d += ' Z';
+    return d;
+  }
+  function Pen(seed) {
+    var rng = mul(seed),
+      els = [];
+    function j(m) {
+      return (rng() * 2 - 1) * m;
+    }
+    function smooth(pts, close) {
+      var d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]);
+      for (var i = 1; i < pts.length; i++) {
+        var mx = (pts[i - 1][0] + pts[i][0]) / 2,
+          my = (pts[i - 1][1] + pts[i][1]) / 2;
+        d += ' Q ' + f(pts[i - 1][0]) + ' ' + f(pts[i - 1][1]) + ' ' + f(mx) + ' ' + f(my);
+      }
+      if (close) d += ' Z';else {
+        var L = pts[pts.length - 1];
+        d += ' L ' + f(L[0]) + ' ' + f(L[1]);
+      }
+      return d;
+    }
+    function edgy(P, close) {
+      var d = 'M' + f(P[0][0]) + ' ' + f(P[0][1]),
+        n = P.length;
+      function seg(a, b) {
+        var mx = (a[0] + b[0]) / 2,
+          my = (a[1] + b[1]) / 2,
+          nx = -(b[1] - a[1]),
+          ny = b[0] - a[0],
+          L = Math.hypot(nx, ny) || 1;
+        var bow = j(Math.min(1.5, Math.hypot(b[0] - a[0], b[1] - a[1]) * 0.02));
+        d += ' Q ' + f(mx + nx / L * bow) + ' ' + f(my + ny / L * bow) + ' ' + f(b[0]) + ' ' + f(b[1]);
+      }
+      for (var i = 1; i < n; i++) seg(P[i - 1], P[i]);
+      if (close) {
+        seg(P[n - 1], P[0]);
+        d += ' Z';
+      }
+      return d;
+    }
+    function line(x1, y1, x2, y2, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[x1, y1], [x2, y2]]);
+      cap({
+        ci: ci,
+        type: 'line',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      var ov = ovGet(ci);
+      if (ov && ov._a) {
+        els.push({
+          d: anchorPath(ov._a, !!ov._c),
+          sw: o.sw,
+          coral: o.coral,
+          dash: o.dash,
+          ci: ci
+        });
+        return;
+      }
+      x1 = P[0][0];
+      y1 = P[0][1];
+      x2 = P[1][0];
+      y2 = P[1][1];
+      var over = o.over || 0,
+        ang = Math.atan2(y2 - y1, x2 - x1),
+        dx = Math.cos(ang),
+        dy = Math.sin(ang);
+      x1 -= dx * over;
+      y1 -= dy * over;
+      x2 += dx * over;
+      y2 += dy * over;
+      var nx = -dy,
+        ny = dx,
+        len = Math.hypot(x2 - x1, y2 - y1),
+        a = Math.min(1.6, len * 0.012 + 0.3);
+      els.push({
+        d: `M${f(x1)} ${f(y1)} C ${f(x1 + (x2 - x1) * 0.34 + nx * j(a))} ${f(y1 + (y2 - y1) * 0.34 + ny * j(a))} ${f(x1 + (x2 - x1) * 0.66 + nx * j(a))} ${f(y1 + (y2 - y1) * 0.66 + ny * j(a))} ${f(x2)} ${f(y2)}`,
+        sw: o.sw,
+        coral: o.coral,
+        dash: o.dash,
+        ci: ci
+      });
+    }
+    function circle(cx, cy, r, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r, cy]]);
+      cap({
+        ci: ci,
+        type: 'circle',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy) || 0.001;
+      var tilt = j(0.04),
+        sq = 0.98 + j(0.03),
+        segs = 28,
+        pts = [];
+      for (var i = 0; i < segs; i++) {
+        var t = 6.283 * i / segs,
+          rr = r * (1 + j(0.012)),
+          x = Math.cos(t) * rr,
+          y = Math.sin(t) * rr * sq;
+        pts.push([cx + x * Math.cos(tilt) - y * Math.sin(tilt), cy + x * Math.sin(tilt) + y * Math.cos(tilt)]);
+      }
+      els.push({
+        d: smooth(pts, true),
+        sw: o.sw,
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        ci: ci
+      });
+    }
+    function poly(pts, close, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var A = applyMoves(ci, pts.map(function (p) {
+        return [p[0], p[1]];
+      }));
+      cap({
+        ci: ci,
+        type: 'poly',
+        pts: A.map(function (p) {
+          return p.slice();
+        }),
+        closed: !!close,
+        sw: o.sw,
+        coral: !!o.coral,
+        fill: !!(o.fill || o.inkfill),
+        sharp: !!o.sharp
+      });
+      var ov = ovGet(ci);
+      if (ov && ov._a) {
+        els.push({
+          d: anchorPath(ov._a, ov._c != null ? ov._c : !!close),
+          sw: o.sw,
+          coral: o.coral,
+          fill: o.fill,
+          inkfill: o.inkfill,
+          ci: ci
+        });
+        return;
+      }
+      var jj = o.j == null ? 0.8 : o.j,
+        P = A.map(p => [p[0] + j(jj), p[1] + j(jj)]);
+      els.push({
+        d: o.sharp ? edgy(P, close) : smooth(P, close),
+        sw: o.sw,
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        ci: ci
+      });
+    }
+    function dot(cx, cy, r, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r, cy]]);
+      cap({
+        ci: ci,
+        type: 'dot',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      els.push({
+        dot: [cx, cy, r],
+        coral: o.coral
+      });
+    }
+    function arc(cx, cy, r, a0, a1, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r * Math.cos(a0), cy + r * Math.sin(a0)]]);
+      cap({
+        ci: ci,
+        type: 'arc',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      var segs = Math.max(5, Math.round(Math.abs(a1 - a0) / 0.32)),
+        pts = [];
+      for (var i = 0; i <= segs; i++) {
+        var t = a0 + (a1 - a0) * i / segs;
+        pts.push([cx + Math.cos(t) * r * (1 + j(0.015)), cy + Math.sin(t) * r * (1 + j(0.015))]);
+      }
+      els.push({
+        d: smooth(pts, false),
+        sw: o.sw,
+        coral: o.coral,
+        ci: ci
+      });
+    }
+    function star(cx, cy, r, o) {
+      o = o || {};
+      var pts = [],
+        n = 5,
+        rot = -Math.PI / 2 + j(0.04);
+      for (var i = 0; i < n * 2; i++) {
+        var rr = i % 2 ? r * 0.42 : r,
+          a = rot + Math.PI * i / n;
+        pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+      }
+      poly(pts, true, {
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        sw: o.sw || 2.5,
+        j: 0.4,
+        sharp: true
+      });
+    }
+    function heart(cx, cy, s) {
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx, cy - s]]);
+      cap({
+        ci: ci,
+        type: 'heart',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        coral: true
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      s = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      els.push({
+        d: `M ${f(cx)} ${f(cy + s * 0.8)} C ${f(cx - s)} ${f(cy)} ${f(cx - s * 0.5)} ${f(cy - s * 0.72)} ${f(cx)} ${f(cy - s * 0.18)} C ${f(cx + s * 0.5)} ${f(cy - s * 0.72)} ${f(cx + s)} ${f(cy)} ${f(cx)} ${f(cy + s * 0.8)} Z`,
+        coral: true,
+        fill: true,
+        sw: 1.5
+      });
+    }
+    return {
+      line,
+      circle,
+      poly,
+      dot,
+      arc,
+      star,
+      heart,
+      els
+    };
+  }
+  var OUT = 4.4,
+    DET = 3.4,
+    COR = 4;
+
+  // ---- 100 sprinkle marks ----
+  var ELEM = {}; // empty in the core build — add marks or create/import in the editor
+
+  // ---- story illustrations ----
+  var ILL = {};
+  function svgFrom(els) {
+    return '<svg viewBox="0 0 160 160">' + els.map(function (e) {
+      var col = e.coral ? 'var(--brand-primary)' : 'var(--icon-ink)';
+      if (e.dot) return '<circle cx="' + f(e.dot[0]) + '" cy="' + f(e.dot[1]) + '" r="' + e.dot[2] + '" fill="' + col + '"/>';
+      if (e.xstroke !== undefined) {
+        var sc = e.xstroke === 'none' ? 'none' : e.xstroke === 'coral' ? 'var(--brand-primary)' : 'var(--icon-ink)';
+        var fc = !e.xfill || e.xfill === 'none' ? 'none' : e.xfill === 'coral' ? 'var(--brand-primary)' : 'var(--icon-ink)';
+        return '<path d="' + e.d + '" fill="' + fc + '"' + (e.eo ? ' fill-rule="evenodd"' : '') + ' stroke="' + sc + '" stroke-width="' + (e.sw || OUT) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      if (e.fill || e.inkfill) {
+        var fc = e.inkfill ? 'var(--icon-ink)' : col;
+        return '<path d="' + e.d + '" fill="' + fc + '" stroke="' + fc + '" stroke-width="' + (e.sw || 2.5) + '" stroke-linejoin="round" stroke-linecap="round"/>';
+      }
+      var dash = e.dash ? ' stroke-dasharray="2 13"' : '';
+      return '<path d="' + e.d + '" fill="none" stroke="' + col + '" stroke-width="' + (e.sw || OUT) + '" stroke-linecap="round" stroke-linejoin="round"' + dash + '/>';
+    }).join('') + '</svg>';
+  }
+  function run(name, builder, seed) {
+    OV = STORE[name] || null;
+    CIDX = 0;
+    CAPTURE = false;
+    var p = Pen(seed);
+    builder(p);
+    if (OV) {
+      p.els.forEach(function (el) {
+        if (el.ci == null) return;
+        var v = OV[el.ci];
+        if (!v) return;
+        if (v._sw != null) el.sw = v._sw;
+        if (v._stroke != null || v._fill != null) {
+          var bs = el.coral ? 'coral' : 'ink',
+            bf = el.fill || el.inkfill ? el.inkfill ? 'ink' : el.coral ? 'coral' : 'ink' : 'none';
+          el.xstroke = v._stroke != null ? v._stroke : el.fill || el.inkfill ? 'none' : bs;
+          el.xfill = v._fill != null ? v._fill : bf;
+          el.fill = false;
+          el.inkfill = false;
+        }
+      });
+    }
+    var ex = OV && OV._extra;
+    if (ex) {
+      for (var i = 0; i < ex.length; i++) {
+        var s = ex[i];
+        if (s.profile && s.profile !== 'uniform') {
+          p.els.push({
+            d: profileOutline(s.pts, s.sw || OUT, s.profile, !!s.closed),
+            xfill: s.stroke || 'ink',
+            xstroke: 'none',
+            sw: 0,
+            eo: true
+          });
+        } else p.els.push({
+          d: anchorPath(s.pts, !!s.closed),
+          sw: s.sw || OUT,
+          xstroke: s.stroke || (s.coral ? 'coral' : 'ink'),
+          xfill: s.fill || 'none'
+        });
+      }
+    }
+    OV = null;
+    return p.els;
+  }
+  function hash(s) {
+    s = s || '';
+    var h = 29;
+    for (var i = 0; i < s.length; i++) h = h * 131 + s.charCodeAt(i) >>> 0;
+    return h;
+  }
+  function seedFor(kind, name) {
+    return hash((kind === 'ill' ? 'i' : 'm') + name);
+  }
+  var IconKit = {
+    mark: function (name, o) {
+      o = o || {};
+      var b = ELEM[name] || (CUSTOM[name] ? NOOP : null);
+      return b ? svgFrom(run(name, b, o.seed != null ? o.seed : seedFor('mark', name))) : '';
+    },
+    ill: function (name, o) {
+      o = o || {};
+      var b = ILL[name];
+      return b ? svgFrom(run(name, b, o.seed != null ? o.seed : seedFor('ill', name))) : '';
+    },
+    markNames: Object.keys(ELEM),
+    illNames: Object.keys(ILL),
+    customNames: function () {
+      return Object.keys(CUSTOM);
+    },
+    newCustom: function () {
+      var n = 'custom-' + Date.now().toString(36);
+      CUSTOM[n] = true;
+      persistCustom();
+      return n;
+    },
+    removeCustom: function (name) {
+      delete CUSTOM[name];
+      delete STORE[name];
+      persistCustom();
+      persist();
+      emit();
+    },
+    // ---- editor API ----
+    capture: function (name) {
+      var kind = ILL[name] ? 'ill' : 'mark',
+        b = ELEM[name] || ILL[name] || (CUSTOM[name] ? NOOP : null);
+      if (!b) return [];
+      OV = STORE[name] || null;
+      CIDX = 0;
+      CAPTURE = true;
+      CAP = [];
+      var p = Pen(seedFor(kind, name));
+      b(p);
+      CAPTURE = false;
+      var out = CAP.map(function (rec) {
+        var ov = OV && OV[rec.ci];
+        if (ov && ov._a) {
+          rec.anchors = ov._a.map(function (a) {
+            return a.slice();
+          });
+          rec.closed = ov._c != null ? ov._c : rec.closed;
+        }
+        if (rec.type !== 'extra') {
+          var bS = rec.coral ? 'coral' : 'ink',
+            bF = rec.fill ? rec.coral ? 'coral' : 'ink' : 'none';
+          rec.stroke = ov && ov._stroke != null ? ov._stroke : bS;
+          rec.fill = ov && ov._fill != null ? ov._fill : bF;
+          rec.sw = ov && ov._sw != null ? ov._sw : rec.sw;
+        }
+        return rec;
+      });
+      var ex = OV && OV._extra;
+      if (ex) {
+        ex.forEach(function (s, i) {
+          out.push({
+            ci: 'e' + i,
+            type: 'extra',
+            extra: true,
+            anchors: s.pts.map(function (a) {
+              return a.slice();
+            }),
+            pts: s.pts.map(function (a) {
+              return [a[0], a[1]];
+            }),
+            closed: !!s.closed,
+            sw: s.sw,
+            stroke: s.stroke || (s.coral ? 'coral' : 'ink'),
+            fill: s.fill || 'none',
+            profile: s.profile || 'uniform'
+          });
+        });
+      }
+      CAP = null;
+      OV = null;
+      return out;
+    },
+    setPoint: function (name, ci, pi, x, y) {
+      STORE[name] = STORE[name] || {};
+      STORE[name][ci] = STORE[name][ci] || {};
+      STORE[name][ci][pi] = [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+      persist();
+      emit();
+    },
+    setAnchors: function (name, ci, anchors, closed) {
+      var e = STORE[name] = STORE[name] || {};
+      if (String(ci).charAt(0) === 'e') {
+        var idx = +String(ci).slice(1);
+        if (e._extra && e._extra[idx]) {
+          e._extra[idx].pts = anchors;
+          e._extra[idx].closed = !!closed;
+        }
+      } else {
+        e[ci] = e[ci] || {};
+        e[ci]._a = anchors;
+        e[ci]._c = !!closed;
+      }
+      persist();
+      emit();
+    },
+    addExtra: function (name, stroke) {
+      var e = STORE[name] = STORE[name] || {};
+      e._extra = e._extra || [];
+      e._extra.push(stroke);
+      persist();
+      emit();
+      return e._extra.length - 1;
+    },
+    removeExtra: function (name, idx) {
+      var e = STORE[name];
+      if (e && e._extra) {
+        e._extra.splice(idx, 1);
+        persist();
+        emit();
+      }
+    },
+    setExtraStyle: function (name, idx, style) {
+      var e = STORE[name];
+      if (e && e._extra && e._extra[idx]) {
+        for (var k in style) {
+          e._extra[idx][k] = style[k];
+        }
+        persist();
+        emit();
+      }
+    },
+    setStrokeStyle: function (name, ci, style) {
+      var e = STORE[name] = STORE[name] || {};
+      e[ci] = e[ci] || {};
+      if (style.sw != null) e[ci]._sw = style.sw;
+      if (style.stroke != null) e[ci]._stroke = style.stroke;
+      if (style.fill != null) e[ci]._fill = style.fill;
+      persist();
+      emit();
+    },
+    getEdit: function (name) {
+      return STORE[name] ? JSON.parse(JSON.stringify(STORE[name])) : null;
+    },
+    setEdit: function (name, obj) {
+      if (obj == null) delete STORE[name];else STORE[name] = obj;
+      persist();
+      emit();
+    },
+    isEdited: function (name) {
+      return !!STORE[name];
+    },
+    resetMark: function (name) {
+      delete STORE[name];
+      persist();
+      emit();
+    },
+    resetAll: function () {
+      STORE = {};
+      persist();
+      emit();
+    }
+  };
+  root.IconKit = IconKit;
+  function emit() {
+    try {
+      document.dispatchEvent(new CustomEvent('icon-changed'));
+    } catch (e) {}
+  }
+
+  // ---- custom elements ----
+  function define(tag, kind) {
+    if (!root.customElements || customElements.get(tag)) return;
+    customElements.define(tag, class extends HTMLElement {
+      static get observedAttributes() {
+        return ['name', 'seed'];
+      }
+      connectedCallback() {
+        this._r();
+        if (!this._h) {
+          this._h = () => this._r();
+          document.addEventListener('icon-changed', this._h);
+        }
+      }
+      disconnectedCallback() {
+        if (this._h) {
+          document.removeEventListener('icon-changed', this._h);
+          this._h = null;
+        }
+      }
+      attributeChangedCallback() {
+        if (this.isConnected) this._r();
+      }
+      _r() {
+        var n = this.getAttribute('name');
+        if (!n) return;
+        var s = this.getAttribute('seed');
+        this.innerHTML = IconKit[kind](n, s != null ? {
+          seed: +s
+        } : undefined);
+      }
+    });
+  }
+  define('icon-mark', 'mark');
+  define('icon-ill', 'ill');
+})(window);
+})(); } catch (e) { __ds_ns.__errors.push({ path: "components/icons/icon-kit.js", error: String((e && e.message) || e) }); }
 
 // components/illustration/BrowserMock.jsx
 try { (() => {
@@ -1909,15 +3237,13 @@ Object.assign(__ds_scope, { Eyebrow, Headline, Mark, Subhead });
 
 // ui_kits/setup/Setup.jsx
 try { (() => {
-/* Brand Setup wizard — window.Setup
-   A first-run, multi-step wizard (loaded via Babel in START HERE.html).
-   Walks a non-designer through: Welcome → Brand source (Figma / GitHub / file /
-   manual) → Colours → Type & signature → Done. Produces the exact
-   `overrides/brand.css` AND a one-click "Copy for the assistant" message that
-   bundles the source + all choices, so the agent can import the Figma/GitHub
-   brand and write the overrides. A page can't post into the chat itself —
-   this makes handing it over a single paste. Choices persist to localStorage
-   and inject a live brand layer so previews reflect them. */
+/* Brand Settings — window.Setup
+   ONE page: left = all brand options (colours, tint, font, signature, optional
+   source + hand-off), right = a live LinkedIn FEED preview of how a visual will
+   look. Choices persist to localStorage and inject a live brand layer so the
+   preview (and the rest of the app) reflect them immediately. The page can't
+   write overrides/brand.css itself — "Copy for the assistant" hands the agent a
+   ready prompt; or paste the CSS yourself. */
 (function () {
   const {
     useState,
@@ -1936,9 +3262,12 @@ try { (() => {
     sourceType: "manual",
     figmaUrl: "",
     githubUrl: "",
-    fileName: ""
+    fileName: "",
+    profileName: "Your Name",
+    profileRole: "Founder · building in public",
+    profileHandle: "yourname",
+    profilePhoto: ""
   };
-  const STEPS = ["Welcome", "Brand source", "Colours", "Type & signature", "Done"];
   function loadFont(font) {
     const id = "gf-" + font.replace(/\s+/g, "-");
     if (document.getElementById(id)) return;
@@ -1949,7 +3278,7 @@ try { (() => {
     document.head.appendChild(l);
   }
   function hexToRgb(hex) {
-    const m = hex.replace("#", "");
+    const m = (hex || "#000").replace("#", "");
     const n = m.length === 3 ? m.split("").map(c => c + c).join("") : m;
     const i = parseInt(n, 16);
     return [i >> 16 & 255, i >> 8 & 255, i & 255];
@@ -1996,8 +3325,25 @@ MY CHOICES (use these, or override them with what you find in the source)
 
 Please write these into overrides/brand.css (load the font's <link> too) and confirm. Then I'll start making visuals.`;
   }
+  function copyText(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;opacity:0;top:-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      ta.remove();
+      if (ok) return true;
+    } catch (e) {}
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
+  }
+  const h = React.createElement;
   function Setup() {
-    const [step, setStep] = useState(0);
     const [s, setS] = useState(() => {
       try {
         return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS)) || {});
@@ -2026,540 +3372,651 @@ Please write these into overrides/brand.css (load the font's <link> too) and con
     }));
     const light = lightTint(s.primary, s.tint);
     const copy = (key, text) => {
-      navigator.clipboard && navigator.clipboard.writeText(text);
+      copyText(text);
       setCopied(key);
       setTimeout(() => setCopied(""), 1700);
     };
-    const sigStyle = s.signature === "underline" ? {
-      boxShadow: `inset 0 -0.12em 0 ${s.accent}`
+    const sig = color => s.signature === "underline" ? {
+      boxShadow: `inset 0 -0.14em 0 ${color || s.accent}`
     } : s.signature === "block" ? {
-      background: s.accent,
+      background: color || s.accent,
       color: "#fff",
-      padding: "0 .12em"
+      padding: "0 .14em",
+      borderRadius: 3
     } : s.signature === "bubble" ? {
-      border: `3px solid ${s.accent}`,
+      border: `2.5px solid ${color || s.accent}`,
       borderRadius: "999px",
-      padding: ".02em .35em"
+      padding: ".02em .4em"
     } : {};
 
-    // ---- shared styles ----
-    const shell = {
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      fontFamily: `'${s.font}', system-ui, sans-serif`,
-      color: "#18181b"
-    };
-    const main = {
-      flex: 1,
-      display: "flex",
-      gap: 44,
-      alignItems: "flex-start",
-      maxWidth: 1140,
-      width: "100%",
-      margin: "0 auto",
-      padding: "36px 40px 0",
-      boxSizing: "border-box"
-    };
-    const colLeft = {
-      flex: "1 1 0",
-      minWidth: 0
-    };
+    // ---- tokens / chrome styles (settings UI is neutral Inter; only the preview uses the brand font) ----
+    const ui = "'Inter',system-ui,-apple-system,sans-serif";
     const label = {
       display: "block",
-      fontSize: 13,
+      fontSize: 11.5,
       fontWeight: 700,
-      letterSpacing: ".04em",
+      letterSpacing: ".05em",
       textTransform: "uppercase",
-      color: "#6b7280",
-      margin: "0 0 10px"
+      color: "#9aa0a6",
+      margin: "0 0 9px"
     };
-    const h1 = {
-      fontFamily: `'${s.font}', sans-serif`,
-      fontWeight: 700,
-      fontSize: 38,
-      letterSpacing: "-.025em",
-      margin: "0 0 14px",
-      lineHeight: 1.08
-    };
-    const sub = {
-      fontSize: 17,
-      lineHeight: 1.55,
-      color: "#5a5a5a",
-      margin: "0 0 28px",
-      maxWidth: 560
-    };
-    const colorInput = {
-      width: 54,
-      height: 40,
-      border: "1px solid #d8dadd",
-      borderRadius: 8,
+    const card = {
       background: "#fff",
-      padding: 2,
-      cursor: "pointer"
+      border: "1px solid #e5e7eb",
+      borderRadius: 14,
+      padding: 18,
+      marginBottom: 14,
+      boxShadow: "0 1px 2px rgba(0,0,0,.04)"
     };
     const field = {
       width: "100%",
-      padding: "13px 14px",
-      fontSize: 15,
+      padding: "11px 12px",
+      fontSize: 14,
       border: "1px solid #d8dadd",
-      borderRadius: 10,
+      borderRadius: 9,
       background: "#fff",
       boxSizing: "border-box",
-      fontFamily: "inherit"
+      fontFamily: "inherit",
+      color: "#1f2328"
     };
-    const btn = primary => ({
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "13px 26px",
-      fontSize: 16,
-      fontWeight: 700,
-      borderRadius: 11,
-      cursor: "pointer",
-      border: primary ? "none" : "1px solid #d8dadd",
-      background: primary ? s.primary : "#fff",
-      color: primary ? "#fff" : "#3a3f45"
-    });
     function Color({
       k,
-      name
+      name,
+      role
     }) {
-      return React.createElement("div", {
+      return h("div", {
         style: {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          marginBottom: 12
+          marginBottom: 11
         }
-      }, React.createElement("input", {
+      }, h("input", {
         type: "color",
         value: s[k],
         onChange: e => set(k, e.target.value),
-        style: colorInput
-      }), React.createElement("div", null, React.createElement("div", {
+        style: {
+          width: 46,
+          height: 38,
+          border: "1px solid #d8dadd",
+          borderRadius: 8,
+          background: "#fff",
+          padding: 2,
+          cursor: "pointer",
+          flex: "none"
+        }
+      }), h("div", {
+        style: {
+          minWidth: 0
+        }
+      }, h("div", {
         style: {
           fontWeight: 600,
-          fontSize: 15
+          fontSize: 14
         }
-      }, name), React.createElement("div", {
+      }, name), h("div", {
         style: {
-          fontSize: 13,
+          fontSize: 12.5,
+          color: "#8a9098"
+        }
+      }, role)), h("div", {
+        style: {
+          marginLeft: "auto",
+          fontSize: 12.5,
           color: "#8a9098",
           fontFamily: "monospace"
         }
-      }, s[k])));
+      }, (s[k] || "").toUpperCase()));
     }
-    function Preview() {
-      const card = (bg, fg, kicker, kickerColor, title, body) => React.createElement("div", {
+
+    // ---- the LIVE feed preview (right) ----
+    function FeedVisual() {
+      // a single-visual "loud" cover, recoloured live
+      return h("div", {
+        style: {
+          aspectRatio: "4/5",
+          background: s.primary,
+          color: "#fff",
+          padding: "30px 26px",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          fontFamily: `'${s.font}', sans-serif`
+        }
+      }, h("div", {
+        style: {
+          fontSize: 12,
+          fontWeight: 700,
+          letterSpacing: ".14em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,.72)"
+        }
+      }, "The hard truth"), h("div", null, h("div", {
+        style: {
+          fontWeight: 800,
+          fontSize: 38,
+          lineHeight: 1.05,
+          letterSpacing: "-.02em"
+        }
+      }, "Most outreach dies on the ", h("span", {
+        style: sig("#fff")
+      }, "first line")), h("div", {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 9,
+          marginTop: 24
+        }
+      }, h("span", {
+        style: {
+          width: 30,
+          height: 30,
+          borderRadius: "50%",
+          flex: "none",
+          background: s.profilePhoto ? `center/cover url(${s.profilePhoto})` : "rgba(255,255,255,.25)"
+        }
+      }), h("span", {
+        style: {
+          fontSize: 14,
+          fontWeight: 600,
+          color: "rgba(255,255,255,.9)"
+        }
+      }, "@" + (s.profileHandle || "yourname")), h("span", {
+        style: {
+          marginLeft: "auto",
+          fontSize: 22
+        }
+      }, "\u2192"))));
+    }
+    function MiniRole(bg, fg, kicker, kc) {
+      return h("div", {
         style: {
           flex: 1,
           aspectRatio: "4/5",
-          borderRadius: 12,
+          borderRadius: 8,
           background: bg,
           color: fg,
-          padding: 18,
-          boxSizing: "border-box",
+          padding: 10,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-end",
-          boxShadow: "0 6px 22px rgba(0,0,0,.10)"
+          fontFamily: `'${s.font}', sans-serif`
         }
-      }, React.createElement("div", {
+      }, h("div", {
         style: {
-          fontSize: 10,
+          fontSize: 8,
           fontWeight: 700,
           letterSpacing: ".1em",
           textTransform: "uppercase",
-          color: kickerColor
+          color: kc
         }
-      }, kicker), React.createElement("div", {
-        style: {
-          fontFamily: `'${s.font}', sans-serif`,
-          fontWeight: 700,
-          fontSize: 21,
-          lineHeight: 1.1,
-          marginTop: 7
-        }
-      }, title, body));
-      return React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 12
-        }
-      }, card(s.primary, "#fff", "Loud", "rgba(255,255,255,.7)", "Cover headline", null), card(light, "#18181b", "Light", "#8a9098", "A point worth ", React.createElement("span", {
-        style: sigStyle
-      }, "saving")), card(s.secondary, "#fff", "Section", s.accent, "Chapter marker", null));
-    }
-
-    // ---- step bodies ----
-    let body;
-    if (step === 0) {
-      body = React.createElement("div", {
-        style: colLeft
-      }, React.createElement("div", {
-        style: {
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: ".12em",
-          textTransform: "uppercase",
-          color: s.primary,
-          marginBottom: 18
-        }
-      }, React.createElement("span", {
-        style: {
-          width: 8,
-          height: 8,
-          borderRadius: "50%",
-          background: s.primary
-        }
-      }), "LinkedIn Visual Design System"), React.createElement("h1", {
-        style: h1
-      }, "Welcome — let's set up your brand first."), React.createElement("p", {
-        style: sub
-      }, "Five quick steps: point us at your Figma or GitHub (optional), then pick colours, font and your headline signature. A live preview shows your style as you go. Everything you set is yours and survives every update."), React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 28,
-          margin: "8px 0 32px",
-          flexWrap: "wrap"
-        }
-      }, [["1", "Source", "Figma, GitHub, a .fig file — or skip"], ["2", "Colours", "Loud, section & accent"], ["3", "Type", "Font + headline signature"], ["4", "Hand off", "One paste to the assistant"]].map(x => React.createElement("div", {
-        key: x[0],
-        style: {
-          flex: 1,
-          minWidth: 150
-        }
-      }, React.createElement("div", {
+      }, kicker), h("div", {
         style: {
           fontWeight: 700,
-          fontSize: 14,
-          marginBottom: 4
-        }
-      }, x[0] + " · " + x[1]), React.createElement("div", {
-        style: {
-          fontSize: 13.5,
-          color: "#8a9098",
-          lineHeight: 1.45
-        }
-      }, x[2])))));
-    } else if (step === 1) {
-      const opt = (val, title, desc) => React.createElement("button", {
-        onClick: () => set("sourceType", val),
-        style: {
-          textAlign: "left",
-          width: "100%",
-          padding: "16px 18px",
-          marginBottom: 12,
-          borderRadius: 12,
-          cursor: "pointer",
-          background: "#fff",
-          border: "1.5px solid " + (s.sourceType === val ? s.primary : "#d8dadd"),
-          boxShadow: s.sourceType === val ? `0 0 0 3px ${lightTint(s.primary, 12)}` : "none"
-        }
-      }, React.createElement("div", {
-        style: {
-          fontWeight: 700,
-          fontSize: 16
-        }
-      }, title), React.createElement("div", {
-        style: {
-          fontSize: 14,
-          color: "#8a9098",
-          marginTop: 3,
-          lineHeight: 1.4
-        }
-      }, desc));
-      body = React.createElement("div", {
-        style: colLeft
-      }, React.createElement("h1", {
-        style: h1
-      }, "Where should your brand come from?"), React.createElement("p", {
-        style: sub
-      }, "If you have a Figma file or a GitHub repo, the assistant can pull your real colours, fonts and logo from it. No source? Just set it by hand in the next steps."), opt("figma", "Figma file", "Paste a share link — the assistant imports the brand from it."), s.sourceType === "figma" && React.createElement("input", {
-        style: Object.assign({}, field, {
-          marginBottom: 12
-        }),
-        placeholder: "https://www.figma.com/file/…",
-        value: s.figmaUrl,
-        onChange: e => set("figmaUrl", e.target.value)
-      }), opt("github", "GitHub repo", "Paste the repo URL — pulls theme tokens / colours / fonts."), s.sourceType === "github" && React.createElement("input", {
-        style: Object.assign({}, field, {
-          marginBottom: 12
-        }),
-        placeholder: "https://github.com/owner/repo",
-        value: s.githubUrl,
-        onChange: e => set("githubUrl", e.target.value)
-      }), opt("file", "Upload a .fig file", "Pick the file, then attach it in the chat so the assistant can read it."), s.sourceType === "file" && React.createElement("div", {
-        style: {
-          marginBottom: 12
-        }
-      }, React.createElement("label", {
-        style: Object.assign({}, btn(false), {
-          fontSize: 14,
-          padding: "10px 18px"
-        })
-      }, "Choose .fig file", React.createElement("input", {
-        type: "file",
-        accept: ".fig",
-        style: {
-          display: "none"
-        },
-        onChange: e => set("fileName", e.target.files[0] ? e.target.files[0].name : "")
-      })), s.fileName && React.createElement("div", {
-        style: {
-          fontSize: 13.5,
-          color: "#1f8a5b",
-          fontWeight: 600,
-          marginTop: 8
-        }
-      }, "✓ " + s.fileName + " — remember to also attach it in the chat."), s.fileName && React.createElement("div", {
-        style: {
           fontSize: 13,
-          color: "#8a9098",
-          marginTop: 4,
-          lineHeight: 1.4
+          lineHeight: 1.08,
+          marginTop: 4
         }
-      }, "A page can't send the file itself, so drag it into the chat as well.")), opt("manual", "Set it manually", "No source — pick colours and type yourself."));
-    } else if (step === 2) {
-      body = React.createElement("div", {
-        style: colLeft
-      }, React.createElement("h1", {
-        style: h1
-      }, "Your colours"), React.createElement("p", {
-        style: sub
-      }, "Three roles drive every visual: a loud cover colour, a deep section colour, and an accent for highlights."), React.createElement(Color, {
-        k: "primary",
-        name: "Primary — loud canvas (cover / back)"
-      }), React.createElement(Color, {
-        k: "secondary",
-        name: "Secondary — section canvas (chapters)"
-      }), React.createElement(Color, {
-        k: "accent",
-        name: "Accent — highlight / mark"
-      }), React.createElement("div", {
-        style: {
-          marginTop: 22
-        }
-      }, React.createElement("span", {
-        style: label
-      }, "Light-canvas tint · " + s.tint + "%"), React.createElement("input", {
-        type: "range",
-        min: 3,
-        max: 16,
-        value: s.tint,
-        onChange: e => set("tint", +e.target.value),
-        style: {
-          width: "100%",
-          accentColor: s.primary
-        }
-      })));
-    } else if (step === 3) {
-      body = React.createElement("div", {
-        style: colLeft
-      }, React.createElement("h1", {
-        style: h1
-      }, "Type & signature"), React.createElement("p", {
-        style: sub
-      }, "Pick the font everything is set in, and how a highlighted word looks in your headlines."), React.createElement("div", {
-        style: {
-          marginBottom: 24
-        }
-      }, React.createElement("span", {
-        style: label
-      }, "Font"), React.createElement("select", {
-        value: s.font,
-        onChange: e => set("font", e.target.value),
-        style: Object.assign({}, field, {
-          fontFamily: `'${s.font}', sans-serif`
-        })
-      }, FONTS.map(f => React.createElement("option", {
-        key: f,
-        value: f
-      }, f)))), React.createElement("div", null, React.createElement("span", {
-        style: label
-      }, "Headline signature"), React.createElement("div", {
-        style: {
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap"
-        }
-      }, SIGS.map(([val, name]) => React.createElement("button", {
-        key: val,
-        onClick: () => set("signature", val),
+      }, "Headline"));
+    }
+    function Feed() {
+      const act = txt => h("div", {
         style: {
           flex: 1,
-          minWidth: 84,
-          padding: "11px 8px",
-          fontSize: 14,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 6,
+          fontSize: 13,
           fontWeight: 600,
-          cursor: "pointer",
-          borderRadius: 9,
-          border: "1.5px solid " + (s.signature === val ? s.primary : "#d8dadd"),
-          background: s.signature === val ? s.primary : "#fff",
-          color: s.signature === val ? "#fff" : "#3a3f45"
+          color: "#5f6671",
+          padding: "9px 0"
         }
-      }, name)))));
-    } else {
-      // Done — hand off
-      body = React.createElement("div", {
-        style: colLeft
-      }, React.createElement("h1", {
-        style: h1
-      }, "You're set. Hand it to the assistant."), React.createElement("p", {
-        style: sub
-      }, "One paste does it: the message below tells the assistant your source and choices, so it imports your brand and writes the overrides for you. (A page can't post into the chat on its own.)"), React.createElement("button", {
-        onClick: () => copy("msg", assistantMsg(s)),
-        style: Object.assign({}, btn(true), {
-          marginBottom: 16
-        })
-      }, copied === "msg" ? "Copied — now paste in chat ✓" : "Copy for the assistant"), React.createElement("details", {
+      }, txt);
+      return h("div", null, h("span", {
+        style: label
+      }, "Live preview — in the feed"), h("div", {
         style: {
-          marginTop: 6
+          background: "#fff",
+          border: "1px solid #e5e7eb",
+          borderRadius: 12,
+          overflow: "hidden",
+          boxShadow: "0 8px 24px rgba(0,0,0,.08)",
+          maxWidth: 380
         }
-      }, React.createElement("summary", {
+      },
+      // post header
+      h("div", {
         style: {
-          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "13px 14px 10px"
+        }
+      }, h("span", {
+        style: {
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          border: "1px solid #e5e7eb",
+          flex: "none",
+          background: s.profilePhoto ? `center/cover url(${s.profilePhoto})` : light
+        }
+      }), h("div", {
+        style: {
+          lineHeight: 1.25
+        }
+      }, h("div", {
+        style: {
+          fontWeight: 700,
           fontSize: 14,
-          fontWeight: 600,
+          color: "#111827"
+        }
+      }, s.profileName || "Your Name"), h("div", {
+        style: {
+          fontSize: 12,
           color: "#6b7280"
         }
-      }, "Or paste overrides/brand.css yourself"), React.createElement("div", {
+      }, s.profileRole || "Founder · building in public"), h("div", {
         style: {
-          background: "#16232b",
-          borderRadius: 14,
-          overflow: "hidden",
-          marginTop: 12
+          fontSize: 12,
+          color: "#6b7280"
         }
-      }, React.createElement("div", {
+      }, "2h · \uD83C\uDF10")), h("span", {
+        style: {
+          marginLeft: "auto",
+          color: s.primary,
+          fontWeight: 700,
+          fontSize: 13
+        }
+      }, "+ Follow")),
+      // post text
+      h("div", {
+        style: {
+          padding: "0 14px 12px",
+          fontSize: 13.5,
+          lineHeight: 1.5,
+          color: "#1f2328"
+        }
+      }, "Spent years getting this wrong. Here's the one change that doubled my reply rate \uD83D\uDC47"),
+      // the visual
+      FeedVisual(),
+      // action bar
+      h("div", {
         style: {
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "12px 16px",
-          borderBottom: "1px solid rgba(255,255,255,.1)"
+          borderTop: "1px solid #eef0f2"
         }
-      }, React.createElement("span", {
+      }, act("\uD83D\uDC4D Like"), act("\uD83D\uDCAC Comment"), act("\uD83D\uDD01 Repost"), act("\u27A4 Send"))),
+      // three canvas roles
+      h("div", {
         style: {
-          color: "#cfd3d8",
-          fontSize: 13,
-          fontWeight: 600,
-          fontFamily: "monospace"
+          marginTop: 16
         }
-      }, "overrides/brand.css"), React.createElement("button", {
-        onClick: () => copy("css", cssText(s)),
+      }, h("span", {
+        style: label
+      }, "Your three canvases"), h("div", {
         style: {
-          background: s.primary,
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          padding: "7px 14px",
-          fontSize: 13,
-          fontWeight: 700,
-          cursor: "pointer"
+          display: "flex",
+          gap: 8,
+          maxWidth: 380
         }
-      }, copied === "css" ? "Copied ✓" : "Copy")), React.createElement("pre", {
-        style: {
-          margin: 0,
-          padding: "16px 18px",
-          color: "#e6edf3",
-          fontSize: 12.5,
-          lineHeight: 1.5,
-          fontFamily: "monospace",
-          whiteSpace: "pre-wrap",
-          overflowX: "auto"
-        }
-      }, cssText(s)))));
+      }, MiniRole(s.primary, "#fff", "Loud", "rgba(255,255,255,.7)"), MiniRole(light, "#18181b", "Light", "#8a9098"), MiniRole(s.secondary, "#fff", "Section", s.accent))));
     }
-    const showPreview = step >= 2;
-    return React.createElement("div", {
-      style: shell
-    },
-    // stepper
-    React.createElement("div", {
+
+    // ---- left controls ----
+    const srcOpt = (val, name) => h("button", {
+      onClick: () => set("sourceType", val),
       style: {
-        display: "flex",
-        gap: 8,
-        justifyContent: "center",
-        padding: "26px 20px 6px",
-        flexWrap: "wrap"
-      }
-    }, STEPS.map((name, i) => React.createElement("div", {
-      key: name,
-      onClick: () => i <= step && setStep(i),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        cursor: i <= step ? "pointer" : "default",
-        opacity: i <= step ? 1 : .5
-      }
-    }, React.createElement("span", {
-      style: {
-        width: 26,
-        height: 26,
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 13,
-        fontWeight: 700,
-        background: i < step ? s.primary : i === step ? s.primary : "#e2e5e9",
-        color: i <= step ? "#fff" : "#9aa0a6"
-      }
-    }, i < step ? "✓" : i + 1), React.createElement("span", {
-      style: {
-        fontSize: 13.5,
+        flex: 1,
+        minWidth: 70,
+        padding: "8px 6px",
+        fontSize: 12.5,
         fontWeight: 600,
-        color: i === step ? "#18181b" : "#9aa0a6"
+        cursor: "pointer",
+        borderRadius: 8,
+        border: "1.5px solid " + (s.sourceType === val ? s.primary : "#d8dadd"),
+        background: s.sourceType === val ? s.primary : "#fff",
+        color: s.sourceType === val ? "#fff" : "#3a3f45",
+        fontFamily: "inherit"
       }
-    }, name), i < STEPS.length - 1 && React.createElement("span", {
+    }, name);
+    const left = h("div", {
       style: {
-        width: 22,
-        height: 2,
-        background: "#e2e5e9",
-        marginLeft: 4
+        flex: "1 1 0",
+        minWidth: 0,
+        maxWidth: 560
       }
-    })))), React.createElement("div", {
-      style: main
-    }, body, showPreview && React.createElement("div", {
+    }, h("div", {
       style: {
-        flex: "0 0 440px",
-        maxWidth: 440,
-        position: "sticky",
-        top: 20
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        fontSize: 11.5,
+        fontWeight: 700,
+        letterSpacing: ".12em",
+        textTransform: "uppercase",
+        color: s.primary,
+        marginBottom: 10
       }
-    }, React.createElement("span", {
+    }, h("span", {
+      style: {
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: s.primary
+      }
+    }), "Brand settings"), h("h1", {
+      style: {
+        fontWeight: 800,
+        fontSize: 28,
+        letterSpacing: "-.02em",
+        margin: "0 0 6px",
+        color: "#111827"
+      }
+    }, "Your brand"), h("p", {
+      style: {
+        fontSize: 14.5,
+        lineHeight: 1.5,
+        color: "#6b7280",
+        margin: "0 0 20px"
+      }
+    }, "Set it here or just tell the assistant in chat — everything updates live on the right, and persists across every visual."),
+    // Profile (name · role · photo)
+    h("div", {
+      style: card
+    }, h("span", {
       style: label
-    }, "Live preview"), React.createElement(Preview))),
-    // nav
-    React.createElement("div", {
+    }, "Your profile"), h("div", {
+      style: {
+        display: "flex",
+        gap: 14,
+        alignItems: "flex-start"
+      }
+    }, h("label", {
+      style: {
+        flex: "none",
+        cursor: "pointer",
+        textAlign: "center"
+      }
+    }, h("span", {
+      style: {
+        display: "block",
+        width: 60,
+        height: 60,
+        borderRadius: "50%",
+        border: "1px solid #d8dadd",
+        background: s.profilePhoto ? `center/cover url(${s.profilePhoto})` : "#f1f2f4",
+        marginBottom: 5
+      }
+    }, !s.profilePhoto && h("span", {
+      style: {
+        display: "flex",
+        width: "100%",
+        height: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: 22,
+        color: "#b6bcc3"
+      }
+    }, "+")), h("span", {
+      style: {
+        fontSize: 11,
+        color: s.primary,
+        fontWeight: 600
+      }
+    }, s.profilePhoto ? "Change" : "Photo"), h("input", {
+      type: "file",
+      accept: "image/*",
+      style: {
+        display: "none"
+      },
+      onChange: e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => set("profilePhoto", r.result);
+        r.readAsDataURL(f);
+      }
+    })), h("div", {
+      style: {
+        flex: "1 1 0",
+        minWidth: 0
+      }
+    }, h("input", {
+      style: Object.assign({}, field, {
+        marginBottom: 8
+      }),
+      placeholder: "Name",
+      value: s.profileName,
+      onChange: e => set("profileName", e.target.value)
+    }), h("input", {
+      style: Object.assign({}, field, {
+        marginBottom: 8
+      }),
+      placeholder: "Role / function (e.g. Founder · SaaS)",
+      value: s.profileRole,
+      onChange: e => set("profileRole", e.target.value)
+    }), h("input", {
+      style: field,
+      placeholder: "@handle",
+      value: s.profileHandle,
+      onChange: e => set("profileHandle", e.target.value.replace(/^@/, ""))
+    }))), s.profilePhoto && h("button", {
+      onClick: () => set("profilePhoto", ""),
+      style: {
+        marginTop: 10,
+        fontSize: 12,
+        fontWeight: 600,
+        color: "#8a9098",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        fontFamily: "inherit"
+      }
+    }, "Remove photo")),
+    // Colours
+    h("div", {
+      style: card
+    }, h("span", {
+      style: label
+    }, "Colours"), h(Color, {
+      k: "primary",
+      name: "Primary",
+      role: "Loud canvas — covers & backs"
+    }), h(Color, {
+      k: "secondary",
+      name: "Secondary",
+      role: "Section canvas — chapter markers"
+    }), h(Color, {
+      k: "accent",
+      name: "Accent",
+      role: "Highlight / signature mark"
+    }), h("div", {
+      style: {
+        marginTop: 14
+      }
+    }, h("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
-        maxWidth: 1140,
-        width: "100%",
-        margin: "0 auto",
-        padding: "28px 40px 40px",
-        boxSizing: "border-box"
+        marginBottom: 6
       }
-    }, React.createElement("button", {
-      onClick: () => setStep(Math.max(0, step - 1)),
-      style: Object.assign({}, btn(false), {
-        visibility: step === 0 ? "hidden" : "visible"
+    }, h("span", {
+      style: {
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#3a3f45"
+      }
+    }, "Light-canvas tint"), h("span", {
+      style: {
+        fontSize: 13,
+        color: "#8a9098",
+        fontFamily: "monospace"
+      }
+    }, s.tint + "%")), h("input", {
+      type: "range",
+      min: 3,
+      max: 16,
+      value: s.tint,
+      onChange: e => set("tint", +e.target.value),
+      style: {
+        width: "100%",
+        accentColor: s.primary
+      }
+    }))),
+    // Type & signature
+    h("div", {
+      style: card
+    }, h("span", {
+      style: label
+    }, "Type & signature"), h("select", {
+      value: s.font,
+      onChange: e => set("font", e.target.value),
+      style: Object.assign({}, field, {
+        fontFamily: `'${s.font}', sans-serif`,
+        marginBottom: 14
       })
-    }, "← Back"), step < STEPS.length - 1 ? React.createElement("button", {
-      onClick: () => setStep(step + 1),
-      style: btn(true)
-    }, step === 0 ? "Get started →" : "Next →") : React.createElement("a", {
-      href: "Visual Board.html",
-      style: Object.assign({}, btn(true), {
-        textDecoration: "none"
-      })
-    }, "Start making visuals →")));
+    }, FONTS.map(f => h("option", {
+      key: f,
+      value: f
+    }, f))), h("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        flexWrap: "wrap"
+      }
+    }, SIGS.map(([val, name]) => h("button", {
+      key: val,
+      onClick: () => set("signature", val),
+      style: {
+        flex: 1,
+        minWidth: 78,
+        padding: "9px 6px",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        borderRadius: 8,
+        border: "1.5px solid " + (s.signature === val ? s.primary : "#d8dadd"),
+        background: s.signature === val ? s.primary : "#fff",
+        color: s.signature === val ? "#fff" : "#3a3f45",
+        fontFamily: "inherit"
+      }
+    }, name)))),
+    // Source (optional)
+    h("div", {
+      style: card
+    }, h("span", {
+      style: label
+    }, "Start from an existing brand (optional)"), h("div", {
+      style: {
+        display: "flex",
+        gap: 8,
+        marginBottom: 10
+      }
+    }, srcOpt("manual", "Manual"), srcOpt("figma", "Figma"), srcOpt("github", "GitHub"), srcOpt("file", ".fig file")), s.sourceType === "figma" && h("input", {
+      style: field,
+      placeholder: "https://www.figma.com/file/…",
+      value: s.figmaUrl,
+      onChange: e => set("figmaUrl", e.target.value)
+    }), s.sourceType === "github" && h("input", {
+      style: field,
+      placeholder: "https://github.com/owner/repo",
+      value: s.githubUrl,
+      onChange: e => set("githubUrl", e.target.value)
+    }), s.sourceType === "file" && h("label", {
+      style: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "9px 14px",
+        border: "1px solid #d8dadd",
+        borderRadius: 9,
+        cursor: "pointer",
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#3a3f45"
+      }
+    }, s.fileName ? "\u2713 " + s.fileName : "Choose .fig file", h("input", {
+      type: "file",
+      accept: ".fig",
+      style: {
+        display: "none"
+      },
+      onChange: e => set("fileName", e.target.files[0] ? e.target.files[0].name : "")
+    })), (s.sourceType === "figma" || s.sourceType === "github" || s.sourceType === "file") && h("div", {
+      style: {
+        fontSize: 12,
+        color: "#8a9098",
+        marginTop: 8,
+        lineHeight: 1.4
+      }
+    }, "The assistant imports it — paste/attach it in the chat with the hand-off below.")),
+    // Hand-off
+    h("div", {
+      style: {
+        display: "flex",
+        gap: 10,
+        alignItems: "center",
+        flexWrap: "wrap"
+      }
+    }, h("button", {
+      onClick: () => copy("msg", assistantMsg(s)),
+      style: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "12px 22px",
+        fontSize: 15,
+        fontWeight: 700,
+        borderRadius: 11,
+        cursor: "pointer",
+        border: "none",
+        background: s.primary,
+        color: "#fff",
+        fontFamily: "inherit"
+      }
+    }, copied === "msg" ? "Copied — paste in chat \u2713" : "Apply via the assistant"), h("button", {
+      onClick: () => copy("css", cssText(s)),
+      style: {
+        padding: "12px 18px",
+        fontSize: 14,
+        fontWeight: 600,
+        borderRadius: 11,
+        cursor: "pointer",
+        border: "1px solid #d8dadd",
+        background: "#fff",
+        color: "#5f6671",
+        fontFamily: "inherit"
+      }
+    }, copied === "css" ? "Copied brand.css \u2713" : "Copy brand.css")));
+    return h("div", {
+      style: {
+        minHeight: "100vh",
+        fontFamily: ui,
+        color: "#1f2328",
+        background: "#f6f7f8"
+      }
+    }, h("div", {
+      style: {
+        display: "flex",
+        gap: 40,
+        alignItems: "flex-start",
+        maxWidth: 1180,
+        margin: "0 auto",
+        padding: "34px 36px 60px",
+        boxSizing: "border-box",
+        flexWrap: "wrap"
+      }
+    }, left, h("div", {
+      style: {
+        flex: "0 0 380px",
+        maxWidth: 380,
+        position: "sticky",
+        top: 28
+      }
+    }, Feed())));
   }
   window.Setup = Setup;
 })();
@@ -4169,6 +5626,725 @@ try { (() => {
 })();
 })(); } catch (e) { __ds_ns.__errors.push({ path: "ui_kits/visual-library/sampleVisuals.jsx", error: String((e && e.message) || e) }); }
 
+// uploads/Design system setup/doodle-kit.js
+try { (() => {
+/* ============================================================
+   DOODLE KIT — MORE THAN SAID
+   Reusable hand-drawn doodle library for the LinkedIn visuals.
+   Brand-agnostic engine + editor. Ships with an EMPTY icon set; populate per project.
+
+   USAGE
+     <link rel="stylesheet" href="doodle.css">
+     <script src="doodle-kit.js"></script>
+     <doodle-mark name="rocket"></doodle-mark>
+     <doodle-ill  name="research"></doodle-ill>
+     el.innerHTML = DoodleKit.mark('funnel');
+
+   EDIT MODE (node editor)
+     DoodleKit.capture(name)         -> [{ci,type,pts:[[x,y]..]}]  (anchor points)
+     DoodleKit.setPoint(name,ci,pi,x,y)   move one anchor (persisted)
+     DoodleKit.resetMark(name)            clear edits for one mark
+     Edits live in localStorage('doodle-overrides') and every live
+     <doodle-mark>/<doodle-ill> re-renders on the 'doodle-changed' event.
+
+   Colour: line = var(--doodle-ink) (defaults to --brand-secondary),
+   accent = var(--brand-primary). Size with CSS width/height.
+   ============================================================ */
+(function (root) {
+  function mul(a) {
+    return function () {
+      a |= 0;
+      a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function f(n) {
+    return Math.round(n * 10) / 10;
+  }
+
+  // ---- edit state (module scope, shared with Pen primitives) ----
+  var STORE = {},
+    OV = null,
+    CIDX = 0,
+    CAP = null,
+    CAPTURE = false,
+    CUSTOM = {};
+  try {
+    STORE = JSON.parse(root.localStorage.getItem('doodle-overrides')) || {};
+  } catch (e) {
+    STORE = {};
+  }
+  try {
+    (JSON.parse(root.localStorage.getItem('doodle-custom')) || []).forEach(function (n) {
+      CUSTOM[n] = true;
+    });
+  } catch (e) {}
+  function NOOP() {}
+  function persist() {
+    try {
+      root.localStorage.setItem('doodle-overrides', JSON.stringify(STORE));
+    } catch (e) {}
+  }
+  function persistCustom() {
+    try {
+      root.localStorage.setItem('doodle-custom', JSON.stringify(Object.keys(CUSTOM)));
+    } catch (e) {}
+  }
+  function ovGet(ci) {
+    return OV ? OV[ci] : null;
+  }
+  function applyMoves(ci, pts) {
+    var o = ovGet(ci);
+    if (o) {
+      for (var k in o) {
+        if (k.charAt(0) !== '_') pts[+k] = [o[k][0], o[k][1]];
+      }
+    }
+    return pts;
+  }
+  function cap(rec) {
+    if (CAPTURE) CAP.push(rec);
+  }
+  // build an SVG path from anchors ([x,y] corner, or [x,y,hx,hy] with a symmetric bezier handle)
+  function anchorPath(A, closed) {
+    if (!A || !A.length) return '';
+    function hx(a) {
+      return a.length > 2 ? a[2] : 0;
+    }
+    function hy(a) {
+      return a.length > 3 ? a[3] : 0;
+    }
+    var d = 'M' + f(A[0][0]) + ' ' + f(A[0][1]),
+      n = A.length,
+      segs = closed ? n : n - 1;
+    for (var i = 0; i < segs; i++) {
+      var a = A[i],
+        b = A[(i + 1) % n];
+      if (hx(a) || hy(a) || hx(b) || hy(b)) {
+        d += ' C ' + f(a[0] + hx(a)) + ' ' + f(a[1] + hy(a)) + ' ' + f(b[0] - hx(b)) + ' ' + f(b[1] - hy(b)) + ' ' + f(b[0]) + ' ' + f(b[1]);
+      } else d += ' L ' + f(b[0]) + ' ' + f(b[1]);
+    }
+    if (closed) d += ' Z';
+    return d;
+  }
+  function profileOutline(A, baseW, profile, closed) {
+    if (!A || A.length < 2) return '';
+    function hx(a) {
+      return a.length > 2 ? a[2] : 0;
+    }
+    function hy(a) {
+      return a.length > 3 ? a[3] : 0;
+    }
+    var segEnd = closed ? A.length : A.length - 1,
+      pts = [];
+    for (var i = 0; i < segEnd; i++) {
+      var a = A[i],
+        b = A[(i + 1) % A.length];
+      var c1x = a[0] + hx(a),
+        c1y = a[1] + hy(a),
+        c2x = b[0] - hx(b),
+        c2y = b[1] - hy(b),
+        sub = 14;
+      for (var s2 = 0; s2 < sub; s2++) {
+        var t = s2 / sub,
+          mt = 1 - t;
+        pts.push([mt * mt * mt * a[0] + 3 * mt * mt * t * c1x + 3 * mt * t * t * c2x + t * t * t * b[0], mt * mt * mt * a[1] + 3 * mt * mt * t * c1y + 3 * mt * t * t * c2y + t * t * t * b[1]]);
+      }
+    }
+    if (!closed) pts.push([A[A.length - 1][0], A[A.length - 1][1]]);
+    var n = pts.length,
+      T = [0];
+    for (var i = 1; i < n; i++) T[i] = T[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    var L = T[n - 1] || 1;
+    for (var i = 0; i < n; i++) T[i] /= L;
+    function wf(t) {
+      var v;
+      if (profile === 'bulge') v = Math.sin(Math.PI * t);else if (profile === 'taper') v = 1 - t;else if (profile === 'reverse') v = t;else if (profile === 'waist') v = Math.abs(2 * t - 1);else v = 1;
+      return baseW * (0.14 + 0.95 * v);
+    }
+    function norm(i) {
+      var a = pts[(i - 1 + n) % n],
+        b = pts[(i + 1) % n];
+      if (!closed) {
+        a = pts[Math.max(0, i - 1)];
+        b = pts[Math.min(n - 1, i + 1)];
+      }
+      var dx = b[0] - a[0],
+        dy = b[1] - a[1],
+        len = Math.hypot(dx, dy) || 1;
+      return [-dy / len, dx / len];
+    }
+    var left = [],
+      right = [];
+    for (var i = 0; i < n; i++) {
+      var hw = wf(T[i]) / 2,
+        nb = norm(i);
+      left.push([pts[i][0] + nb[0] * hw, pts[i][1] + nb[1] * hw]);
+      right.push([pts[i][0] - nb[0] * hw, pts[i][1] - nb[1] * hw]);
+    }
+    if (closed) {
+      var d1 = 'M' + f(left[0][0]) + ' ' + f(left[0][1]);
+      for (var i = 1; i < n; i++) d1 += ' L ' + f(left[i][0]) + ' ' + f(left[i][1]);
+      d1 += ' Z';
+      var d2 = 'M' + f(right[0][0]) + ' ' + f(right[0][1]);
+      for (var i = 1; i < n; i++) d2 += ' L ' + f(right[i][0]) + ' ' + f(right[i][1]);
+      d2 += ' Z';
+      return d1 + ' ' + d2;
+    }
+    var d = 'M' + f(left[0][0]) + ' ' + f(left[0][1]);
+    for (var i = 1; i < n; i++) d += ' L ' + f(left[i][0]) + ' ' + f(left[i][1]);
+    for (var i = n - 1; i >= 0; i--) d += ' L ' + f(right[i][0]) + ' ' + f(right[i][1]);
+    d += ' Z';
+    return d;
+  }
+  function Pen(seed) {
+    var rng = mul(seed),
+      els = [];
+    function j(m) {
+      return (rng() * 2 - 1) * m;
+    }
+    function smooth(pts, close) {
+      var d = 'M' + f(pts[0][0]) + ' ' + f(pts[0][1]);
+      for (var i = 1; i < pts.length; i++) {
+        var mx = (pts[i - 1][0] + pts[i][0]) / 2,
+          my = (pts[i - 1][1] + pts[i][1]) / 2;
+        d += ' Q ' + f(pts[i - 1][0]) + ' ' + f(pts[i - 1][1]) + ' ' + f(mx) + ' ' + f(my);
+      }
+      if (close) d += ' Z';else {
+        var L = pts[pts.length - 1];
+        d += ' L ' + f(L[0]) + ' ' + f(L[1]);
+      }
+      return d;
+    }
+    function edgy(P, close) {
+      var d = 'M' + f(P[0][0]) + ' ' + f(P[0][1]),
+        n = P.length;
+      function seg(a, b) {
+        var mx = (a[0] + b[0]) / 2,
+          my = (a[1] + b[1]) / 2,
+          nx = -(b[1] - a[1]),
+          ny = b[0] - a[0],
+          L = Math.hypot(nx, ny) || 1;
+        var bow = j(Math.min(1.5, Math.hypot(b[0] - a[0], b[1] - a[1]) * 0.02));
+        d += ' Q ' + f(mx + nx / L * bow) + ' ' + f(my + ny / L * bow) + ' ' + f(b[0]) + ' ' + f(b[1]);
+      }
+      for (var i = 1; i < n; i++) seg(P[i - 1], P[i]);
+      if (close) {
+        seg(P[n - 1], P[0]);
+        d += ' Z';
+      }
+      return d;
+    }
+    function line(x1, y1, x2, y2, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[x1, y1], [x2, y2]]);
+      cap({
+        ci: ci,
+        type: 'line',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      var ov = ovGet(ci);
+      if (ov && ov._a) {
+        els.push({
+          d: anchorPath(ov._a, !!ov._c),
+          sw: o.sw,
+          coral: o.coral,
+          dash: o.dash,
+          ci: ci
+        });
+        return;
+      }
+      x1 = P[0][0];
+      y1 = P[0][1];
+      x2 = P[1][0];
+      y2 = P[1][1];
+      var over = o.over || 0,
+        ang = Math.atan2(y2 - y1, x2 - x1),
+        dx = Math.cos(ang),
+        dy = Math.sin(ang);
+      x1 -= dx * over;
+      y1 -= dy * over;
+      x2 += dx * over;
+      y2 += dy * over;
+      var nx = -dy,
+        ny = dx,
+        len = Math.hypot(x2 - x1, y2 - y1),
+        a = Math.min(1.6, len * 0.012 + 0.3);
+      els.push({
+        d: `M${f(x1)} ${f(y1)} C ${f(x1 + (x2 - x1) * 0.34 + nx * j(a))} ${f(y1 + (y2 - y1) * 0.34 + ny * j(a))} ${f(x1 + (x2 - x1) * 0.66 + nx * j(a))} ${f(y1 + (y2 - y1) * 0.66 + ny * j(a))} ${f(x2)} ${f(y2)}`,
+        sw: o.sw,
+        coral: o.coral,
+        dash: o.dash,
+        ci: ci
+      });
+    }
+    function circle(cx, cy, r, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r, cy]]);
+      cap({
+        ci: ci,
+        type: 'circle',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy) || 0.001;
+      var tilt = j(0.04),
+        sq = 0.98 + j(0.03),
+        segs = 28,
+        pts = [];
+      for (var i = 0; i < segs; i++) {
+        var t = 6.283 * i / segs,
+          rr = r * (1 + j(0.012)),
+          x = Math.cos(t) * rr,
+          y = Math.sin(t) * rr * sq;
+        pts.push([cx + x * Math.cos(tilt) - y * Math.sin(tilt), cy + x * Math.sin(tilt) + y * Math.cos(tilt)]);
+      }
+      els.push({
+        d: smooth(pts, true),
+        sw: o.sw,
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        ci: ci
+      });
+    }
+    function poly(pts, close, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var A = applyMoves(ci, pts.map(function (p) {
+        return [p[0], p[1]];
+      }));
+      cap({
+        ci: ci,
+        type: 'poly',
+        pts: A.map(function (p) {
+          return p.slice();
+        }),
+        closed: !!close,
+        sw: o.sw,
+        coral: !!o.coral,
+        fill: !!(o.fill || o.inkfill),
+        sharp: !!o.sharp
+      });
+      var ov = ovGet(ci);
+      if (ov && ov._a) {
+        els.push({
+          d: anchorPath(ov._a, ov._c != null ? ov._c : !!close),
+          sw: o.sw,
+          coral: o.coral,
+          fill: o.fill,
+          inkfill: o.inkfill,
+          ci: ci
+        });
+        return;
+      }
+      var jj = o.j == null ? 0.8 : o.j,
+        P = A.map(p => [p[0] + j(jj), p[1] + j(jj)]);
+      els.push({
+        d: o.sharp ? edgy(P, close) : smooth(P, close),
+        sw: o.sw,
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        ci: ci
+      });
+    }
+    function dot(cx, cy, r, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r, cy]]);
+      cap({
+        ci: ci,
+        type: 'dot',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      els.push({
+        dot: [cx, cy, r],
+        coral: o.coral
+      });
+    }
+    function arc(cx, cy, r, a0, a1, o) {
+      o = o || {};
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx + r * Math.cos(a0), cy + r * Math.sin(a0)]]);
+      cap({
+        ci: ci,
+        type: 'arc',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        sw: o.sw,
+        coral: !!o.coral
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      r = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      var segs = Math.max(5, Math.round(Math.abs(a1 - a0) / 0.32)),
+        pts = [];
+      for (var i = 0; i <= segs; i++) {
+        var t = a0 + (a1 - a0) * i / segs;
+        pts.push([cx + Math.cos(t) * r * (1 + j(0.015)), cy + Math.sin(t) * r * (1 + j(0.015))]);
+      }
+      els.push({
+        d: smooth(pts, false),
+        sw: o.sw,
+        coral: o.coral,
+        ci: ci
+      });
+    }
+    function star(cx, cy, r, o) {
+      o = o || {};
+      var pts = [],
+        n = 5,
+        rot = -Math.PI / 2 + j(0.04);
+      for (var i = 0; i < n * 2; i++) {
+        var rr = i % 2 ? r * 0.42 : r,
+          a = rot + Math.PI * i / n;
+        pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]);
+      }
+      poly(pts, true, {
+        coral: o.coral,
+        fill: o.fill,
+        inkfill: o.inkfill,
+        sw: o.sw || 2.5,
+        j: 0.4,
+        sharp: true
+      });
+    }
+    function heart(cx, cy, s) {
+      var ci = CIDX++;
+      var P = applyMoves(ci, [[cx, cy], [cx, cy - s]]);
+      cap({
+        ci: ci,
+        type: 'heart',
+        pts: [P[0].slice(), P[1].slice()],
+        closed: false,
+        coral: true
+      });
+      cx = P[0][0];
+      cy = P[0][1];
+      s = Math.hypot(P[1][0] - cx, P[1][1] - cy);
+      els.push({
+        d: `M ${f(cx)} ${f(cy + s * 0.8)} C ${f(cx - s)} ${f(cy)} ${f(cx - s * 0.5)} ${f(cy - s * 0.72)} ${f(cx)} ${f(cy - s * 0.18)} C ${f(cx + s * 0.5)} ${f(cy - s * 0.72)} ${f(cx + s)} ${f(cy)} ${f(cx)} ${f(cy + s * 0.8)} Z`,
+        coral: true,
+        fill: true,
+        sw: 1.5
+      });
+    }
+    return {
+      line,
+      circle,
+      poly,
+      dot,
+      arc,
+      star,
+      heart,
+      els
+    };
+  }
+  var OUT = 4.4,
+    DET = 3.4,
+    COR = 4;
+
+  // ---- 100 sprinkle marks ----
+  var ELEM = {}; // empty in the core build — add marks or create/import in the editor
+
+  // ---- story illustrations ----
+  var ILL = {};
+  function svgFrom(els) {
+    return '<svg viewBox="0 0 160 160">' + els.map(function (e) {
+      var col = e.coral ? 'var(--brand-primary)' : 'var(--doodle-ink)';
+      if (e.dot) return '<circle cx="' + f(e.dot[0]) + '" cy="' + f(e.dot[1]) + '" r="' + e.dot[2] + '" fill="' + col + '"/>';
+      if (e.xstroke !== undefined) {
+        var sc = e.xstroke === 'none' ? 'none' : e.xstroke === 'coral' ? 'var(--brand-primary)' : 'var(--doodle-ink)';
+        var fc = !e.xfill || e.xfill === 'none' ? 'none' : e.xfill === 'coral' ? 'var(--brand-primary)' : 'var(--doodle-ink)';
+        return '<path d="' + e.d + '" fill="' + fc + '"' + (e.eo ? ' fill-rule="evenodd"' : '') + ' stroke="' + sc + '" stroke-width="' + (e.sw || OUT) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      if (e.fill || e.inkfill) {
+        var fc = e.inkfill ? 'var(--doodle-ink)' : col;
+        return '<path d="' + e.d + '" fill="' + fc + '" stroke="' + fc + '" stroke-width="' + (e.sw || 2.5) + '" stroke-linejoin="round" stroke-linecap="round"/>';
+      }
+      var dash = e.dash ? ' stroke-dasharray="2 13"' : '';
+      return '<path d="' + e.d + '" fill="none" stroke="' + col + '" stroke-width="' + (e.sw || OUT) + '" stroke-linecap="round" stroke-linejoin="round"' + dash + '/>';
+    }).join('') + '</svg>';
+  }
+  function run(name, builder, seed) {
+    OV = STORE[name] || null;
+    CIDX = 0;
+    CAPTURE = false;
+    var p = Pen(seed);
+    builder(p);
+    if (OV) {
+      p.els.forEach(function (el) {
+        if (el.ci == null) return;
+        var v = OV[el.ci];
+        if (!v) return;
+        if (v._sw != null) el.sw = v._sw;
+        if (v._stroke != null || v._fill != null) {
+          var bs = el.coral ? 'coral' : 'ink',
+            bf = el.fill || el.inkfill ? el.inkfill ? 'ink' : el.coral ? 'coral' : 'ink' : 'none';
+          el.xstroke = v._stroke != null ? v._stroke : el.fill || el.inkfill ? 'none' : bs;
+          el.xfill = v._fill != null ? v._fill : bf;
+          el.fill = false;
+          el.inkfill = false;
+        }
+      });
+    }
+    var ex = OV && OV._extra;
+    if (ex) {
+      for (var i = 0; i < ex.length; i++) {
+        var s = ex[i];
+        if (s.profile && s.profile !== 'uniform') {
+          p.els.push({
+            d: profileOutline(s.pts, s.sw || OUT, s.profile, !!s.closed),
+            xfill: s.stroke || 'ink',
+            xstroke: 'none',
+            sw: 0,
+            eo: true
+          });
+        } else p.els.push({
+          d: anchorPath(s.pts, !!s.closed),
+          sw: s.sw || OUT,
+          xstroke: s.stroke || (s.coral ? 'coral' : 'ink'),
+          xfill: s.fill || 'none'
+        });
+      }
+    }
+    OV = null;
+    return p.els;
+  }
+  function hash(s) {
+    s = s || '';
+    var h = 29;
+    for (var i = 0; i < s.length; i++) h = h * 131 + s.charCodeAt(i) >>> 0;
+    return h;
+  }
+  function seedFor(kind, name) {
+    return hash((kind === 'ill' ? 'i' : 'm') + name);
+  }
+  var DoodleKit = {
+    mark: function (name, o) {
+      o = o || {};
+      var b = ELEM[name] || (CUSTOM[name] ? NOOP : null);
+      return b ? svgFrom(run(name, b, o.seed != null ? o.seed : seedFor('mark', name))) : '';
+    },
+    ill: function (name, o) {
+      o = o || {};
+      var b = ILL[name];
+      return b ? svgFrom(run(name, b, o.seed != null ? o.seed : seedFor('ill', name))) : '';
+    },
+    markNames: Object.keys(ELEM),
+    illNames: Object.keys(ILL),
+    customNames: function () {
+      return Object.keys(CUSTOM);
+    },
+    newCustom: function () {
+      var n = 'custom-' + Date.now().toString(36);
+      CUSTOM[n] = true;
+      persistCustom();
+      return n;
+    },
+    removeCustom: function (name) {
+      delete CUSTOM[name];
+      delete STORE[name];
+      persistCustom();
+      persist();
+      emit();
+    },
+    // ---- editor API ----
+    capture: function (name) {
+      var kind = ILL[name] ? 'ill' : 'mark',
+        b = ELEM[name] || ILL[name] || (CUSTOM[name] ? NOOP : null);
+      if (!b) return [];
+      OV = STORE[name] || null;
+      CIDX = 0;
+      CAPTURE = true;
+      CAP = [];
+      var p = Pen(seedFor(kind, name));
+      b(p);
+      CAPTURE = false;
+      var out = CAP.map(function (rec) {
+        var ov = OV && OV[rec.ci];
+        if (ov && ov._a) {
+          rec.anchors = ov._a.map(function (a) {
+            return a.slice();
+          });
+          rec.closed = ov._c != null ? ov._c : rec.closed;
+        }
+        if (rec.type !== 'extra') {
+          var bS = rec.coral ? 'coral' : 'ink',
+            bF = rec.fill ? rec.coral ? 'coral' : 'ink' : 'none';
+          rec.stroke = ov && ov._stroke != null ? ov._stroke : bS;
+          rec.fill = ov && ov._fill != null ? ov._fill : bF;
+          rec.sw = ov && ov._sw != null ? ov._sw : rec.sw;
+        }
+        return rec;
+      });
+      var ex = OV && OV._extra;
+      if (ex) {
+        ex.forEach(function (s, i) {
+          out.push({
+            ci: 'e' + i,
+            type: 'extra',
+            extra: true,
+            anchors: s.pts.map(function (a) {
+              return a.slice();
+            }),
+            pts: s.pts.map(function (a) {
+              return [a[0], a[1]];
+            }),
+            closed: !!s.closed,
+            sw: s.sw,
+            stroke: s.stroke || (s.coral ? 'coral' : 'ink'),
+            fill: s.fill || 'none',
+            profile: s.profile || 'uniform'
+          });
+        });
+      }
+      CAP = null;
+      OV = null;
+      return out;
+    },
+    setPoint: function (name, ci, pi, x, y) {
+      STORE[name] = STORE[name] || {};
+      STORE[name][ci] = STORE[name][ci] || {};
+      STORE[name][ci][pi] = [Math.round(x * 10) / 10, Math.round(y * 10) / 10];
+      persist();
+      emit();
+    },
+    setAnchors: function (name, ci, anchors, closed) {
+      var e = STORE[name] = STORE[name] || {};
+      if (String(ci).charAt(0) === 'e') {
+        var idx = +String(ci).slice(1);
+        if (e._extra && e._extra[idx]) {
+          e._extra[idx].pts = anchors;
+          e._extra[idx].closed = !!closed;
+        }
+      } else {
+        e[ci] = e[ci] || {};
+        e[ci]._a = anchors;
+        e[ci]._c = !!closed;
+      }
+      persist();
+      emit();
+    },
+    addExtra: function (name, stroke) {
+      var e = STORE[name] = STORE[name] || {};
+      e._extra = e._extra || [];
+      e._extra.push(stroke);
+      persist();
+      emit();
+      return e._extra.length - 1;
+    },
+    removeExtra: function (name, idx) {
+      var e = STORE[name];
+      if (e && e._extra) {
+        e._extra.splice(idx, 1);
+        persist();
+        emit();
+      }
+    },
+    setExtraStyle: function (name, idx, style) {
+      var e = STORE[name];
+      if (e && e._extra && e._extra[idx]) {
+        for (var k in style) {
+          e._extra[idx][k] = style[k];
+        }
+        persist();
+        emit();
+      }
+    },
+    setStrokeStyle: function (name, ci, style) {
+      var e = STORE[name] = STORE[name] || {};
+      e[ci] = e[ci] || {};
+      if (style.sw != null) e[ci]._sw = style.sw;
+      if (style.stroke != null) e[ci]._stroke = style.stroke;
+      if (style.fill != null) e[ci]._fill = style.fill;
+      persist();
+      emit();
+    },
+    getEdit: function (name) {
+      return STORE[name] ? JSON.parse(JSON.stringify(STORE[name])) : null;
+    },
+    setEdit: function (name, obj) {
+      if (obj == null) delete STORE[name];else STORE[name] = obj;
+      persist();
+      emit();
+    },
+    isEdited: function (name) {
+      return !!STORE[name];
+    },
+    resetMark: function (name) {
+      delete STORE[name];
+      persist();
+      emit();
+    },
+    resetAll: function () {
+      STORE = {};
+      persist();
+      emit();
+    }
+  };
+  root.DoodleKit = DoodleKit;
+  function emit() {
+    try {
+      document.dispatchEvent(new CustomEvent('doodle-changed'));
+    } catch (e) {}
+  }
+
+  // ---- custom elements ----
+  function define(tag, kind) {
+    if (!root.customElements || customElements.get(tag)) return;
+    customElements.define(tag, class extends HTMLElement {
+      static get observedAttributes() {
+        return ['name', 'seed'];
+      }
+      connectedCallback() {
+        this._r();
+        if (!this._h) {
+          this._h = () => this._r();
+          document.addEventListener('doodle-changed', this._h);
+        }
+      }
+      disconnectedCallback() {
+        if (this._h) {
+          document.removeEventListener('doodle-changed', this._h);
+          this._h = null;
+        }
+      }
+      attributeChangedCallback() {
+        if (this.isConnected) this._r();
+      }
+      _r() {
+        var n = this.getAttribute('name');
+        if (!n) return;
+        var s = this.getAttribute('seed');
+        this.innerHTML = DoodleKit[kind](n, s != null ? {
+          seed: +s
+        } : undefined);
+      }
+    });
+  }
+  define('doodle-mark', 'mark');
+  define('doodle-ill', 'ill');
+})(window);
+})(); } catch (e) { __ds_ns.__errors.push({ path: "uploads/Design system setup/doodle-kit.js", error: String((e && e.message) || e) }); }
+
 // visual-board.js
 try { (() => {
 /* Visual Board — vanilla controller.
@@ -4184,8 +6360,8 @@ try { (() => {
      iteration timeline + reel so the visual never gets squeezed.
    · EDIT mode (board-editor.js) = Canva-style drag / resize / drop on the hero;
      edits persist per variant and the assistant can iterate over them.
-   · "+ New visual" / "Iterate" prompt the user back to the chat, where the
-     assistant runs the brief questions before building 3 variants. */
+   · "+ New visual" / "Iterate" copy a ready-made `/linkedin-visual` prompt to the
+     clipboard; the user pastes it to the agent, which runs the brief then builds. */
 (function () {
   function boot() {
     var source = document.getElementById("source");
@@ -4540,9 +6716,9 @@ try { (() => {
       var next = document.createElement("div");
       next.className = "round next";
       next.innerHTML = '<div class="plus"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div><div class="nt">Iterate<br>3 new variants</div>';
-      next.title = "Open the brief — tell the assistant what to change for the next round.";
+      next.title = "Prepare an iterate prompt for the assistant";
       next.addEventListener("click", function () {
-        openBrief("To iterate “" + v.label + "”: tell the assistant in the chat what to change — it'll build 3 fresh variants.");
+        prepareModal("iterate", v.label);
       });
       timelineEl.appendChild(next);
     }
@@ -4619,8 +6795,9 @@ try { (() => {
       var nv = document.createElement("div");
       nv.className = "newvis";
       nv.innerHTML = '<div class="nframe"><div class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div><div class="nlbl">New visual</div>';
+      nv.title = "Prepare a new-visual prompt for the assistant";
       nv.addEventListener("click", function () {
-        openBrief("New visual: describe your post in the chat. The assistant will ask the brief questions, then build 3 variants.");
+        prepareModal("new");
       });
       reel.appendChild(nv);
       countEl.textContent = visuals.length + " visual" + (visuals.length === 1 ? "" : "s") + " · 1080 × 1350 · export PNG or HTML";
@@ -4759,12 +6936,163 @@ try { (() => {
       }
     });
 
-    /* ---- new visual / iterate → back to the chat ----
-       The brief lives in the conversation: the assistant asks the brief
-       questions (post, type, the save-trigger, the analogy, references) and
-       only then builds 3 variants. These buttons just nudge the user there. */
+    /* ---- new visual / iterate → hand a ready-made prompt to the agent ----
+       Agent-first: these buttons don't open a panel and don't fork a second
+       assistant. They copy a standard `/linkedin-visual` prompt (with the rules
+       baked in: ask the brief first, stay on the board, 3 variants) to the
+       clipboard, so the user pastes it into the chat and the agent takes over. */
+    function chatPrompt(text) {
+      // The async Clipboard API is blocked in sandboxed previews, so try the legacy
+      // execCommand path first (it works during a user-gesture click), then async,
+      // then a fallback box the user can copy from manually.
+      var ok = false;
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ok = document.execCommand("copy");
+        ta.remove();
+      } catch (e) {
+        ok = false;
+      }
+      if (ok) {
+        flash("Prompt copied — paste it to the assistant to continue");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          flash("Prompt copied — paste it to the assistant to continue");
+        }, function () {
+          showPromptFallback(text);
+        });
+        return;
+      }
+      showPromptFallback(text);
+    }
+    // last resort: show the prompt in a selectable box so the user can copy it by hand
+    function showPromptFallback(text) {
+      var prev = document.getElementById("promptFallback");
+      if (prev) prev.remove();
+      var mac = navigator.platform && navigator.platform.indexOf("Mac") >= 0;
+      var wrap = document.createElement("div");
+      wrap.id = "promptFallback";
+      wrap.style.cssText = "position:fixed;inset:0;background:rgba(20,24,28,.45);z-index:200;display:flex;align-items:center;justify-content:center";
+      var box = document.createElement("div");
+      box.style.cssText = "background:#fff;border-radius:14px;padding:20px;width:min(92vw,560px);box-shadow:0 16px 50px rgba(0,0,0,.3);font-family:'Inter',system-ui,sans-serif";
+      box.innerHTML = '<div style="font-weight:700;font-size:15px;margin-bottom:4px">Copy this prompt, then paste it to the assistant</div><div style="font-size:13px;color:#6b7280;margin-bottom:10px">It\u2019s pre-selected \u2014 copy with ' + (mac ? "\u2318C" : "Ctrl+C") + ', then paste in the chat.</div>';
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.readOnly = true;
+      ta.style.cssText = "width:100%;height:130px;border:1px solid #d8dadd;border-radius:10px;padding:11px;font:inherit;font-size:13px;line-height:1.5;resize:none;box-sizing:border-box;color:#1f2328";
+      box.appendChild(ta);
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:flex-end;margin-top:12px";
+      var close = document.createElement("button");
+      close.textContent = "Done";
+      close.style.cssText = "padding:9px 18px;border:none;border-radius:9px;background:var(--brand-primary,#0A66C2);color:#fff;font-weight:700;cursor:pointer";
+      close.addEventListener("click", function () {
+        wrap.remove();
+      });
+      row.appendChild(close);
+      box.appendChild(row);
+      wrap.appendChild(box);
+      document.body.appendChild(wrap);
+      ta.focus();
+      ta.select();
+      wrap.addEventListener("click", function (e) {
+        if (e.target === wrap) wrap.remove();
+      });
+    }
     function openBrief(msg) {
-      flash(msg || "Describe your post in the chat — the assistant will ask the brief questions, then build 3 variants.");
+      flash(msg);
+    } // legacy no-op nudge (kept for safety)
+
+    /* ---- prepare-prompt modal (New visual / Iterate) ----
+       A static artifact lives in an isolated preview frame; it cannot reach the
+       chat input (cross-origin). So this modal PREPARES the prompt — paste your
+       post + notes — and copies it; you paste once into the chat and attach any
+       screenshots/drawings there. Agent-first: the AI still runs the brief. */
+    function prepareModal(kind, label) {
+      var prev = document.getElementById("prepModal");
+      if (prev) prev.remove();
+      var mac = navigator.platform && navigator.platform.indexOf("Mac") >= 0;
+      var scrim = document.createElement("div");
+      scrim.id = "prepModal";
+      scrim.style.cssText = "position:fixed;inset:0;background:rgba(20,24,28,.45);z-index:200;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif";
+      var box = document.createElement("div");
+      box.style.cssText = "background:#fff;border-radius:16px;padding:22px;width:min(94vw,580px);max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.32)";
+      var title = kind === "iterate" ? "Iterate \u201c" + label + "\u201d" : "New visual";
+      var lead = kind === "iterate" ? "Tell the assistant what to change. It'll add a new round of 3 variants to this visual." : "Paste your LinkedIn post and any direction. The assistant will ask the brief, then build 3 variants on the board.";
+      box.innerHTML = '<div style="font-family:var(--font-display,inherit);font-weight:700;font-size:19px;letter-spacing:-.01em">' + title + '</div>' + '<div style="font-size:13.5px;color:#6b7280;margin:4px 0 16px;line-height:1.45">' + lead + '</div>';
+      function field(labelText, ph, big) {
+        var w = document.createElement("div");
+        w.style.cssText = "margin-bottom:14px";
+        w.innerHTML = '<div style="font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">' + labelText + '</div>';
+        var t = document.createElement("textarea");
+        t.placeholder = ph;
+        t.style.cssText = "width:100%;height:" + (big ? "120px" : "60px") + ";border:1px solid #d8dadd;border-radius:10px;padding:11px;font:inherit;font-size:14px;line-height:1.5;resize:vertical;box-sizing:border-box;color:#1f2328";
+        w.appendChild(t);
+        box.appendChild(w);
+        return t;
+      }
+      var inA, inB;
+      if (kind === "iterate") {
+        inA = field("What should change?", "e.g. make variant B bolder, swap the metaphor to a ladder, tighten the headline\u2026", true);
+      } else {
+        inA = field("Your LinkedIn post", "Paste the post text here\u2026", true);
+        inB = field("Direction / emphasize (optional)", "e.g. lean on the 68% stat; keep it punchy; audience = founders", false);
+        box.appendChild(el2("div", "font-size:12.5px;color:#8a9098;margin:-4px 0 14px;line-height:1.45", "\uD83D\uDCCE Got screenshots, sketches or a brand reference? Paste/drag them straight into the chat after you paste this prompt."));
+      }
+      function el2(tag, css, html) {
+        var d = document.createElement(tag);
+        d.style.cssText = css;
+        d.innerHTML = html;
+        return d;
+      }
+      function buildPrompt() {
+        if (kind === "iterate") {
+          var ch = (inA.value || "").trim();
+          return "/linkedin-visual\n\nIterate the visual \u201c" + label + "\u201d on the Visual Board." + (ch ? " What I want to change: " + ch + "." : " Ask me what I want to change first.") + " Add a NEW round of 3 genuinely different variants to that visual\u2019s existing <section> (keep the previous rounds). Stay on Visual Board.html \u2014 don\u2019t make a separate file.";
+        }
+        var post = (inA.value || "").trim(),
+          notes = (inB.value || "").trim();
+        return "/linkedin-visual\n\nI want a NEW visual on the Visual Board. Ask me the brief questions first (the type, the ONE thing readers should remember, the visual analogy, any references), then build 3 genuinely different variants as a new <section> on Visual Board.html \u2014 never a separate file." + (notes ? "\n\nDirection: " + notes : "") + (post ? "\n\nPOST:\n" + post : "");
+      }
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px";
+      var hint = el2("div", "font-size:12px;color:#aab0b6", "Copies the prompt \u2014 paste it in the chat (" + (mac ? "\u2318V" : "Ctrl+V") + ").");
+      var btns = document.createElement("div");
+      btns.style.cssText = "display:flex;gap:8px";
+      var cancel = document.createElement("button");
+      cancel.textContent = "Cancel";
+      cancel.style.cssText = "padding:10px 16px;border:1px solid #d8dadd;border-radius:10px;background:#fff;font:inherit;font-weight:600;cursor:pointer;color:#5f6671";
+      cancel.addEventListener("click", function () {
+        scrim.remove();
+      });
+      var copy = document.createElement("button");
+      copy.textContent = "Copy prompt";
+      copy.style.cssText = "padding:10px 20px;border:none;border-radius:10px;background:var(--brand-primary,#0A66C2);color:#fff;font:inherit;font-weight:700;cursor:pointer";
+      copy.addEventListener("click", function () {
+        var ok = chatPrompt(buildPrompt());
+        scrim.remove();
+      });
+      btns.appendChild(cancel);
+      btns.appendChild(copy);
+      row.appendChild(hint);
+      row.appendChild(btns);
+      box.appendChild(row);
+      scrim.appendChild(box);
+      document.body.appendChild(scrim);
+      scrim.addEventListener("click", function (e) {
+        if (e.target === scrim) scrim.remove();
+      });
+      setTimeout(function () {
+        inA.focus();
+      }, 30);
     }
 
     /* ---- export ---- */
@@ -4864,6 +7192,7 @@ try { (() => {
         heroStage: heroStage,
         selbox: document.getElementById("selbox"),
         eltbar: document.getElementById("eltbar"),
+        cpop: document.getElementById("cpop"),
         palette: document.getElementById("palette"),
         onChange: persistEdit,
         flash: flash

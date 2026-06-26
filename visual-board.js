@@ -11,8 +11,8 @@
      iteration timeline + reel so the visual never gets squeezed.
    · EDIT mode (board-editor.js) = Canva-style drag / resize / drop on the hero;
      edits persist per variant and the assistant can iterate over them.
-   · "+ New visual" / "Iterate" prompt the user back to the chat, where the
-     assistant runs the brief questions before building 3 variants. */
+   · "+ New visual" / "Iterate" copy a ready-made `/linkedin-visual` prompt to the
+     clipboard; the user pastes it to the agent, which runs the brief then builds. */
 (function () {
   function boot() {
     var source = document.getElementById("source");
@@ -249,8 +249,8 @@
     timelineEl.appendChild(chev());
     var next = document.createElement("div"); next.className = "round next";
     next.innerHTML = '<div class="plus"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div><div class="nt">Iterate<br>3 new variants</div>';
-    next.title = "Open the brief — tell the assistant what to change for the next round.";
-    next.addEventListener("click", function () { openBrief("To iterate “" + v.label + "”: tell the assistant in the chat what to change — it'll build 3 fresh variants."); });
+    next.title = "Prepare an iterate prompt for the assistant";
+    next.addEventListener("click", function () { prepareModal("iterate", v.label); });
     timelineEl.appendChild(next);
   }
   function chev() { var a = document.createElement("div"); a.className = "arrow"; a.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>'; return a; }
@@ -292,7 +292,8 @@
     // + New visual card
     var nv = document.createElement("div"); nv.className = "newvis";
     nv.innerHTML = '<div class="nframe"><div class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div><div class="nlbl">New visual</div>';
-    nv.addEventListener("click", function () { openBrief("New visual: describe your post in the chat. The assistant will ask the brief questions, then build 3 variants."); });
+    nv.title = "Prepare a new-visual prompt for the assistant";
+    nv.addEventListener("click", function () { prepareModal("new"); });
     reel.appendChild(nv);
 
     countEl.textContent = visuals.length + " visual" + (visuals.length === 1 ? "" : "s") + " · 1080 × 1350 · export PNG or HTML";
@@ -379,11 +380,123 @@
     else if (e.key === "ArrowRight" && cur < n - 1) { e.preventDefault(); gotoSlide(cur + 1); }
   });
 
-  /* ---- new visual / iterate → back to the chat ----
-     The brief lives in the conversation: the assistant asks the brief
-     questions (post, type, the save-trigger, the analogy, references) and
-     only then builds 3 variants. These buttons just nudge the user there. */
-  function openBrief(msg) { flash(msg || "Describe your post in the chat — the assistant will ask the brief questions, then build 3 variants."); }
+  /* ---- new visual / iterate → hand a ready-made prompt to the agent ----
+     Agent-first: these buttons don't open a panel and don't fork a second
+     assistant. They copy a standard `/linkedin-visual` prompt (with the rules
+     baked in: ask the brief first, stay on the board, 3 variants) to the
+     clipboard, so the user pastes it into the chat and the agent takes over. */
+  function chatPrompt(text) {
+    // The async Clipboard API is blocked in sandboxed previews, so try the legacy
+    // execCommand path first (it works during a user-gesture click), then async,
+    // then a fallback box the user can copy from manually.
+    var ok = false;
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      ok = document.execCommand("copy");
+      ta.remove();
+    } catch (e) { ok = false; }
+    if (ok) { flash("Prompt copied — paste it to the assistant to continue"); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { flash("Prompt copied — paste it to the assistant to continue"); },
+        function () { showPromptFallback(text); }
+      );
+      return;
+    }
+    showPromptFallback(text);
+  }
+  // last resort: show the prompt in a selectable box so the user can copy it by hand
+  function showPromptFallback(text) {
+    var prev = document.getElementById("promptFallback"); if (prev) prev.remove();
+    var mac = navigator.platform && navigator.platform.indexOf("Mac") >= 0;
+    var wrap = document.createElement("div"); wrap.id = "promptFallback";
+    wrap.style.cssText = "position:fixed;inset:0;background:rgba(20,24,28,.45);z-index:200;display:flex;align-items:center;justify-content:center";
+    var box = document.createElement("div");
+    box.style.cssText = "background:#fff;border-radius:14px;padding:20px;width:min(92vw,560px);box-shadow:0 16px 50px rgba(0,0,0,.3);font-family:'Inter',system-ui,sans-serif";
+    box.innerHTML = '<div style="font-weight:700;font-size:15px;margin-bottom:4px">Copy this prompt, then paste it to the assistant</div><div style="font-size:13px;color:#6b7280;margin-bottom:10px">It\u2019s pre-selected \u2014 copy with ' + (mac ? "\u2318C" : "Ctrl+C") + ', then paste in the chat.</div>';
+    var ta = document.createElement("textarea"); ta.value = text; ta.readOnly = true;
+    ta.style.cssText = "width:100%;height:130px;border:1px solid #d8dadd;border-radius:10px;padding:11px;font:inherit;font-size:13px;line-height:1.5;resize:none;box-sizing:border-box;color:#1f2328";
+    box.appendChild(ta);
+    var row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:flex-end;margin-top:12px";
+    var close = document.createElement("button"); close.textContent = "Done";
+    close.style.cssText = "padding:9px 18px;border:none;border-radius:9px;background:var(--brand-primary,#0A66C2);color:#fff;font-weight:700;cursor:pointer";
+    close.addEventListener("click", function () { wrap.remove(); });
+    row.appendChild(close); box.appendChild(row);
+    wrap.appendChild(box); document.body.appendChild(wrap);
+    ta.focus(); ta.select();
+    wrap.addEventListener("click", function (e) { if (e.target === wrap) wrap.remove(); });
+  }
+  function openBrief(msg) { flash(msg); }   // legacy no-op nudge (kept for safety)
+
+  /* ---- prepare-prompt modal (New visual / Iterate) ----
+     A static artifact lives in an isolated preview frame; it cannot reach the
+     chat input (cross-origin). So this modal PREPARES the prompt — paste your
+     post + notes — and copies it; you paste once into the chat and attach any
+     screenshots/drawings there. Agent-first: the AI still runs the brief. */
+  function prepareModal(kind, label) {
+    var prev = document.getElementById("prepModal"); if (prev) prev.remove();
+    var mac = navigator.platform && navigator.platform.indexOf("Mac") >= 0;
+    var scrim = document.createElement("div"); scrim.id = "prepModal";
+    scrim.style.cssText = "position:fixed;inset:0;background:rgba(20,24,28,.45);z-index:200;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif";
+    var box = document.createElement("div");
+    box.style.cssText = "background:#fff;border-radius:16px;padding:22px;width:min(94vw,580px);max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.32)";
+    var title = kind === "iterate" ? "Iterate \u201c" + label + "\u201d" : "New visual";
+    var lead = kind === "iterate"
+      ? "Tell the assistant what to change. It'll add a new round of 3 variants to this visual."
+      : "Paste your LinkedIn post and any direction. The assistant will ask the brief, then build 3 variants on the board.";
+    box.innerHTML = '<div style="font-family:var(--font-display,inherit);font-weight:700;font-size:19px;letter-spacing:-.01em">' + title + '</div>' +
+      '<div style="font-size:13.5px;color:#6b7280;margin:4px 0 16px;line-height:1.45">' + lead + '</div>';
+
+    function field(labelText, ph, big) {
+      var w = document.createElement("div"); w.style.cssText = "margin-bottom:14px";
+      w.innerHTML = '<div style="font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">' + labelText + '</div>';
+      var t = document.createElement("textarea"); t.placeholder = ph;
+      t.style.cssText = "width:100%;height:" + (big ? "120px" : "60px") + ";border:1px solid #d8dadd;border-radius:10px;padding:11px;font:inherit;font-size:14px;line-height:1.5;resize:vertical;box-sizing:border-box;color:#1f2328";
+      w.appendChild(t); box.appendChild(w); return t;
+    }
+
+    var inA, inB;
+    if (kind === "iterate") {
+      inA = field("What should change?", "e.g. make variant B bolder, swap the metaphor to a ladder, tighten the headline\u2026", true);
+    } else {
+      inA = field("Your LinkedIn post", "Paste the post text here\u2026", true);
+      inB = field("Direction / emphasize (optional)", "e.g. lean on the 68% stat; keep it punchy; audience = founders", false);
+      box.appendChild(el2("div", "font-size:12.5px;color:#8a9098;margin:-4px 0 14px;line-height:1.45", "\uD83D\uDCCE Got screenshots, sketches or a brand reference? Paste/drag them straight into the chat after you paste this prompt."));
+    }
+
+    function el2(tag, css, html) { var d = document.createElement(tag); d.style.cssText = css; d.innerHTML = html; return d; }
+    function buildPrompt() {
+      if (kind === "iterate") {
+        var ch = (inA.value || "").trim();
+        return "/linkedin-visual\n\nIterate the visual \u201c" + label + "\u201d on the Visual Board." +
+          (ch ? " What I want to change: " + ch + "." : " Ask me what I want to change first.") +
+          " Add a NEW round of 3 genuinely different variants to that visual\u2019s existing <section> (keep the previous rounds). Stay on Visual Board.html \u2014 don\u2019t make a separate file.";
+      }
+      var post = (inA.value || "").trim(), notes = (inB.value || "").trim();
+      return "/linkedin-visual\n\nI want a NEW visual on the Visual Board. Ask me the brief questions first (the type, the ONE thing readers should remember, the visual analogy, any references), then build 3 genuinely different variants as a new <section> on Visual Board.html \u2014 never a separate file." +
+        (notes ? "\n\nDirection: " + notes : "") +
+        (post ? "\n\nPOST:\n" + post : "");
+    }
+
+    var row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px";
+    var hint = el2("div", "font-size:12px;color:#aab0b6", "Copies the prompt \u2014 paste it in the chat (" + (mac ? "\u2318V" : "Ctrl+V") + ").");
+    var btns = document.createElement("div"); btns.style.cssText = "display:flex;gap:8px";
+    var cancel = document.createElement("button"); cancel.textContent = "Cancel";
+    cancel.style.cssText = "padding:10px 16px;border:1px solid #d8dadd;border-radius:10px;background:#fff;font:inherit;font-weight:600;cursor:pointer;color:#5f6671";
+    cancel.addEventListener("click", function () { scrim.remove(); });
+    var copy = document.createElement("button"); copy.textContent = "Copy prompt";
+    copy.style.cssText = "padding:10px 20px;border:none;border-radius:10px;background:var(--brand-primary,#0A66C2);color:#fff;font:inherit;font-weight:700;cursor:pointer";
+    copy.addEventListener("click", function () { var ok = chatPrompt(buildPrompt()); scrim.remove(); });
+    btns.appendChild(cancel); btns.appendChild(copy);
+    row.appendChild(hint); row.appendChild(btns); box.appendChild(row);
+
+    scrim.appendChild(box); document.body.appendChild(scrim);
+    scrim.addEventListener("click", function (e) { if (e.target === scrim) scrim.remove(); });
+    setTimeout(function () { inA.focus(); }, 30);
+  }
 
   /* ---- export ---- */
   function nameFor(ri, varIdx) { var base = slug(visuals[activeIdx].label) + "-v" + (ri + 1) + letter(varIdx).toLowerCase(); if (isCarousel(activeIdx, ri, varIdx)) base += "-s" + ((slidePos[editKey(activeIdx, ri, varIdx)] || 0) + 1); return base; }
@@ -440,6 +553,7 @@
       heroStage: heroStage,
       selbox: document.getElementById("selbox"),
       eltbar: document.getElementById("eltbar"),
+      cpop: document.getElementById("cpop"),
       palette: document.getElementById("palette"),
       onChange: persistEdit,
       flash: flash,
