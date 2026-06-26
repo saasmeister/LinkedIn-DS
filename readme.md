@@ -121,6 +121,8 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 ## Index / manifest
 
 **Root**
+- `LinkedIn Visual Designer.html` — **the single entry point / app shell.** A floating dock switches between three views, each a standalone file loaded as a pane: **Visual Board** + **Settings** (`app/`) and the **Icon Library** (`components/icons/`). This is the only page a user opens.
+- `app/` — the app's sub-views, not opened directly: `Visual Board.html` + `visual-board.js` + `board-editor.js` (the delivery canvas) and `START HERE.html` (brand setup). Kept out of the project root so only the app shell is openable.
 - `styles.css` — the global entry point (import this). `@import`s every token + font file.
 - `tokens/` — `brand.css` (override layer), `canvas.css` (roles), `typography.css`, `spacing.css`, `headline.css` (signature classes), `fonts.css` (default Inter).
 - `readme.md` — this guide. `SKILL.md` — portable Agent-Skill wrapper. **`posture.md` — the senior-designer operating posture. `BRIEF.md` — the intake + fillable starter brief. `GOVERNANCE.md` — the master → branch model (what's pushed vs. what a client owns), `VERSION` + `CHANGELOG.md`.**
@@ -141,11 +143,19 @@ In any template you can also do this live from the **Tweaks** panel (primary / s
 - **`carousel-01…09-*`** — slide archetypes (cover, context, problem, steps, result, back, divider, context-card) + `carousel-09-rail` (full-rail reference). Slides may use ANY archetype — not locked to the carousel set.
 - **Tooling (not numbered):** `start-here/` (brand setup) · `visual-board/` (the delivery surface).
 
+**Style packs** (`style-packs/<slug>/` — composable design skillsets the assistant reaches for / blends; colour- & font-agnostic)
+- `style-packs/doodle/` — **Doodle** (*skin*): playful hand-drawn — sketch borders, solid offset shadows, doodle marks from the Icon Library, slight tilt.
+- `style-packs/bento/` — **Bento** (*composition*): an asymmetric hairline-tile mosaic, one emphasis tile, mono metadata.
+- `style-packs/paper/` — **Paper** (*skin*): editorial & minimal — outline-only surfaces (no shadows), 6px radius, paper-grain texture, generous air.
+- Packs **compose** (e.g. Bento blocks in Doodle style) and each wears the brand layer (treatment, not a fixed palette/font). The assistant may apply them proactively, the user may name one, or set one as their base style. A pack restyles the look only — the gates (one board, 3 variants, analogy-led, safe margins) still hold. Add your own (skeuomorphic, neumorphic) per `style-packs/README.md`.
+
 **UI kits**
 - `ui_kits/visual-library/` — the **Visual Library**: a Canva-style gallery (hero + scrollable reel) to browse generated visuals, export each as **PNG** or standalone **HTML** via a ⋯ menu, and **approve** visuals into the system. Approved variants are the queue the design system learns from.
 - Brand setup is the **`START HERE.html`** screen at the project root (not a kit) — identity → colours → spacing → ready, writing `overrides/brand.css` + `overrides/extras.css`.
 
-**Foundation cards** (`guidelines/*.card.html`) populate the Design System tab under Colors / Type / Spacing / Brand. **Principles cards** (`principles/*.card.html`) carry the philosophy.
+**Foundation cards** (`guidelines/*.card.html`) populate the Design System tab under Colors / Type / Spacing / Brand. **Principles cards** (`principles/*.card.html`) carry the philosophy — incl. **Anti-Slop Gate** (the GATE 8 QA pass).
+
+**Quality** (`references/anti-slop.md` + `tools/anti-slop/`) — the anti-slop checklist run before every delivery (GATE 8), adapted for 1080×1350 from the [Impeccable](https://github.com/pbakaus/impeccable) anti-pattern system. `tools/anti-slop/` vendors its deterministic detector (`detect-antipatterns.js`) + critique flow (`critique-reference.md`) under Apache-2.0.
 
 ---
 

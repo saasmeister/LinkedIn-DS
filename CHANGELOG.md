@@ -4,6 +4,34 @@ Semantic versioning. **MAJOR** = a breaking change to a token name, component pr
 
 A branch records the master version it last pulled in `overrides/BRANCH.md`.
 
+## 1.22.0 — Anti-slop QA gate (GATE 8), adapted from Impeccable
+- **New hard gate (GATE 8):** before the three variants are shown, each is self-audited against `references/anti-slop.md` — readable contrast, no default-font headline, no gradient text, and the social-slop tropes (hero-metric template, eyebrow-on-every-variant, side-stripe cards, identical card grids, three-tints-of-one-layout) are refused. Wired into the SKILL description as a 6th hard rule and the RUNBOOK as step 6.
+- **`references/anti-slop.md`** — the checklist, retranslated from web UI to 1080×1350 social visuals, keeping only what transfers. Includes the **style-pack exemption**: a deliberately invoked pack (Doodle/Paper hand-drawn, cream, grain) is authorized *voice*, not slop; the never-exempt checks (contrast, hierarchy, no default font) still hold inside a pack.
+- **`tools/anti-slop/`** vendors [Impeccable](https://github.com/pbakaus/impeccable)'s deterministic browser detector (`detect-antipatterns.js`) + critique flow (`critique-reference.md`) under Apache-2.0 (`IMPECCABLE-LICENSE`) — the heavy 700KB live-browser tooling was left out. Optional machine pass over an exported artboard; judgment calls stay with the agent.
+- **New Principles card:** "Anti-Slop Gate".
+
+## 1.21.0 — Unattended daily auto-update from a private GitHub repo
+- Added the **real** daily-sync mechanism the master↔branch model only documented before: a scheduled **GitHub Action** (`.github/workflows/daily-update.yml`, cron ~12:00 Europe/Amsterdam) that runs on GitHub's servers — **whether or not the project is open or anyone asked** — clones the private master repo, and on a new version installs it and commits.
+- Shipped the two scripts the docs referenced but were missing: **`tools/check-update.cjs`** (exit 10 when behind master) and **`tools/apply-update.cjs`** (copies master-owned files, honouring `governance/ownership.json` — `overrides/` + `client/` + `.github/` are never overwritten — and stamps `overrides/BRANCH.md`). Written as Node CommonJS so the in-browser bundler skips them.
+- **`tools/CONNECT.md`** documents the one-time setup: set `MASTER_REPO`, add a fine-grained read-only PAT as the `DS_SYNC_TOKEN` repo secret (the "secret key" — stored in GitHub, never pasted anywhere). Honest scope: a static design system can't run a daemon itself; a scheduled Action is the only true unattended daily scan.
+
+## 1.20.0 — Single entry point: only the app shell is openable
+- Moved the app's sub-views into **`app/`** — `Visual Board.html`, `visual-board.js`, `board-editor.js`, and `START HERE.html` — so they're no longer loose openable pages at the project root. **`LinkedIn Visual Designer.html`** is now the only page a user opens; it loads the three views (Visual Board · Icon Library · Settings) as panes from `app/` + `components/icons/`.
+- Relative paths in the moved files corrected (`../styles.css`, `../overrides/…`, `../ui_kits/…`, `../_ds_bundle.js`); `board-editor.js` icon-library/icon-kit base-guesses gained a `../` depth so the library still auto-loads from `app/`. App-shell iframe sources + the start-here template links updated. Verified all three views load and the board picks up tokens + brand.
+
+## 1.19.0 — Paper style pack + packs reframed as composable, agnostic skillsets
+- Added **`style-packs/paper/`**: editorial & minimal — outline-only surfaces (no shadows), tight 6px radius, paper-grain texture, generous air, restrained accent. Translated from a web/UI language to the 1080×1350 archetypes. Includes a preview card.
+- **Style packs reframed as composable design skillsets**, not modes a user flips on. The assistant reaches for them proactively (or the user names one / sets one as their **base style**), and they **mix & match**: *composition* packs (Bento = tile mosaic) layer with *skin* packs (Doodle, Paper) — e.g. "Bento blocks in Doodle style."
+- **Every pack is now explicitly colour- & font-agnostic**: it supplies the *treatment* (technique), never a fixed palette/typeface, and wears the brand layer (`--brand-font`, `--brand-primary` as accent); each pack's named palette/font is a fallback, any signature display font optional flavour. Doodle, Bento and Paper all updated; root `SKILL.md` + `style-packs/README.md` rewritten to match.
+
+## 1.18.0 — Bento style pack
+- Added **`style-packs/bento/`**: a premium, dark-first, editorial pack — near-black `#0A0A0A` canvas, an asymmetric mosaic of 1px-hairline tiles (clean 32px radius, flat — borders not fills), oversized Inter-Tight value statements, JetBrains-Mono metadata, and one warm **accent** (the brand colour) lighting the focal stat/word/CTA with a soft glow. Translated from a web/landing-page language to the 1080×1350 archetypes (cover / big-stat / cards / quote / carousel). Includes a preview card. Same boundary as every pack: restyles the look, never the gates.
+
+## 1.17.0 — Style Packs (optional aesthetic layers) + Doodle pack
+- New **`style-packs/`** section: opt-in aesthetic layers a user switches on by name (*"3 variants in the Doodle style"*). A pack changes the **look** of a visual — borders, shadows, texture, decorative marks, sometimes the headline font — without touching the hard rules. `style-packs/README.md` documents the one-folder format (`SKILL.md` + a `@dsCard group="Style Packs"` card) so users can drop in their own (skeuomorphic, neumorphic, bento…).
+- **Doodle pack** (`style-packs/doodle/`): the hand-drawn design language **translated from web-UI to LinkedIn visuals** — sketch borders (3px ink + asymmetric hand-drawn radius), solid offset shadows (zero blur), hand-lettered headline (Delius Swash Caps), warm-cream canvas + dot-grid, doodle marks pulled from the Icon Library, subtle tilt. Mapped onto the cover / big-stat / cards / quote / carousel archetypes. Includes a preview card.
+- Wired into `SKILL.md` (a Style Packs section after GATE 6) and the readme index. **A pack never overrides the gates** — one board, 3 variants, analogy-led, safe margins, GATE 7 still win; the brand colour folds in as the pack accent.
+
 ## 1.16.2 — Board editor: Icon Library is now a drag source
 - The board's **My library** panel now auto-surfaces icons from the **Icon Library** (`icon-kit.js`): built-in marks, the user's own drawn/imported icons (`localStorage('icon-custom')`), and illustrations appear under a **"From the Icon Library"** caption, ready to drag onto the canvas — no re-upload. Renders inline so each icon recolours to the brand (`--brand-primary`/`--icon-ink`); dropped icons carry `data-shape="icon"` so resize keeps aspect. Refreshes live on the `icon-changed`/`storage` events. Empty kit → graceful empty state (unchanged).
 

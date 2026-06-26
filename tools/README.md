@@ -44,18 +44,9 @@ jobs:
 Two ways, depending on where the branch runs:
 
 - **In-platform:** open the **Update Center** (`ui_kits/update-center/`). It auto-checks on load if it hasn't in 24h, shows any pending master version with its changelog + included templates, and applies only after you confirm.
-- **In CI / a repo:** schedule a daily job that compares the branch version to the published master `update-manifest.json` and opens a PR (or notifies) when master is ahead:
+- **Unattended (the real daily sync):** `.github/workflows/daily-update.yml` runs on GitHub's servers every day ~12:00 — clones the private master repo, runs `tools/check-update.mjs`, and on a new version runs `tools/apply-update.mjs` to install master-owned files (your `overrides/` + `client/` are never touched) and commit. **See `tools/CONNECT.md` for the one-time setup** (set `MASTER_REPO`, add the `DS_SYNC_TOKEN` secret). This is the only way to get a true daily scan that runs whether or not the project is open — a static design-system file can't run a daemon by itself.
 
-```yaml
-# .github/workflows/daily-update-check.yml
-on:
-  schedule: [{ cron: "0 7 * * *" }]   # every day 07:00 UTC
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: node tools/check-update.mjs   # compares VERSION vs master manifest, notifies if behind
+```bash
+node tools/check-update.cjs --master-dir .ds-master   # exit 10 = behind
+node tools/apply-update.cjs --master-dir .ds-master   # install master-owned files
 ```
-
-> The actual *scheduling* and *network sync* are owned by the host/CI — a static design-system file can't run a daemon by itself. These hooks are how you attach it to one. The Update Center provides the on-open + 24h check and the confirm-before-apply UX.

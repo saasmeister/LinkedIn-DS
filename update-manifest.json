@@ -1,12 +1,90 @@
 {
   "name": "LinkedIn Visual Design System",
   "channel": "master",
-  "version": "1.16.2",
+  "version": "1.22.0",
   "published": "2026-06-26",
   "manifestUrl": "REPLACE_WITH_PUBLISHED_MANIFEST_URL",
   "checkCadenceHours": 24,
   "autoApply": false,
   "releases": [
+    {
+      "version": "1.22.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Anti-slop QA gate (GATE 8): every variant is self-audited against references/anti-slop.md before delivery — refusing AI-slop tropes (hero-metric, eyebrow-reflex, side-stripe cards, gradient text, three-tints-of-one-layout) while never breaking readable contrast or type hierarchy. Adapted for 1080×1350 from the Impeccable anti-pattern system.",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "references/anti-slop.md = the checklist retranslated to social visuals + the style-pack exemption (an invoked Doodle/Paper pack is voice, not slop; never-exempt checks still hold).",
+        "tools/anti-slop/ vendors Impeccable's deterministic detector (detect-antipatterns.js) + critique flow under Apache-2.0; the 700KB live-browser tooling was left out. Optional machine pass; judgment calls stay with the agent.",
+        "Wired into the SKILL description as a 6th hard rule, the RUNBOOK as step 6, and a new 'Anti-Slop Gate' Principles card."
+      ]
+    },
+    {
+      "version": "1.21.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Unattended daily auto-update: a scheduled GitHub Action (~12:00) clones the private master repo and installs new versions automatically, honouring ownership (overrides/ + client/ untouched).",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "New: .github/workflows/daily-update.yml (cron, runs on GitHub's servers whether or not the project is open).",
+        "New scripts: tools/check-update.cjs (exit 10 = behind) + tools/apply-update.cjs (installs master-owned files only).",
+        "Setup in tools/CONNECT.md: set MASTER_REPO + add DS_SYNC_TOKEN secret (read-only PAT). A static design system can't self-run a daemon — a scheduled Action is the only true unattended sync."
+      ]
+    },
+    {
+      "version": "1.20.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Single entry point: the app's sub-views (Visual Board, START HERE + their JS) moved into app/ so only LinkedIn Visual Designer.html is openable. Verified all three views still load.",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "Moved files: app/Visual Board.html, app/visual-board.js, app/board-editor.js, app/START HERE.html.",
+        "Relative paths corrected (../styles.css, ../overrides, ../ui_kits, ../_ds_bundle.js); board-editor base-guesses gained a ../ depth.",
+        "App-shell iframe srcs + start-here template links repointed at app/."
+      ]
+    },
+    {
+      "version": "1.19.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Paper style pack (editorial, outline-only, paper-grain) + style packs reframed as composable, colour/font-agnostic skillsets the assistant reaches for and blends.",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "Packs compose: composition packs (Bento = tile mosaic) layer with skin packs (Doodle, Paper) — e.g. Bento blocks in Doodle style.",
+        "Every pack is colour- & font-agnostic: it supplies the treatment, wears the brand layer (--brand-font, --brand-primary accent); named palette/font is a fallback, signature display font is optional.",
+        "Used proactively by the assistant, named by the user, or set as a base style. Root SKILL.md + style-packs/README.md rewritten."
+      ]
+    },
+    {
+      "version": "1.18.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Bento style pack — premium dark-first editorial: near-black canvas, asymmetric hairline-tile mosaic, oversized Inter-Tight type, mono metadata, one accent glow. Translated to the 1080×1350 archetypes.",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "Tiles share the #0A0A0A canvas; 1px hairline borders (not fills) define them; clean 32px radius, flat, no tilt.",
+        "Brand colour folds in as the single accent (focal stat/word/CTA + soft glow on the focal tile only).",
+        "A pack restyles the look only — one board, 3 variants, analogy-led, safe margins, GATE 7 still win."
+      ]
+    },
+    {
+      "version": "1.17.0",
+      "date": "2026-06-26",
+      "level": "minor",
+      "summary": "Style Packs — optional aesthetic layers switched on by name. First pack: Doodle (hand-drawn), translated from web-UI to the 1080×1350 LinkedIn archetypes.",
+      "templates": [],
+      "components": [],
+      "notes": [
+        "style-packs/<slug>/ = SKILL.md + a @dsCard group=\"Style Packs\" card; users can drop in their own (skeuomorphic, neumorphic, bento).",
+        "Doodle: sketch borders, solid offset shadows, hand-lettered headline (Delius Swash Caps), cream canvas + dot-grid, doodle marks from the Icon Library, subtle tilt.",
+        "A pack restyles the look only — one board, 3 variants, analogy-led, safe margins, GATE 7 still win; brand colour folds in as the accent."
+      ]
+    },
     {
       "version": "1.16.2",
       "date": "2026-06-26",

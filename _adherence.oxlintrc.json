@@ -16,18 +16,19 @@
         "patterns": [
           {
             "group": [
-              "board-editor.js",
+              "app/**",
               "components/content/**",
               "components/icons/**",
               "components/illustration/**",
               "components/layout/**",
               "components/preview/**",
               "components/text/**",
+              "tools/**",
+              "tools/anti-slop/**",
               "ui_kits/setup/**",
               "ui_kits/update-center/**",
               "ui_kits/visual-library/**",
-              "uploads/Design system setup/**",
-              "visual-board.js"
+              "uploads/Design system setup/**"
             ],
             "message": "Import design-system components from 'index.js', not component internals."
           }
