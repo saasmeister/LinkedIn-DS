@@ -39,13 +39,20 @@ function resolveGlobs(list) {
   return list.flatMap((g) => (g === "@uiLayer" ? manifest.uiLayer : [g]));
 }
 
+// Pruned during traversal (not just excluded after) so the walk stays fast
+// regardless of how large dist/.publish grow. variants/ holds only build
+// inputs (copied via HERE-relative paths), never source to assemble.
+const PRUNE_DIRS = new Set([".git", "node_modules", "variants"]);
 function walk(dir, base = dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
     const abs = join(dir, name);
-    const rel = relative(base, abs).split(sep).join("/");
-    if (statSync(abs).isDirectory()) out.push(...walk(abs, base));
-    else out.push(rel);
+    if (statSync(abs).isDirectory()) {
+      if (PRUNE_DIRS.has(name)) continue;
+      out.push(...walk(abs, base));
+    } else {
+      out.push(relative(base, abs).split(sep).join("/"));
+    }
   }
   return out;
 }

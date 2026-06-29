@@ -17,8 +17,10 @@ design system:
 - **The full archetype library is present** under `templates/<type>-NN-<slug>/` — every numbered single, quote, carousel and infographic, each a complete `.dc.html` + its runtime + thumbnail. **Import/expose ALL of them as starting points. Never recreate just a handful from scratch, and never ask the user which archetypes to include — they all ship here, use them.**
 - **The real components ship** in `components/**` (`.jsx` implementations + `.d.ts`/`.prompt.md` contracts). **Import the actual implementations — do not re-author them from the specs.**
 - **The tokens + `styles.css` entry point ship** — wire them verbatim; the brand layer (`overrides/brand.css`) restyles everything.
+- **ONE CANVAS — bundle every visual on a single shared Canvas.** Never spawn a new Canvas / document / file per visual. Every visual is a `<section class="visual">` block appended to the SAME Canvas, so the user keeps working in one place — not a hundred scattered documents. This is non-negotiable (see GATE 2).
+- **BRAND FIRST — don't build on the default.** Before producing any visual, confirm a brand is set in `overrides/brand.css`; if it's unconfigured, run the brand check-in (GATE 0) and capture it FIRST. Do not scaffold visuals on the placeholder LinkedIn blue and ask for the brand afterwards.
 
-If something looks missing, it is in the repo — read it, don't reinvent it. The only things deliberately absent are the app-surface UI (Visual Board, app shell, kits, compiled bundle), because delivery here is the artboard markup itself.
+If something looks missing, it is in the repo — read it, don't reinvent it. The only things deliberately absent are the app-surface chrome (the Visual Board shell, app wrapper, kits, compiled bundle), because in Claude Design the host's own Canvas is the board.
 
 ---
 
@@ -85,9 +87,11 @@ Then run the **critical pass** (`BRIEF.md §5`): does the post fit the type? Is 
 
 ---
 
-## 🛑 GATE 2 — RETURN SELF-CONTAINED ARTBOARDS. NEVER A FILE PER VISUAL.
+## 🛑 GATE 2 — ALL VISUALS ON ONE SHARED CANVAS. NEVER A DOCUMENT PER VISUAL.
 
-**Deliver the artboard markup directly — do not write a separate `.html` / `.dc.html` file or page per visual.** In this headless variant there is no Visual Board to append to; the host surface (Claude Design's canvas) renders what you return. The canonical structure you produce is one `<section class="visual">` containing one `<div class="round">` of three `.artboard` variants:
+**Every visual the user makes lives as a block on ONE shared Canvas — never a new Canvas / document / file per visual.** This is the single most important delivery rule: keep everything bundled in one place so the user works in one canvas, not a hundred scattered documents. In Claude Design, that means the project's own Canvas is the board — append each new visual to it; do NOT create a fresh Canvas, page, or `.html`/`.dc.html` file each time.
+
+The canonical structure you append to the shared Canvas is one `<section class="visual">` containing one `<div class="round">` of three `.artboard` variants:
 
 ```html
 <section class="visual" data-label="Most outreach fails on the first line" data-type="single">
