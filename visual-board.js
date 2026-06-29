@@ -26,6 +26,7 @@
   var CHOSEN_KEY = "li-vds-board-chosen-v1";
   var EDITS_KEY = "li-vds-board-edits-v1";
   var SLIDES_KEY = "li-vds-board-slidepos-v1";
+  var GEN_KEY = "li-vds-board-generated-v1";
   var heroStage = document.getElementById("heroStage");
   var stageEl = document.getElementById("stage");
   var heroType = document.getElementById("heroType");
@@ -40,6 +41,28 @@
   var toast = document.getElementById("toast");
   var countEl = document.getElementById("count");
   var feedEl = document.getElementById("feed");
+
+  /* ---- hydrate any locally-generated visuals (standalone Opus 4.8 server) ---- */
+  (function hydrateGenerated() {
+    var g = loadJSON(GEN_KEY, null); if (!g) return;
+    (g.sections || []).forEach(function (s) {
+      var sec = document.createElement("section");
+      sec.className = "visual";
+      sec.setAttribute("data-label", s.label || "Generated");
+      sec.setAttribute("data-type", s.type || "visual");
+      sec.setAttribute("data-generated", "1");
+      sec.innerHTML = '<div class="round">' + s.html + "</div>";
+      source.appendChild(sec);
+    });
+    var rounds = g.rounds || {};
+    Object.keys(rounds).forEach(function (label) {
+      var sec = source.querySelector('.visual[data-label="' + label.replace(/"/g, '\\"') + '"]');
+      if (!sec) return;
+      rounds[label].forEach(function (html) {
+        var r = document.createElement("div"); r.className = "round"; r.innerHTML = html; sec.appendChild(r);
+      });
+    });
+  })();
 
   /* ---- build the model ---- */
   var visuals = [].slice.call(source.querySelectorAll(".visual")).map(function (sec, vi) {
@@ -436,6 +459,41 @@
      chat input (cross-origin). So this modal PREPARES the prompt — paste your
      post + notes — and copies it; you paste once into the chat and attach any
      screenshots/drawings there. Agent-first: the AI still runs the brief. */
+  /* ---- local generate via the standalone Opus 4.8 server ----
+     Falls back silently: if the server isn't reachable, the modal's
+     "Copy prompt" button still hands the brief to the assistant. */
+  function genEndpoint() {
+    try { var o = localStorage.getItem("li-vds-generate-endpoint"); if (o) return o; } catch (e) {}
+    return window.DS_GENERATE_ENDPOINT || "http://localhost:8787/api/generate";
+  }
+  function persistGenerated(kind, label, html, type) {
+    var g = loadJSON(GEN_KEY, { sections: [], rounds: {} });
+    if (!g.sections) g.sections = []; if (!g.rounds) g.rounds = {};
+    if (kind === "iterate" && label) { (g.rounds[label] = g.rounds[label] || []).push(html); }
+    else { g.sections.push({ label: label || ("Visual " + (visuals.length + g.sections.length + 1)), type: type || "visual", html: html }); }
+    saveJSON(GEN_KEY, g);
+  }
+  function generateRemote(kind, label, brief, btn) {
+    var orig = btn.textContent; btn.textContent = "Generating…"; btn.disabled = true;
+    fetch(genEndpoint(), {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ brief: brief })
+    }).then(function (r) { if (!r.ok) throw new Error("server " + r.status); return r.json(); })
+      .then(function (d) {
+        if (d && d.error) throw new Error(d.error);
+        var html = ((d && d.html) || "").trim();
+        if (!html) throw new Error("empty response");
+        persistGenerated(kind, label, html);
+        var prev = document.getElementById("prepModal"); if (prev) prev.remove();
+        flash("Generated — refreshing board…");
+        setTimeout(function () { location.reload(); }, 600);
+      })
+      .catch(function (e) {
+        btn.textContent = orig; btn.disabled = false;
+        flash("Local generate unavailable (" + (e && e.message) + ") — use Copy prompt instead.");
+      });
+  }
+
   function prepareModal(kind, label) {
     var prev = document.getElementById("prepModal"); if (prev) prev.remove();
     var mac = navigator.platform && navigator.platform.indexOf("Mac") >= 0;
@@ -481,16 +539,29 @@
         (post ? "\n\nPOST:\n" + post : "");
     }
 
+    function briefFor() {
+      if (kind === "iterate") {
+        var ch = (inA.value || "").trim();
+        return "Iterate the visual \u201c" + label + "\u201d on the board." + (ch ? " What to change: " + ch + "." : "") + " Produce one strong new variant as a single .artboard.";
+      }
+      var post = (inA.value || "").trim(), notes = (inB.value || "").trim();
+      return "Create a new LinkedIn visual as a single .artboard." + (notes ? " Direction: " + notes : "") + (post ? "\n\nPOST:\n" + post : "");
+    }
+
     var row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px";
-    var hint = el2("div", "font-size:12px;color:#aab0b6", "Copies the prompt \u2014 paste it in the chat (" + (mac ? "\u2318V" : "Ctrl+V") + ").");
-    var btns = document.createElement("div"); btns.style.cssText = "display:flex;gap:8px";
+    var hint = el2("div", "font-size:12px;color:#aab0b6;flex:1;min-width:0", "Generate now via the local Opus 4.8 server, or copy the prompt for the assistant (" + (mac ? "\u2318V" : "Ctrl+V") + ").");
+    var btns = document.createElement("div"); btns.style.cssText = "display:flex;gap:8px;flex:none";
     var cancel = document.createElement("button"); cancel.textContent = "Cancel";
     cancel.style.cssText = "padding:10px 16px;border:1px solid #d8dadd;border-radius:10px;background:#fff;font:inherit;font-weight:600;cursor:pointer;color:#5f6671";
     cancel.addEventListener("click", function () { scrim.remove(); });
     var copy = document.createElement("button"); copy.textContent = "Copy prompt";
-    copy.style.cssText = "padding:10px 20px;border:none;border-radius:10px;background:var(--brand-primary,#0A66C2);color:#fff;font:inherit;font-weight:700;cursor:pointer";
-    copy.addEventListener("click", function () { var ok = chatPrompt(buildPrompt()); scrim.remove(); });
-    btns.appendChild(cancel); btns.appendChild(copy);
+    copy.style.cssText = "padding:10px 16px;border:1px solid var(--brand-primary,#0A66C2);border-radius:10px;background:#fff;color:var(--brand-primary,#0A66C2);font:inherit;font-weight:700;cursor:pointer";
+    copy.addEventListener("click", function () { chatPrompt(buildPrompt()); scrim.remove(); });
+    var gen = document.createElement("button"); gen.textContent = "Generate here";
+    gen.title = "Generate now via the local Opus 4.8 server";
+    gen.style.cssText = "padding:10px 20px;border:none;border-radius:10px;background:var(--brand-primary,#0A66C2);color:#fff;font:inherit;font-weight:700;cursor:pointer";
+    gen.addEventListener("click", function () { generateRemote(kind, label, briefFor(), gen); });
+    btns.appendChild(cancel); btns.appendChild(copy); btns.appendChild(gen);
     row.appendChild(hint); row.appendChild(btns); box.appendChild(row);
 
     scrim.appendChild(box); document.body.appendChild(scrim);

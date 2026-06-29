@@ -1,0 +1,13 @@
+{
+  "name": "linkedin-visual-ds-standalone",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone server for the LinkedIn Visual Design System — drives claude-opus-4-8 with the design-system principles as a cached system prompt.",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0"
+  }
+}

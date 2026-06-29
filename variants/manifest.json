@@ -1,0 +1,49 @@
+{
+  "$comment": "Defines the three products built from this one source. The build walks the repo root, drops anything matching alwaysExclude (build artifacts + Finder ' 2' duplicates are handled in code), then drops each variant's own exclude globs. 'core' strips the UI layer; 'claude-design' ships everything; 'standalone' ships everything plus the API server in standalone-server/.",
+  "source": "..",
+  "out": "dist",
+  "alwaysExclude": [
+    ".git/**",
+    ".github/**",
+    ".claude/**",
+    "variants/**",
+    "node_modules/**",
+    "**/.DS_Store",
+    "**/package-lock.json"
+  ],
+  "uiLayer": [
+    "app/**",
+    "LinkedIn Visual Designer.html",
+    "Visual Board.html",
+    "START HERE.html",
+    "visual-board.js",
+    "board-editor.js",
+    "ui_kits/**",
+    "_ds_bundle.js",
+    "styles.css",
+    "components/**/*.jsx",
+    "components/**/*.card.html",
+    "templates/**/support.js",
+    "templates/**/ds-base.js",
+    "templates/**/*.thumbnail"
+  ],
+  "variants": {
+    "core": {
+      "title": "DS Core (headless)",
+      "audience": "The agent inside Claude Design. Load as a design system; no interface.",
+      "exclude": ["@uiLayer"],
+      "overlay": "overlays/core"
+    },
+    "claude-design": {
+      "title": "Claude Design + UI",
+      "audience": "Loads into Claude Design as a full design system, interface included. This is today's shipping product.",
+      "exclude": []
+    },
+    "standalone": {
+      "title": "Standalone (Opus 4.8 API)",
+      "audience": "Runs outside Claude Design with its own UI, driving claude-opus-4-8 via the Anthropic API.",
+      "exclude": [],
+      "extraSources": ["standalone-server"]
+    }
+  }
+}
