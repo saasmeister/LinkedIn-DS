@@ -11,6 +11,7 @@
     "**/.DS_Store",
     "**/package-lock.json"
   ],
+  "$uiLayerNote": "App/tooling UI only. Component implementations (components/**/*.jsx) and the token entry point (styles.css) are FRAMEWORK vocabulary and stay in core, so the consuming agent reproduces the real components instead of reinventing them from specs. The .card.html viewer cards, the compiled _ds_bundle.js, the per-template browser runtime, and the icon-editor stay stripped.",
   "uiLayer": [
     "app/**",
     "LinkedIn Visual Designer.html",
@@ -20,9 +21,8 @@
     "board-editor.js",
     "ui_kits/**",
     "_ds_bundle.js",
-    "styles.css",
-    "components/**/*.jsx",
     "components/**/*.card.html",
+    "components/**/icon-editor.html",
     "templates/**/support.js",
     "templates/**/ds-base.js",
     "templates/**/*.thumbnail"

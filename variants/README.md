@@ -28,13 +28,19 @@ has it.
 
 ## What "no UI" means for `core`
 
-The build strips the interface layer (see `uiLayer` in `manifest.json`):
-the app shell, Visual Board, board editor, `ui_kits/`, the `_ds_bundle.js`
-runtime, `styles.css`, component `.jsx` implementations and `.card.html` viewer
-cards, and the per-template browser runtime (`support.js`, `ds-base.js`,
-thumbnails). What remains is pure framework: the principle/guideline cards, the
-tokens, the style-pack skills, the archetype `.dc.html` layouts, `SKILL.md`,
-`GOVERNANCE.md`, `posture.md`, and the `overrides/` contract.
+The build strips the **app/tooling UI** (see `uiLayer` in `manifest.json`): the
+app shell, Visual Board, board editor, `ui_kits/`, the compiled `_ds_bundle.js`,
+the `.card.html` viewer cards, the icon editor, and the per-template browser
+runtime (`support.js`, `ds-base.js`, thumbnails).
+
+It keeps the full **framework vocabulary** — including the component
+implementations (`components/**/*.jsx`) and the `styles.css` token entry point,
+which are *not* app UI: they're the building blocks an agent needs to reproduce
+the real components instead of reinventing them from specs. So core ships the
+tokens, `styles.css`, the component `.jsx` + their `.d.ts`/`.prompt.md`
+contracts, the principle/guideline cards, the style-pack skills, the archetype
+`.dc.html` layouts, `SKILL.md`, `GOVERNANCE.md`, `posture.md`, and the
+`overrides/` contract.
 
 ## Build
 
