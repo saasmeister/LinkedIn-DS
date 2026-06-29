@@ -34,8 +34,9 @@
     },
     "claude-design": {
       "title": "Claude Design + UI",
-      "audience": "Loads into Claude Design as a full design system, interface included. This is today's shipping product.",
-      "exclude": []
+      "audience": "Loads into Claude Design as a full design system, interface included (Visual Board, board editor, icon editor). This is today's shipping product.",
+      "exclude": [],
+      "overlay": "overlays/claude-design"
     },
     "standalone": {
       "title": "Standalone (Opus 4.8 API)",
