@@ -4,7 +4,7 @@
 
 > **Color is not part of this method.** The examples here happen to be grayscale, but that was one project's theme. Use whatever palette the current set uses. The only color *principle* is in §1: one ramp, focal element = the strongest tone. Read every "grey" / "dark" / "#2b2b2b" below as "your set's strongest tone" and every "#ffffff" as "your set's base."
 
-This is the method behind the saasmeister template library (archetypes B1 → I10). It is written so a person **or** an AI can reproduce the style at scale. Hand this whole file over as context and ask for "a visual in the Bold Visual Method about X."
+This is the method behind the Bold Visual Method template library (archetypes B1 → I10). It is written so a person **or** an AI can reproduce the style at scale. Hand this whole file over as context and ask for "a visual in the Bold Visual Method about X."
 
 ---
 
@@ -185,4 +185,4 @@ Borrow an object, bend it to a SaaS truth:
 
 ---
 
-*Method distilled from the saasmeister template library. Keep it flat, keep the ramp tight, keep the idea loud — in whatever colors the set calls for.*
+*Method distilled from the Bold Visual Method template library. Keep it flat, keep the ramp tight, keep the idea loud — in whatever colors the set calls for.*

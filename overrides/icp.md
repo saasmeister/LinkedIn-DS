@@ -1,8 +1,11 @@
-# Ideal Customer Profile (example — replace via /icp-setup)
+# Ideal Customer Profile (example — replace with the client's via /icp-setup or by asking)
 
-**Who:** Independent SaaS consultants, solo or tiny team, stuck in feast-and-famine revenue.
-**Core pain:** Inconsistent inbound; chasing every lead; no predictable pipeline.
-**Current belief to shift:** "I need to post more / hustle harder" → actually need sharper positioning + a system.
-**Desired outcome:** Predictable inbound leads who already trust them before the first call.
-**Sophistication / tried already:** Posted sporadically, tried cold outreach, no repeatable engine.
-**Buying trigger:** A dry month, or watching a peer win clients from content.
+**Who:** (the client's audience)
+**Core pain:** (the problem they feel)
+**Current belief to shift:** (from → to)
+**Desired outcome:** (what success looks like for them)
+**Sophistication / tried already:** (what they've attempted)
+**Buying trigger:** (what makes them act)
+
+Until this is filled from the client's own brand, keep examples generic —
+don't assume an industry, audience, or product.
