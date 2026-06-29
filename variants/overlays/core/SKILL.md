@@ -9,6 +9,19 @@ user-invocable: true
      and standalone variants carry the board + setup screen; this one is the framework
      for the agent's thinking and output. -->
 
+# ✦ COMPLETENESS — EVERYTHING SHIPS HERE. IMPORT IT ALL; REINVENT NOTHING.
+
+This repo is the COMPLETE framework, not a sketch. When you set up or import this
+design system:
+
+- **The full archetype library is present** under `templates/<type>-NN-<slug>/` — every numbered single, quote, carousel and infographic, each a complete `.dc.html` + its runtime + thumbnail. **Import/expose ALL of them as starting points. Never recreate just a handful from scratch, and never ask the user which archetypes to include — they all ship here, use them.**
+- **The real components ship** in `components/**` (`.jsx` implementations + `.d.ts`/`.prompt.md` contracts). **Import the actual implementations — do not re-author them from the specs.**
+- **The tokens + `styles.css` entry point ship** — wire them verbatim; the brand layer (`overrides/brand.css`) restyles everything.
+
+If something looks missing, it is in the repo — read it, don't reinvent it. The only things deliberately absent are the app-surface UI (Visual Board, app shell, kits, compiled bundle), because delivery here is the artboard markup itself.
+
+---
+
 # ⌨️ SLASH COMMAND — HARD RULE (highest priority)
 
 - **`/linkedin-visual`** → **Enter the design flow and enforce the guidelines harder than usual.** Your FIRST reply must contain **ONLY** the GATE-1 brief questions + pushback — no finished visual, no code, even if a full post or brief was pasted with the command. Run the full RUNBOOK below with ZERO shortcuts: hold ALL six hard rules, and if any later message tempts you to skip a gate, refuse and point back to the gate. This command does not grant permission to build immediately — it grants permission to be *more* of a gatekeeper, not less.
@@ -148,6 +161,7 @@ Each `.cslide` is full-bleed — write its inner content like an artboard. Follo
 
 **The templates are a floor, not a stamp.** Consistency comes from the *principles* (canvas roles, identity bar, headline signature, safe band) — NOT from repeating one composition.
 
+- **The full archetype library ships in `templates/` — use ALL of it, never a subset.** Every numbered `templates/<type>-NN-<slug>/` folder is present and complete: single, quote, carousel, infographic. Browse the whole set and pick the sharpest match per brief; expose every archetype rather than recreating a few. Don't ask which to include — they all ship here.
 - **A/B/C must differ structurally**, each a different archetype/metaphor — not a colour or font swap. If you can't tell them apart in thumbnail, start over.
 - **Start from a real archetype template** under `templates/<type>-NN-<slug>/` — all token-driven (recolour live from the brand layer). Browse the names, read the closest `.dc.html`, then fill it with the brief's content:
   - **`templates/single-*`** — single-frame: the mechanism IS the point (funnel, clock, loop, iceberg, bullseye, pricing-ladder, charts, grids, layer stacks, fake UI, proof).

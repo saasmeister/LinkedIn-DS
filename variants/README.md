@@ -28,19 +28,24 @@ has it.
 
 ## What "no UI" means for `core`
 
-The build strips the **app/tooling UI** (see `uiLayer` in `manifest.json`): the
-app shell, Visual Board, board editor, `ui_kits/`, the compiled `_ds_bundle.js`,
-the `.card.html` viewer cards, the icon editor, and the per-template browser
-runtime (`support.js`, `ds-base.js`, thumbnails).
+The build strips only the **app/tooling UI** (see `uiLayer` in `manifest.json`):
+the app shell, Visual Board, board editor, `ui_kits/`, the compiled
+`_ds_bundle.js`, the `.card.html` viewer cards, and the icon editor.
 
-It keeps the full **framework vocabulary** — including the component
-implementations (`components/**/*.jsx`) and the `styles.css` token entry point,
-which are *not* app UI: they're the building blocks an agent needs to reproduce
-the real components instead of reinventing them from specs. So core ships the
-tokens, `styles.css`, the component `.jsx` + their `.d.ts`/`.prompt.md`
-contracts, the principle/guideline cards, the style-pack skills, the archetype
-`.dc.html` layouts, `SKILL.md`, `GOVERNANCE.md`, `posture.md`, and the
-`overrides/` contract.
+It keeps the full **framework vocabulary** — everything an agent needs to
+reproduce the system without reinventing or asking:
+
+- the **complete template library** — every `templates/<type>-NN-<slug>/` folder
+  intact (`.dc.html` + its `support.js`/`ds-base.js` runtime + thumbnail), not a
+  subset;
+- the **component implementations** (`components/**/*.jsx`) + their
+  `.d.ts`/`.prompt.md` contracts;
+- the `styles.css` token entry point and all `tokens/`;
+- the principle/guideline cards, style-pack skills, `references/`, `SKILL.md`,
+  `GOVERNANCE.md`, `posture.md`, and the `overrides/` contract.
+
+Component `.jsx`, `styles.css` and the template runtime are *not* app UI — they
+are the building blocks; only the board/app surface is removed.
 
 ## Build
 
