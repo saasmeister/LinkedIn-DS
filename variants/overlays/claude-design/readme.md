@@ -17,7 +17,7 @@ This is the **full variant**: the complete framework **plus the visual UI** — 
 > 3. **Every principle card** (`principles/*.card.html`) AND **guideline card** (`guidelines/*.card.html`) — including the Anti-Slop Gate.
 > 4. **The real components** — `components/**/*.jsx` + their `.d.ts`/`.prompt.md` contracts; the component `.card.html` viewer cards; the **icon kit + icon editor** (`components/icons/`).
 > 5. **The tokens + `styles.css`**, the anti-slop tooling, and `posture.md`, `BRIEF.md`, `GOVERNANCE.md`.
-> 6. **The visual UI** — `LinkedIn Visual Designer.html` (app shell), `Visual Board.html` + `visual-board.js` + `board-editor.js`, `START HERE.html` (the brand setup wizard / slider), and `ui_kits/`. Install and wire these — they are the point of this variant (see GATE — VISUAL SHELL).
+> 6. **The visual UI — ONE surface: `LinkedIn Visual Designer.html`.** This is the single entry point and the only thing the user ever opens; all visuals live inside it, and from there the user reaches the board, the icon library and settings. It loads its sub-views as internal panes (`app/Visual Board.html`, `app/START HERE.html`, `components/icons/icon-editor.html`) — **do NOT surface those sub-views (or the board/START-HERE files) as separate openable documents; the user never accesses them directly.** Install and wire the shell + `app/` + `ui_kits/` (see GATE — VISUAL SHELL).
 > 7. **BRAND FIRST** — if `overrides/brand.css` is unconfigured, capture the brand *before* designing: open the **START HERE** wizard (the brand slider) or take a website / brand doc / the colours + font, write `overrides/brand.css`, then build. Never scaffold on the placeholder default and ask afterwards.
 > 8. **APPLY THE BRAND TO EVERYTHING — no template left on the default blue.** Every template, card and component is token-driven and re-derives from `overrides/brand.css`. The template prop-defaults are intentionally empty, so templates inherit the configured brand automatically — you do NOT need to re-colour them one by one. Verify nothing still shows `#0A66C2`.
 
@@ -25,13 +25,15 @@ This is the **full variant**: the complete framework **plus the visual UI** — 
 
 ## 🛑 GATE — VISUAL SHELL (this variant only)
 
-**This variant ships a working visual shell — install it and make it the user's surface, don't drop it:**
+**There is ONE surface: `LinkedIn Visual Designer.html`.** It is the single entry point — the only thing the user opens, and where all visuals live. Everything else is an internal pane it loads; the user never opens those directly. Install the shell and wire its panes; do not present the panes as separate openable files.
 
-- **The Visual Board (`Visual Board.html` + `visual-board.js`) is the canvas** — the Canva-style "LinkedIn Designer" view: a hero + horizontal reel of visuals, per-visual export, and a **brand slider** that re-derives the whole system live. Every visual is a `<section class="visual">` block on this ONE board — never a document per visual.
-- **The board editor (`board-editor.js`)** gives direct-manipulation editing (select / move / resize / recolour) on the focused artboard. Install it with the board.
-- **The icon editor + icon kit (`components/icons/`)** is the hand-drawn icon engine + editor; install it so drawn/imported icons drop onto the canvas and recolour to the brand.
-- **The app shell (`LinkedIn Visual Designer.html`)** wraps the board, icon library and settings into one surface; **START HERE.html** is the brand setup (the slider that writes `overrides/brand.css`).
-- The brand slider / setup is how brand-first (point 7) happens in this variant: set the brand there and every card, template and board visual re-derives.
+- **`LinkedIn Visual Designer.html` (the app)** — the working surface. From inside it the user reaches the board, the **icon library**, and **settings** (the brand slider). This is the only document the user ever opens.
+- **Internal panes (loaded inside the shell, never opened directly):**
+  - `app/Visual Board.html` + `app/visual-board.js` — the Canva-style board: hero + reel, every visual a `<section class="visual">` block on this ONE board (never a document per visual), per-visual export.
+  - `app/board-editor.js` — direct-manipulation editing (select / move / resize / recolour) on the focused artboard.
+  - `app/START HERE.html` — **Settings / the brand slider**: this is how brand-first (point 7) happens in this variant — set the brand here and it writes `overrides/brand.css`; every card, template and board visual re-derives live.
+  - `components/icons/icon-editor.html` — the **icon library / editor**: draw/import icons that drop onto the canvas and recolour to the brand.
+- **Do not strip, rename, or expose the panes.** The standalone root copies of these files are intentionally absent from this variant; the shell uses the `app/` versions. Keep the user inside `LinkedIn Visual Designer.html`.
 
 ## ⛔ Core design rules (when designing)
 
@@ -50,6 +52,6 @@ This is the **full variant**: the complete framework **plus the visual UI** — 
 | **Components + icons** | `components/**` | Build with them — React primitives + the icon kit/editor. |
 | **Templates** | `templates/**` | The full numbered archetype library — inherit the brand by default. |
 | **Style packs** | `style-packs/**` | Doodle / Bento / Paper. |
-| **Visual UI** | `Visual Board.html`, `board-editor.js`, `LinkedIn Visual Designer.html`, `START HERE.html`, `ui_kits/` | The delivery surface (GATE — VISUAL SHELL). |
+| **Visual UI** | `LinkedIn Visual Designer.html` (the only surface) + its internal panes (`app/Visual Board.html`, `app/START HERE.html`, `components/icons/icon-editor.html`) + `ui_kits/` | One surface; panes load inside it (GATE — VISUAL SHELL). |
 
 Read `SKILL.md` for the full operating flow, `posture.md` for how to behave, and `BRIEF.md` for the intake.
