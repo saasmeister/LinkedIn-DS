@@ -1,0 +1,24 @@
+/* ============================================================
+   BRAND LAYER · OVERRIDES   ←  THIS FILE IS YOURS (the branch)
+   ------------------------------------------------------------
+   Ships UNCONFIGURED on purpose: the agent detects "no brand yet"
+   from this all-commented state and runs GATE 0 (the brand
+   check-in) before designing. Set your values here and the whole
+   system re-derives; master updates never touch this file.
+   ============================================================ */
+
+:root {
+  /* ---- Colours -------------------------------------------- */
+  /* --brand-primary:   #0A66C2; */   /* LOUD canvas (cover/back)        */
+  /* --brand-secondary: #16232B; */   /* SECTION canvas (chapter marker) */
+  /* --brand-accent:    #E7A33E; */   /* categorise / mark / highlight   */
+  /* --brand-tint: 7%; */             /* LIGHT-canvas tint strength      */
+
+  /* ---- Type ----------------------------------------------- */
+  /* Load your webfont yourself (a <link> or @font-face), then: */
+  /* --brand-font:         'Your Font', system-ui, sans-serif; */
+  /* --brand-font-display: 'Your Display', system-ui, sans-serif; */
+
+  /* ---- Headline signature --------------------------------- */
+  /* --signature: underline; */       /* underline | block | bubble | plain */
+}
