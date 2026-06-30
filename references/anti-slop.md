@@ -1,6 +1,10 @@
 # Anti-slop — the QA pass before you deliver
 
-*Adapted for 1080×1350 LinkedIn visuals from the [Impeccable](https://github.com/pbakaus/impeccable) anti-pattern system (Apache-2.0, vendored under `tools/anti-slop/`). Impeccable targets web UI; this file keeps only what transfers to flat social graphics and retranslates it to the canvas.*
+*Adapted for 1080×1350 LinkedIn visuals from the [Impeccable](https://github.com/pbakaus/impeccable) anti-pattern system (Apache-2.0). Impeccable targets web UI; this file keeps only what transfers to flat social graphics and retranslates it to the canvas.*
+
+> **Advisory, not an overlay.** This is guidance for *your own* judgement during the QA pass — use it to rewrite weak elements before you show variants. **Never render lint badges, leader-lines or "low contrast / overused font" markers onto the visuals themselves.** (If you're seeing such badges in Claude Design, that's its native *Mark up / Show tweaks* review layer — toggle it off; it isn't part of the visual or its export.)
+>
+> **Contrast is web-oriented — treat WCAG flags as advisory here.** Bold brand visuals deliberately use brand-on-brand (e.g. coral headline on a cream canvas, or light text on a loud panel). That's authorized voice, not a defect. Judge legibility at scroll size with your eyes; do **not** auto-darken or "fix" intentional brand combinations to satisfy a WCAG ratio meant for body-text web UI.
 
 ## What this is
 
