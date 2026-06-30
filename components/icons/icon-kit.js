@@ -126,6 +126,52 @@
   function hash(s){s=s||'';var h=29;for(var i=0;i<s.length;i++)h=(h*131+s.charCodeAt(i))>>>0;return h;}
   function seedFor(kind,name){ return hash((kind==='ill'?'i':'m')+name); }
 
+  // ---- SVG -> editable anchor strokes (runtime; powers IconKit.installSvg) ----
+  function _parsePath(d){
+    var toks=d.match(/[MmLlHhVvCcSsQqTtAaZz]|-?\d*\.?\d+(?:e[-+]?\d+)?/gi)||[]; var i=0;
+    function n(){return parseFloat(toks[i++]);}
+    var subs=[],cur=null,x=0,y=0,sx=0,sy=0,px=0,py=0,prev='';
+    function start(){cur={pts:[],segs:[],closed:false};subs.push(cur);}
+    while(i<toks.length){ var cmd=toks[i]; if(/[a-z]/i.test(cmd)) i++; else cmd=prev; var rel=cmd===cmd.toLowerCase(), C=cmd.toUpperCase();
+      if(C==='M'){x=(rel?x:0)+n();y=(rel?y:0)+n();sx=x;sy=y;start();cur.pts.push([x,y]);prev=rel?'l':'L';}
+      else if(C==='L'){x=(rel?x:0)+n();y=(rel?y:0)+n();cur.segs.push({t:'L'});cur.pts.push([x,y]);}
+      else if(C==='H'){x=(rel?x:0)+n();cur.segs.push({t:'L'});cur.pts.push([x,y]);}
+      else if(C==='V'){y=(rel?y:0)+n();cur.segs.push({t:'L'});cur.pts.push([x,y]);}
+      else if(C==='C'){var a1=(rel?x:0)+n(),a2=(rel?y:0)+n(),b1=(rel?x:0)+n(),b2=(rel?y:0)+n();x=(rel?x:0)+n();y=(rel?y:0)+n();cur.segs.push({t:'C',c1:[a1,a2],c2:[b1,b2]});cur.pts.push([x,y]);px=b1;py=b2;}
+      else if(C==='S'){var p1=2*x-px,p2=2*y-py,q1=(rel?x:0)+n(),q2=(rel?y:0)+n(),nx=(rel?x:0)+n(),ny=(rel?y:0)+n();cur.segs.push({t:'C',c1:[p1,p2],c2:[q1,q2]});cur.pts.push([nx,ny]);px=q1;py=q2;x=nx;y=ny;}
+      else if(C==='Q'){var u1=(rel?x:0)+n(),u2=(rel?y:0)+n(),nx2=(rel?x:0)+n(),ny2=(rel?y:0)+n();cur.segs.push({t:'C',c1:[x+2/3*(u1-x),y+2/3*(u2-y)],c2:[nx2+2/3*(u1-nx2),ny2+2/3*(u2-ny2)]});cur.pts.push([nx2,ny2]);px=u1;py=u2;x=nx2;y=ny2;}
+      else if(C==='T'){var w1=2*x-px,w2=2*y-py,nx3=(rel?x:0)+n(),ny3=(rel?y:0)+n();cur.segs.push({t:'C',c1:[x+2/3*(w1-x),y+2/3*(w2-y)],c2:[nx3+2/3*(w1-nx3),ny3+2/3*(w2-ny3)]});cur.pts.push([nx3,ny3]);px=w1;py=w2;x=nx3;y=ny3;}
+      else if(C==='A'){i+=5;x=(rel?x:0)+parseFloat(toks[i++]);y=(rel?y:0)+parseFloat(toks[i++]);cur.segs.push({t:'L'});cur.pts.push([x,y]);}
+      else if(C==='Z'){if(cur){cur.closed=true;cur.segs.push({t:'L'});x=sx;y=sy;}}
+      if(C!=='C'&&C!=='S'&&C!=='Q'&&C!=='T'){px=x;py=y;} prev=cmd; }
+    return subs.filter(function(s){return s.pts.length>1;});
+  }
+  function _toAnchors(sub){ var P=sub.pts,nn=P.length;
+    var pts=(sub.closed&&nn>1&&P[0][0]===P[nn-1][0]&&P[0][1]===P[nn-1][1])?P.slice(0,-1):P; var m=pts.length,out=[];
+    function so(k){return sub.segs[k]||{t:'L'};}
+    for(var k=0;k<m;k++){var Pi=pts[k],o=so(k),ii=so((k-1+sub.segs.length)%sub.segs.length),hx=0,hy=0,have=0;
+      if(o.t==='C'){hx+=o.c1[0]-Pi[0];hy+=o.c1[1]-Pi[1];have++;}
+      if(ii&&ii.t==='C'&&ii.c2){hx+=Pi[0]-ii.c2[0];hy+=Pi[1]-ii.c2[1];have++;}
+      if(have===2){hx/=2;hy/=2;} out.push(have?[Pi[0],Pi[1],hx,hy]:[Pi[0],Pi[1]]); }
+    return {pts:out,closed:sub.closed};
+  }
+  function _attr(tag,name){var mm=tag.match(new RegExp(name+'\\s*=\\s*"([^"]*)"'));return mm?mm[1]:'';}
+  function svgToStrokes(svg,opts){ opts=opts||{}; var accent=(opts.accent||'').toLowerCase().replace(/^#?/,'#');
+    function role(fl,st){var c=((fl&&fl!=='none')?fl:st||'').trim().toLowerCase().replace(/^#?/,'#');return (accent&&c===accent)?'coral':'ink';}
+    var vb=(svg.match(/viewBox\s*=\s*"([^"]+)"/)||[])[1]; var vw=vb?parseFloat(vb.split(/[\s,]+/)[2]):24; var s=160/(vw||24);
+    var strokes=[]; var paths=svg.match(/<path\b[^>]*\bd\s*=\s*"([^"]+)"[^>]*>/gi)||[];
+    for(var p=0;p<paths.length;p++){var tag=paths[p],dm=tag.match(/\bd\s*=\s*"([^"]+)"/);if(!dm)continue;
+      var fl=_attr(tag,'fill'),st=_attr(tag,'stroke'),rl=role(fl,st),filled=fl&&fl!=='none',sw=(parseFloat(_attr(tag,'stroke-width')||'0')*s)||4.4;
+      var subs=_parsePath(dm[1]); for(var u=0;u<subs.length;u++){var a=_toAnchors(subs[u]);
+        strokes.push({pts:a.pts,closed:filled?true:a.closed,stroke:filled?'none':rl,fill:filled?rl:'none',sw:filled?0:sw});} }
+    var cs=svg.match(/<circle\b[^>]*>/gi)||[];
+    for(var ci=0;ci<cs.length;ci++){var ct=cs[ci],cx=parseFloat(_attr(ct,'cx')),cy=parseFloat(_attr(ct,'cy')),r=parseFloat(_attr(ct,'r'));if(!r)continue;
+      var cf=_attr(ct,'fill'),cst=_attr(ct,'stroke'),crl=role(cf,cst),cfl=cf&&cf!=='none',kk=0.5523*r;
+      strokes.push({pts:[[cx+r,cy,0,kk],[cx,cy+r,-kk,0],[cx-r,cy,0,-kk],[cx,cy-r,kk,0]],closed:true,stroke:cfl?'none':crl,fill:cfl?crl:'none',sw:cfl?0:((parseFloat(_attr(ct,'stroke-width')||'0')*s)||4.4)}); }
+    for(var z=0;z<strokes.length;z++){ strokes[z].pts=strokes[z].pts.map(function(an){return an.map(function(v){return Math.round(v*s*100)/100;});}); }
+    return strokes;
+  }
+
   var IconKit = {
     mark:function(name,o){o=o||{};var b=ELEM[name]||(CUSTOM[name]?NOOP:null);return b?svgFrom(run(name,b, o.seed!=null?o.seed:seedFor('mark',name))):'';},
     ill:function(name,o){o=o||{};var b=ILL[name];return b?svgFrom(run(name,b, o.seed!=null?o.seed:seedFor('ill',name))):'';},
@@ -161,7 +207,12 @@
     // (via customNames), renders through anchorPath (recolourable to the brand),
     // and opens fully editable in the icon editor — no per-install converter.
     installIcon:function(name, strokes){ if(!name||!strokes||!strokes.length) return;
-      CUSTOM[name]=true; STORE[name]={ _extra: strokes }; persistCustom(); persist(); emit(); }
+      CUSTOM[name]=true; STORE[name]={ _extra: strokes }; persistCustom(); persist(); emit(); },
+    // Install an icon straight from an SVG STRING — the converter is built in,
+    // so no build script is needed. `opts.accent` (#hex) maps that colour to the
+    // brand (coral); everything else becomes ink. Use this from a generated
+    // components/icons/icon-library.js: IconKit.installSvg('star', '<svg…>', {accent:'#F2685C'}).
+    installSvg:function(name, svg, opts){ if(!name||!svg) return 0; var s=svgToStrokes(svg, opts||{}); if(s.length) this.installIcon(name, s); return s.length; }
   };
   root.IconKit = IconKit;
 
