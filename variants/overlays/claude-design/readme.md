@@ -1,5 +1,11 @@
 # LinkedIn Visual Design System — Full UI
 
+> # ▶ RULE 0 — EVERY VISUAL LIVES IN THE VISUAL DESIGNER. NO EXCEPTIONS.
+>
+> **`LinkedIn Visual Designer.html` is the ONLY place a visual may exist.** Every visual — single, carousel page, infographic, quote, and every option in a "3 directions" set — is appended as a `<section class="visual">` block to the one Visual Board *inside that surface*.
+>
+> **NEVER generate a standalone design, document, or page per visual.** If your default behaviour is "create a new design," override it: open (or create once) `LinkedIn Visual Designer.html` and build into its board instead. One board, blocks appended, forever — no document-per-visual, no loose artboards outside the Designer. If the board doesn't exist yet, create it as the first step, then design into it.
+
 A **colour- and font-agnostic** system for building strong LinkedIn post visuals — single graphics, carousels, infographics and quote cards on a 1080 × 1350 (4:5) canvas. It encodes the *principles* of a good visual, never one brand's values. You bring your own colours and fonts (the "brand layer"); every canvas role, headline, template and identity bar re-derives from them automatically.
 
 This is the **full variant**: the complete framework **plus the visual UI** — the **Visual Board** (a Canva-style "LinkedIn Designer" view: hero + scrollable reel + a live brand slider), the **board editor** (direct-manipulation editing), and the **icon editor**. The headless Core is the same framework without this UI.
