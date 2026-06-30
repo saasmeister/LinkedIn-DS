@@ -33,6 +33,7 @@ This is the **full variant**: the complete framework **plus the visual UI** — 
   - `app/board-editor.js` — direct-manipulation editing (select / move / resize / recolour) on the focused artboard.
   - `app/START HERE.html` — **Settings / the brand slider**: this is how brand-first (point 7) happens in this variant — set the brand here and it writes `overrides/brand.css`; every card, template and board visual re-derives live.
   - `components/icons/icon-editor.html` — the **icon library / editor**: draw/import icons that drop onto the canvas and recolour to the brand.
+  - **Installing a user's icon set — use the bundler, don't re-engineer a converter.** If the user uploads SVG icons, run `node tools/icons/build-icon-library.mjs <svg-folder> --accent "#<brand accent>" --out components/icons/icon-library.js` (see `tools/icons/README.md`). That registers them via `IconKit.installIcon` as **editable custom marks** that auto-load after `icon-kit.js`, so they appear in the Icon Library (node-editable) AND in the Visual Designer (droppable, recolourable to the brand). Do NOT hand-build an SVG→anchor pipeline per install — `installIcon` + the bundler already do it.
 - **Do not strip, rename, or expose the panes.** The standalone root copies of these files are intentionally absent from this variant; the shell uses the `app/` versions. Keep the user inside `LinkedIn Visual Designer.html`.
 
 ## ⛔ Core design rules (when designing)

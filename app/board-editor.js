@@ -119,7 +119,11 @@ window.BoardEditor = (function () {
       if (window.IconKit) { ensureIconCss(bases[Math.max(0, i - 1)] || ""); collectKit(); renderLib(); return; }
       if (i >= bases.length) return;
       var s = document.createElement("script"); s.src = bases[i] + "components/icons/icon-kit.js";
-      s.onload = function () { ensureIconCss(bases[i]); collectKit(); renderLib(); };
+      s.onload = function () { ensureIconCss(bases[i]);
+        // chain-load the (optional) generated icon library AFTER the kit
+        var lib = document.createElement("script"); lib.src = bases[i] + "components/icons/icon-library.js";
+        lib.onload = lib.onerror = function () { collectKit(); renderLib(); };
+        document.head.appendChild(lib); };
       s.onerror = function () { tryBase(i + 1); };
       document.head.appendChild(s);
     })(0);

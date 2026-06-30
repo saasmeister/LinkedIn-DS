@@ -154,7 +154,14 @@
     setEdit:function(name,obj){ if(obj==null) delete STORE[name]; else STORE[name]=obj; persist(); emit(); },
     isEdited:function(name){ return !!STORE[name]; },
     resetMark:function(name){ delete STORE[name]; persist(); emit(); },
-    resetAll:function(){ STORE={}; persist(); emit(); }
+    resetAll:function(){ STORE={}; persist(); emit(); },
+    // Install an imported icon as an editable custom mark. `strokes` are _extra
+    // anchor strokes: { pts:[[x,y] | [x,y,hx,hy], …], closed, stroke:'ink'|'coral',
+    // fill:'none'|'ink'|'coral', sw }. It appears in the library + Visual Designer
+    // (via customNames), renders through anchorPath (recolourable to the brand),
+    // and opens fully editable in the icon editor — no per-install converter.
+    installIcon:function(name, strokes){ if(!name||!strokes||!strokes.length) return;
+      CUSTOM[name]=true; STORE[name]={ _extra: strokes }; persistCustom(); persist(); emit(); }
   };
   root.IconKit = IconKit;
 
