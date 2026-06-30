@@ -21,6 +21,7 @@
   --canvas-loud-fg:    #FFFFFF;
   --canvas-loud-muted: color-mix(in srgb, #FFFFFF 62%, var(--brand-primary));
   --canvas-loud-line:  color-mix(in srgb, #FFFFFF 28%, transparent);
+  --canvas-loud-soft:  color-mix(in srgb, #FFFFFF 16%, var(--brand-primary));
 
   /* ---- LIGHT : steps + default for single / quote / info --- */
   --canvas-light-bg:    color-mix(in srgb, var(--brand-primary) var(--brand-tint), #FFFFFF);
@@ -43,4 +44,12 @@
   --accent:        var(--brand-accent);
   --accent-soft:   color-mix(in srgb, var(--brand-accent) 16%, #FFFFFF);
   --accent-fg:     #18181B;
+
+  /* ---- Scope-agnostic content neutrals -------------------- *
+     Artboard content uses var(--muted/--soft/--rule); every .art re-aliases
+     these to its own canvas scope (loud/light/section). These LIGHT defaults
+     make them resolve everywhere, so a content neutral is never raw grey. */
+  --muted: var(--canvas-light-muted);
+  --soft:  var(--canvas-light-soft);
+  --rule:  var(--canvas-light-line);
 }
