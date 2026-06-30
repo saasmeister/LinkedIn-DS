@@ -82,10 +82,29 @@ Please write these into overrides/brand.css (load the font's <link> too) and con
   }
   const h = React.createElement;
 
+  // Read the live configured brand from the document (reflects overrides/brand.css),
+  // so the slider starts on the real brand instead of the default blue/Inter.
+  function readBrand() {
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const g = v => (cs.getPropertyValue(v) || "").trim();
+      const fam = v => { const m = g(v).match(/^['"]?([^'",]+)/); return m ? m[1].trim() : ""; };
+      const out = {};
+      const p = g("--brand-primary"); if (p) out.primary = p;
+      const sc = g("--brand-secondary"); if (sc) out.secondary = sc;
+      const ac = g("--brand-accent"); if (ac) out.accent = ac;
+      const t = parseInt(g("--brand-tint"), 10); if (!isNaN(t)) out.tint = t;
+      const f = fam("--brand-font"); if (f) out.font = f;
+      const sg = g("--signature"); if (sg) out.signature = sg;
+      return out;
+    } catch (e) { return {}; }
+  }
+
   function Setup() {
     const [s, setS] = useState(() => {
-      try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS)) || {}); }
-      catch (e) { return Object.assign({}, DEFAULTS); }
+      const live = readBrand();   // configured brand wins over the blue/Inter defaults
+      try { return Object.assign({}, DEFAULTS, live, JSON.parse(localStorage.getItem(LS)) || {}); }
+      catch (e) { return Object.assign({}, DEFAULTS, live); }
     });
     const [copied, setCopied] = useState("");
 
