@@ -25,7 +25,18 @@ This is the **full variant**: the complete framework **plus the visual UI** — 
 > 5. **The tokens + `styles.css`**, the anti-slop tooling, and `posture.md`, `BRIEF.md`, `GOVERNANCE.md`.
 > 6. **The visual UI — ONE surface: `LinkedIn Visual Designer.html`.** This is the single entry point and the only thing the user ever opens; all visuals live inside it, and from there the user reaches the board, the icon library and settings. It loads its sub-views as internal panes (`app/Visual Board.html`, `app/START HERE.html`, `components/icons/icon-editor.html`) — **do NOT surface those sub-views (or the board/START-HERE files) as separate openable documents; the user never accesses them directly.** Install and wire the shell + `app/` + `ui_kits/` (see GATE — VISUAL SHELL).
 > 7. **BRAND FIRST** — if `overrides/brand.css` is unconfigured, capture the brand *before* designing: open the **START HERE** wizard (the brand slider) or take a website / brand doc / the colours + font, write `overrides/brand.css`, then build. Never scaffold on the placeholder default and ask afterwards.
-> 8. **APPLY THE BRAND TO EVERYTHING — no template left on the default blue.** Every template, card and component is token-driven and re-derives from `overrides/brand.css`. The template prop-defaults are intentionally empty, so templates inherit the configured brand automatically — you do NOT need to re-colour them one by one. Verify nothing still shows `#0A66C2`. **Same for the font: set BOTH `--brand-font` and `--brand-font-display` and LOAD them via the `@import` at the top of `overrides/brand.css` (or the START HERE / Settings slider) — Inter is only the default and must be fully replaced; no visual should stay on Inter.**
+> 8. **APPLY THE BRAND TO EVERYTHING — no template left on the default blue.** Every template, card and component is token-driven and re-derives from `overrides/brand.css`. The template prop-defaults are intentionally empty, so templates inherit the configured brand automatically — you do NOT need to re-colour them one by one. Verify nothing still shows `#0A66C2`.
+> 9. **FONT LOADING IS MANDATORY — naming a font is not loading it.** Setting `--brand-font` / `--brand-font-display` only *names* the family; if the font file isn't loaded, every visual (and every template preview) silently falls back to a generic serif/sans that looks wrong. You MUST do BOTH, at the **very top** of `overrides/brand.css` (the `@import` must precede `:root`, or the browser ignores it):
+>    ```css
+>    /* 1 — LOAD the families (render-blocking, so previews are correct too) */
+>    @import url('https://fonts.googleapis.com/css2?family=Body+Font:wght@400;500;600;700;800&family=Display+Font:ital@0;1&display=swap');
+>    :root{
+>      /* 2 — NAME them (must match the families loaded above) */
+>      --brand-font:         'Body Font', system-ui, sans-serif;
+>      --brand-font-display: 'Display Font', Georgia, serif;
+>    }
+>    ```
+>    Replace `Body+Font` / `Display+Font` (URL form, `+` for spaces) and the family names with the brand's real fonts, and request the weights that font actually has (single-weight display faces like Instrument Serif → `:ital@0;1`, never `wght@700`, which 400-errors the whole request). A JS fallback in `ds-base.js` also loads `--brand-font` at runtime, but it runs after first paint — the `@import` is what makes the **template previews** render in the brand font. Inter must be fully replaced; no visual should stay on Inter.
 
 ---
 
