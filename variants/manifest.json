@@ -11,7 +11,7 @@
     "**/.DS_Store",
     "**/package-lock.json"
   ],
-  "$uiLayerNote": "App/tooling UI + stale build artifacts only. Everything an agent needs to reproduce the system stays in core: the FULL template library (each templates/ folder complete — .dc.html + its support.js/ds-base.js runtime + thumbnail), the component implementations (components/**/*.jsx) and the styles.css token entry point. Stripped: the app shell, Visual Board + editor, ui_kits, the compiled _ds_bundle.js AND _ds_manifest.json (both are this build's compiled output baked to a stale namespace — the host recompiles its own), the .card.html viewer cards (they mount the old namespace), and the icon editor.",
+  "$uiLayerNote": "App/tooling UI + stale build artifacts only. Everything an agent needs to reproduce the system stays in core: the FULL template library (each templates/ folder complete — .dc.html + its support.js/ds-base.js runtime + thumbnail), the component implementations (components/**/*.jsx), their .card.html viewer cards (now namespace-agnostic — they resolve the DS registry on window dynamically, so they render under the host's recompiled namespace and satisfy check_design_system without the agent rebuilding them), and the styles.css token entry point. Stripped: the app shell, Visual Board + editor, ui_kits, the compiled _ds_bundle.js AND _ds_manifest.json (both are this build's compiled output baked to a stale namespace — the host recompiles its own), and the icon editor.",
   "uiLayer": [
     "app/**",
     "LinkedIn Visual Designer.html",
@@ -22,7 +22,6 @@
     "ui_kits/**",
     "_ds_bundle.js",
     "_ds_manifest.json",
-    "components/**/*.card.html",
     "components/**/icon-editor.html"
   ],
   "variants": {
