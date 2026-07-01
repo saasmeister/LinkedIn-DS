@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="../styles.css" />
 <style>
   body { margin:0; font-family:var(--font-body); background:#fff; color:#18181b; padding:26px 30px; }
-  .lead { font-size:13px; color:#8a8a8a; margin:0 0 16px; }
+  .lead { font-size:13px; color:var(--muted,#8a8a8a); margin:0 0 16px; }
   .lead b { color:#18181b; }
   .cols { display:flex; gap:22px; }
   .col { flex:1; }
@@ -13,12 +13,12 @@
   .ban .dot { background:#c0392b; }
   .ok .dot { background:var(--brand-primary); }
   ul { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
-  li { font-size:12.5px; line-height:1.4; color:#5a5a5a; padding-left:15px; position:relative; }
+  li { font-size:12.5px; line-height:1.4; color:var(--muted,#5a5a5a); padding-left:15px; position:relative; }
   li::before { content:""; position:absolute; left:0; top:6px; width:6px; height:6px; border-radius:1px; }
   .ban li::before { background:#c0392b; }
   .ok li::before { background:var(--brand-primary); }
   li b { color:#18181b; font-weight:600; }
-  .foot { margin-top:17px; font-size:12px; color:#8a8a8a; padding-top:13px; border-top:1px solid #ececec; }
+  .foot { margin-top:17px; font-size:12px; color:var(--muted,#8a8a8a); padding-top:13px; border-top:1px solid var(--rule,#ececec); }
   .foot b { color:var(--brand-primary); }
 </style></head>
 <body>

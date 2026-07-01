@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="../styles.css" />
 <style>
   body { margin:0; font-family:var(--font-body); background:#fff; color:#18181b; padding:24px 28px; }
-  .lead { font-size:13px; color:#8a8a8a; margin:0 0 18px; }
+  .lead { font-size:13px; color:var(--muted,#8a8a8a); margin:0 0 18px; }
   .lead b { color:#18181b; }
   .cols { display:flex; gap:26px; }
   .col { flex:1; }
@@ -14,12 +14,12 @@
   .opt { width:18px; height:18px; border-radius:5px; flex:none; border:1.5px solid var(--canvas-light-line); margin-top:1px; }
   .lbl { font-size:13.5px; line-height:1.4; }
   .lbl b { font-weight:600; }
-  .lbl span { color:#8a8a8a; }
-  .foot { margin-top:16px; padding-top:13px; border-top:1px solid #f0f0f0; font-size:13px; color:#5a5a5a; }
+  .lbl span { color:var(--muted,#8a8a8a); }
+  .foot { margin-top:16px; padding-top:13px; border-top:1px solid var(--rule,#f0f0f0); font-size:13px; color:var(--muted,#5a5a5a); }
   .foot b { color:#18181b; }
 </style></head>
 <body>
-  <p class="lead">Never build until the brief is filled. <b>Post-first, type-explicit, brand-explicit.</b> <span style="color:#b5b5b5">■ required · □ ask every time</span></p>
+  <p class="lead">Never build until the brief is filled. <b>Post-first, type-explicit, brand-explicit.</b> <span style="color:var(--muted,#b5b5b5)">■ required · □ ask every time</span></p>
   <div class="cols">
     <div class="col">
       <p class="ct">Required</p>
